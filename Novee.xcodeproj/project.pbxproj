@@ -11,6 +11,14 @@
 		9B04480F28FB3DA300FD7891 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B04480E28FB3DA300FD7891 /* ContentView.swift */; };
 		9B04481128FB3DA400FD7891 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481028FB3DA400FD7891 /* Assets.xcassets */; };
 		9B04481428FB3DA400FD7891 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */; };
+		9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B57D28FBCE5900E1A837 /* HomeView.swift */; };
+		9B78B58028FBCE6300E1A837 /* AnimeMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */; };
+		9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */; };
+		9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */; };
+		9B78B58628FBCE7800E1A837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58528FBCE7800E1A837 /* SettingsView.swift */; };
+		9B78B58A28FC68EF00E1A837 /* MangadexManga.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58928FC68EF00E1A837 /* MangadexManga.swift */; };
+		9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CB28FD8E8F008738D5 /* Log.swift */; };
+		9B8B70CE28FD8EDF008738D5 /* MangaVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +28,14 @@
 		9B04481028FB3DA400FD7891 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9B04481528FB3DA400FD7891 /* Novee.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Novee.entitlements; sourceTree = "<group>"; };
+		9B78B57D28FBCE5900E1A837 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeMenuView.swift; sourceTree = "<group>"; };
+		9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaMenuView.swift; sourceTree = "<group>"; };
+		9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NovelMenuView.swift; sourceTree = "<group>"; };
+		9B78B58528FBCE7800E1A837 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9B78B58928FC68EF00E1A837 /* MangadexManga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangadexManga.swift; sourceTree = "<group>"; };
+		9B8B70CB28FD8E8F008738D5 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaVM.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,8 +68,9 @@
 		9B04480B28FB3DA300FD7891 /* Novee */ = {
 			isa = PBXGroup;
 			children = (
-				9B04480C28FB3DA300FD7891 /* NoveeApp.swift */,
-				9B04480E28FB3DA300FD7891 /* ContentView.swift */,
+				9B78B58728FC503100E1A837 /* Model */,
+				9B78B58828FC503A00E1A837 /* ViewModel */,
+				9B78B57C28FBCE1F00E1A837 /* Views */,
 				9B04481028FB3DA400FD7891 /* Assets.xcassets */,
 				9B04481528FB3DA400FD7891 /* Novee.entitlements */,
 				9B04481228FB3DA400FD7891 /* Preview Content */,
@@ -67,6 +84,37 @@
 				9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		9B78B57C28FBCE1F00E1A837 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				9B04480C28FB3DA300FD7891 /* NoveeApp.swift */,
+				9B04480E28FB3DA300FD7891 /* ContentView.swift */,
+				9B78B57D28FBCE5900E1A837 /* HomeView.swift */,
+				9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */,
+				9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */,
+				9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */,
+				9B78B58528FBCE7800E1A837 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		9B78B58728FC503100E1A837 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9B78B58928FC68EF00E1A837 /* MangadexManga.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		9B78B58828FC503A00E1A837 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				9B8B70CB28FD8E8F008738D5 /* Log.swift */,
+				9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */,
+			);
+			path = ViewModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,8 +187,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B78B58628FBCE7800E1A837 /* SettingsView.swift in Sources */,
+				9B8B70CE28FD8EDF008738D5 /* MangaVM.swift in Sources */,
+				9B78B58028FBCE6300E1A837 /* AnimeMenuView.swift in Sources */,
+				9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */,
+				9B78B58A28FC68EF00E1A837 /* MangadexManga.swift in Sources */,
+				9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */,
 				9B04480F28FB3DA300FD7891 /* ContentView.swift in Sources */,
 				9B04480D28FB3DA300FD7891 /* NoveeApp.swift in Sources */,
+				9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */,
+				9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
