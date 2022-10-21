@@ -34,7 +34,10 @@ class MangaVM: ObservableObject {
                 
 //                print(safeData)
                 do {
-                    result = try JSONDecoder().decode(MangadexResponse.self, from: safeData.data(using: .utf8)!)
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    
+                    result = try decoder.decode(MangadexResponse.self, from: safeData.data(using: .utf8)!)
                     DispatchQueue.main.sync {
                         self.mangadexManga = result!.data
                     }

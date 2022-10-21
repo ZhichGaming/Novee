@@ -32,8 +32,8 @@ struct MangadexMangaAttributes: Codable {
     var status: String
     var year: Int?
     var tags: [MangadexTag]?
-    var createdAt: String
-    var updatedAt: String
+    var createdAt: Date
+    var updatedAt: Date
 }
 
 struct MangadexTag: Codable, Identifiable {

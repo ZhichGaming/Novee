@@ -9,7 +9,35 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        Text("Settings")
+        ScrollView {
+            VStack (alignment: .leading) {
+                Text("Settings")
+                    .font(.largeTitle)
+                Divider()
+                Group {
+                    Text("General")
+                        .font(.title)
+                }
+                Divider()
+                Group {
+                    Text("Anime")
+                        .font(.title)
+                }
+                Divider()
+                Group {
+                    Text("Manga")
+                        .font(.title)
+                    
+                }
+                Divider()
+                Group {
+                    Text("Novel")
+                        .font(.title)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+        }
     }
 }
 

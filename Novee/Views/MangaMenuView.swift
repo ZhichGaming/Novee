@@ -10,6 +10,7 @@ import SwiftUI
 struct MangaMenuView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @State var searchText = ""
+    @State var selectedManga: MangadexMangaData?
     
     var body: some View {
         GeometryReader { geo in
@@ -25,49 +26,57 @@ struct MangaMenuView: View {
                 .frame(height: 30)
                 .frame(maxWidth: .infinity)
 
-                List(mangaVM.mangadexManga) { manga in
-                    Divider()
-                    Button {
-                        print("Pressed \(manga.attributes.title)")
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text(manga.attributes.title.first?.value ?? "")
-                                    .font(.title2)
-                                if !(manga.attributes.altTitles?.isEmpty ?? true) {
-                                    Text((manga.attributes.altTitles?[0].first)!.value)
-                                        .font(.footnote)
-                                }
-                                HStack {
-                                    ForEach(getShortenedTags(for: manga)) { tag in
-                                        Text(tag.attributes.name.first(where: { $0.key == "en"})?.value ?? "None")
-                                            .font(.caption)
-                                            .padding(3)
-                                            .foregroundColor(.white)
-                                            .background {
-                                                Color.accentColor.clipShape(RoundedRectangle(cornerRadius: 5))
-                                            }
+                HSplitView {
+                    List(mangaVM.mangadexManga) { manga in
+                        Divider()
+                        Button {
+                            selectedManga = manga
+                            print(selectedManga?.attributes.title)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(manga.attributes.title.first?.value ?? "")
+                                        .font(.title2)
+                                    if !(manga.attributes.altTitles?.isEmpty ?? true) {
+                                        Text((manga.attributes.altTitles?[0].first)!.value)
+                                            .font(.footnote)
+                                    }
+                                    HStack {
+                                        ForEach(getShortenedTags(for: manga)) { tag in
+                                            Text(tag.attributes.name.first(where: { $0.key == "en"})?.value ?? "None")
+                                                .font(.caption)
+                                                .padding(3)
+                                                .foregroundColor(.white)
+                                                .background {
+                                                    Color.accentColor.clipShape(RoundedRectangle(cornerRadius: 5))
+                                                }
+                                        }
                                     }
                                 }
+                                
+                                Spacer()
+                                AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                } placeholder: {
+                                    ProgressView()
+                                }
                             }
-                            
-                            Spacer()
-                            AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                            } placeholder: {
-                                ProgressView()
-                            }
+                            .frame(height: 100)
+                            .contentShape(Rectangle())
                         }
-                        .frame(height: 100)
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .onAppear {
-                    print(mangaVM.mangadexManga)
+                    .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    if selectedManga != nil {
+                        MangaDetailsView(manga: Binding(
+                            get: { selectedManga! },
+                            set: { selectedManga = $0 } )
+                        )
+                        .frame(minWidth: 400, maxWidth: .infinity)
+                    }
                 }
             }
         }
