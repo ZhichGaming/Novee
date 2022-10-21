@@ -13,24 +13,25 @@ struct MangaDetailsView: View {
     var body: some View {
         GeometryReader { geo in
             ScrollView {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
+                VStack {
+                    HStack(alignment: .top) {
                         Text(manga.attributes.title.first?.value ?? "No title")
                             .font(.largeTitle)
-                        Text(manga.attributes.description?.first?.value ?? "No description")
+                        Spacer()
+                        AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
+                        .clipped()
                     }
-                    .padding()
-                    Spacer()
-                    AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                    .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
-                    .clipped()
+                    Divider()
+                    Text(LocalizedStringKey(manga.attributes.description?.first?.value ?? "No description"))
                 }
+                .padding()
             }
         }
     }
