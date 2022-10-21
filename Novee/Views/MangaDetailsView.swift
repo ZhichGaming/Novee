@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MangaDetailsView: View {
-    @Binding var manga: MangadexMangaData
+    @State var manga: MangadexMangaData
     
     var body: some View {
         GeometryReader { geo in
@@ -39,7 +39,7 @@ struct MangaDetailsView: View {
 
 struct MangaDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaDetailsView(manga: .constant(MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))])))
+        MangaDetailsView(manga: MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))]))
             .frame(width: 500, height: 625)
     }
 }

@@ -10,7 +10,6 @@ import SwiftUI
 struct MangaMenuView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @State var searchText = ""
-    @State var selectedManga: MangadexMangaData?
     
     var body: some View {
         GeometryReader { geo in
@@ -26,12 +25,10 @@ struct MangaMenuView: View {
                 .frame(height: 30)
                 .frame(maxWidth: .infinity)
 
-                HSplitView {
+                NavigationView {
                     List(mangaVM.mangadexManga) { manga in
-                        Divider()
-                        Button {
-                            selectedManga = manga
-                            print(selectedManga?.attributes.title)
+                        NavigationLink {
+                            MangaDetailsView(manga: manga)
                         } label: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 0) {
@@ -66,17 +63,8 @@ struct MangaMenuView: View {
                             .frame(height: 100)
                             .contentShape(Rectangle())
                         }
-                        .buttonStyle(.plain)
                     }
                     .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
-                    
-                    if selectedManga != nil {
-                        MangaDetailsView(manga: Binding(
-                            get: { selectedManga! },
-                            set: { selectedManga = $0 } )
-                        )
-                        .frame(minWidth: 400, maxWidth: .infinity)
-                    }
                 }
             }
         }
