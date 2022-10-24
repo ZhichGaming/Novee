@@ -20,6 +20,8 @@
 		9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CB28FD8E8F008738D5 /* Log.swift */; };
 		9B8B70CE28FD8EDF008738D5 /* MangaVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */; };
 		9BA53E8F2901E6CD00C6BDDF /* MangaDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */; };
+		9BEF80C729034D8500662F8C /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEF80C629034D8500662F8C /* Settings.swift */; };
+		9BEF80C92903524A00662F8C /* SettingsVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEF80C82903524A00662F8C /* SettingsVM.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +40,8 @@
 		9B8B70CB28FD8E8F008738D5 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaVM.swift; sourceTree = "<group>"; };
 		9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaDetailsView.swift; sourceTree = "<group>"; };
+		9BEF80C629034D8500662F8C /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		9BEF80C82903524A00662F8C /* SettingsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVM.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +74,7 @@
 		9B04480B28FB3DA300FD7891 /* Novee */ = {
 			isa = PBXGroup;
 			children = (
+				9B04480C28FB3DA300FD7891 /* NoveeApp.swift */,
 				9B78B58728FC503100E1A837 /* Model */,
 				9B78B58828FC503A00E1A837 /* ViewModel */,
 				9B78B57C28FBCE1F00E1A837 /* Views */,
@@ -91,7 +96,6 @@
 		9B78B57C28FBCE1F00E1A837 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				9B04480C28FB3DA300FD7891 /* NoveeApp.swift */,
 				9B04480E28FB3DA300FD7891 /* ContentView.swift */,
 				9B78B57D28FBCE5900E1A837 /* HomeView.swift */,
 				9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */,
@@ -107,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				9B78B58928FC68EF00E1A837 /* MangadexManga.swift */,
+				9BEF80C629034D8500662F8C /* Settings.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -116,6 +121,7 @@
 			children = (
 				9B8B70CB28FD8E8F008738D5 /* Log.swift */,
 				9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */,
+				9BEF80C82903524A00662F8C /* SettingsVM.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -196,10 +202,12 @@
 				9B78B58028FBCE6300E1A837 /* AnimeMenuView.swift in Sources */,
 				9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */,
 				9B78B58A28FC68EF00E1A837 /* MangadexManga.swift in Sources */,
+				9BEF80C729034D8500662F8C /* Settings.swift in Sources */,
 				9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */,
 				9B04480F28FB3DA300FD7891 /* ContentView.swift in Sources */,
 				9B04480D28FB3DA300FD7891 /* NoveeApp.swift in Sources */,
 				9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */,
+				9BEF80C92903524A00662F8C /* SettingsVM.swift in Sources */,
 				9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct NoveeApp: App {
+    @StateObject var settingsVM = SettingsVM()
     @StateObject var mangaVM = MangaVM()
 
     var body: some Scene {
@@ -16,6 +17,8 @@ struct NoveeApp: App {
             ContentView()
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
                 .environmentObject(mangaVM)
+                .environmentObject(settingsVM)
+                .presentedWindowToolbarStyle(.unified)
         }
     }
 }

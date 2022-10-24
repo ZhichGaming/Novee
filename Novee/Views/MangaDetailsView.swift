@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MangaDetailsView: View {
+    @EnvironmentObject var settingsVM: SettingsVM
     @State var manga: MangadexMangaData
     
     var body: some View {
@@ -15,7 +16,7 @@ struct MangaDetailsView: View {
             ScrollView {
                 VStack {
                     HStack(alignment: .top) {
-                        Text(manga.attributes.title.first?.value ?? "No title")
+                        Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
                             .font(.largeTitle)
                         Spacer()
                         AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
@@ -29,7 +30,7 @@ struct MangaDetailsView: View {
                         .clipped()
                     }
                     Divider()
-                    Text(LocalizedStringKey(manga.attributes.description?.first?.value ?? "No description"))
+                    Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM)))
                 }
                 .padding()
             }

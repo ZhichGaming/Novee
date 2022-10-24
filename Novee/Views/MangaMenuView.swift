@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MangaMenuView: View {
+    @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var mangaVM: MangaVM
     @State var searchText = ""
     
@@ -32,15 +33,13 @@ struct MangaMenuView: View {
                         } label: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 0) {
-                                    Text(manga.attributes.title.first?.value ?? "")
+                                    Text(manga.attributes.title.first?.value ?? "No title")
                                         .font(.title2)
-                                    if !(manga.attributes.altTitles?.isEmpty ?? true) {
-                                        Text((manga.attributes.altTitles?[0].first)!.value)
-                                            .font(.footnote)
-                                    }
+                                    Text("Latest chapter: \(manga.attributes.lastChapter ?? "No chapters")")
+                                        .font(.footnote)
                                     HStack {
                                         ForEach(getShortenedTags(for: manga)) { tag in
-                                            Text(tag.attributes.name.first(where: { $0.key == "en"})?.value ?? "None")
+                                            Text(MangaVM.getLocalisedString(tag.attributes.name, settingsVM: settingsVM))
                                                 .font(.caption)
                                                 .padding(3)
                                                 .foregroundColor(.white)

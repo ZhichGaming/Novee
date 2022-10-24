@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var settingsVM: SettingsVM
+    
     var body: some View {
         ScrollView {
             VStack (alignment: .leading) {
@@ -27,7 +29,15 @@ struct SettingsView: View {
                 Group {
                     Text("Manga")
                         .font(.title)
-                    
+                    VStack {
+                        Picker("Primary language", selection: Binding(get: { settingsVM.settings.preferedLanguage }, set: { settingsVM.settings.preferedLanguage = $0 })
+                        ) {
+                            ForEach(Language.allCases, id: \.self) { language in
+                                Text(language.rawValue)
+                                    .tag(language)
+                            }
+                        }
+                    }
                 }
                 Divider()
                 Group {

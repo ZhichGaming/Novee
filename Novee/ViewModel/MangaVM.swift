@@ -6,10 +6,9 @@
 //
 
 import Foundation
+import SwiftUI
 
 class MangaVM: ObservableObject {
-    static let shared = MangaVM()
-    
     init() {
         fetchManga()
     }
@@ -32,7 +31,6 @@ class MangaVM: ObservableObject {
                     .replacingOccurrences(of: ",\"description\":[]", with: "")
                     .replacingOccurrences(of: ",\"links\":[]", with: "")
                 
-//                print(safeData)
                 do {
                     let decoder = JSONDecoder()
                     decoder.dateDecodingStrategy = .iso8601
@@ -48,5 +46,19 @@ class MangaVM: ObservableObject {
             
             task.resume()
         }
+    }
+    
+    static func getLocalisedString(_ strings: [String: String]?, settingsVM: SettingsVM) -> String {
+        guard let unwrappedStrings = strings else {
+            return "None"
+        }
+        if unwrappedStrings.isEmpty { return "None" }
+        let primaryLanguageString = unwrappedStrings.first { $0.key.uppercased() == "\(settingsVM.settings.preferedLanguage)" }?.value
+        
+        if primaryLanguageString != nil {
+            return primaryLanguageString!
+        } 
+        
+        return unwrappedStrings.first?.value ?? "None"
     }
 }
