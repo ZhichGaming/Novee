@@ -10,6 +10,7 @@ import SwiftUI
 struct MangaDetailsView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     @State var manga: MangadexMangaData
+    @State var collapsed = true
     
     var body: some View {
         GeometryReader { geo in
@@ -34,7 +35,18 @@ struct MangaDetailsView: View {
                         .clipped()
                     }
                     Divider()
-                    Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM)))
+                    VStack(alignment: .leading) {
+                        Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM))).lineLimit(collapsed ? 5 : nil)
+                        Button(action: {
+                            withAnimation {
+                                collapsed.toggle()
+                            }
+                        }, label: {
+                            Text(collapsed ? "More" : "Less")
+                                .foregroundColor(.accentColor)
+                        })
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding()
             }
