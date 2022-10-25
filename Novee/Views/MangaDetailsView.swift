@@ -16,8 +16,12 @@ struct MangaDetailsView: View {
             ScrollView {
                 VStack {
                     HStack(alignment: .top) {
-                        Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
-                            .font(.largeTitle)
+                        VStack(alignment: .leading) {
+                            Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
+                                .font(.largeTitle)
+                            Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
+                            TagView(tags: getTags())
+                        }
                         Spacer()
                         AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
                             image
@@ -34,6 +38,106 @@ struct MangaDetailsView: View {
                 }
                 .padding()
             }
+        }
+    }
+    
+    func getAltTitles() -> String {
+        var titles: [String] = []
+        
+        if manga.attributes.altTitles != nil {
+            for altTitle in manga.attributes.altTitles! {
+                for value in altTitle.values {
+                    titles.append(value)
+                }
+            }
+        } else {
+            return "None"
+        }
+        
+        return titles.joined(separator: ", ")
+    }
+    
+    func getTags() -> [String] {
+        var tags: [String] = []
+        
+        if manga.attributes.tags != nil {
+            for tag in manga.attributes.tags! {
+                tags.append(MangaVM.getLocalisedString(tag.attributes.name, settingsVM: settingsVM))
+            }
+        } else {
+            return ["No tags"]
+        }
+        
+        return tags
+    }
+}
+
+struct TagView: View {
+    var tags: [String]
+
+    @State private var totalHeight
+          = CGFloat.zero       // << variant for ScrollView/List
+    //    = CGFloat.infinity   // << variant for VStack
+
+    var body: some View {
+        VStack {
+            GeometryReader { geometry in
+                self.generateContent(in: geometry)
+            }
+        }
+        .frame(height: totalHeight)// << variant for ScrollView/List
+        //.frame(maxHeight: totalHeight) // << variant for VStack
+    }
+
+    private func generateContent(in g: GeometryProxy) -> some View {
+        var width = CGFloat.zero
+        var height = CGFloat.zero
+
+        return ZStack(alignment: .topLeading) {
+            ForEach(self.tags, id: \.self) { tag in
+                self.item(for: tag)
+                    .padding([.horizontal, .vertical], 4)
+                    .alignmentGuide(.leading, computeValue: { d in
+                        if (abs(width - d.width) > g.size.width)
+                        {
+                            width = 0
+                            height -= d.height
+                        }
+                        let result = width
+                        if tag == self.tags.last! {
+                            width = 0 //last item
+                        } else {
+                            width -= d.width
+                        }
+                        return result
+                    })
+                    .alignmentGuide(.top, computeValue: {d in
+                        let result = height
+                        if tag == self.tags.last! {
+                            height = 0 // last item
+                        }
+                        return result
+                    })
+            }
+        }.background(viewHeightReader($totalHeight))
+    }
+
+    private func item(for text: String) -> some View {
+        Text(text)
+            .padding(.all, 5)
+            .font(.body)
+            .background(Color.blue)
+            .foregroundColor(Color.white)
+            .cornerRadius(5)
+    }
+
+    private func viewHeightReader(_ binding: Binding<CGFloat>) -> some View {
+        return GeometryReader { geometry -> Color in
+            let rect = geometry.frame(in: .local)
+            DispatchQueue.main.async {
+                binding.wrappedValue = rect.size.height
+            }
+            return .clear
         }
     }
 }

@@ -142,6 +142,8 @@
 			dependencies = (
 			);
 			name = Novee;
+			packageProductDependencies = (
+			);
 			productName = Novee;
 			productReference = 9B04480928FB3DA300FD7891 /* Novee.app */;
 			productType = "com.apple.product-type.application";
@@ -170,6 +172,8 @@
 				Base,
 			);
 			mainGroup = 9B04480028FB3DA300FD7891;
+			packageReferences = (
+			);
 			productRefGroup = 9B04480A28FB3DA300FD7891 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
