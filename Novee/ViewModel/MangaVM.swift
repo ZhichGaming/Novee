@@ -48,6 +48,39 @@ class MangaVM: ObservableObject {
         }
     }
     
+    func getChapters(manga: UUID) {
+        DispatchQueue.global(qos: .userInteractive).async {
+            var result: MangadexChapterResponse? = nil
+
+            guard let url = URL(string: "https://api.mangadex.org/manga/\(manga.uuidString.lowercased())/feed") else {
+                print("Invalid URL")
+                return
+            }
+            
+            let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+                guard let data = data else { return }
+
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+
+                    result = try decoder.decode(MangadexChapterResponse.self, from: data)
+                    DispatchQueue.main.sync {
+                        self.mangadexManga[self.mangadexManga.firstIndex { $0.id == manga }!].chapters = result!.data
+                    }
+//                    if let JSONString = String(data: data, encoding: String.Encoding.utf8) {
+//                        print(JSONString)
+//                    }
+                } catch {
+                    print(error)
+                }
+            }
+            
+            task.resume()
+        }
+
+    }
+    
     static func getLocalisedString(_ strings: [String: String]?, settingsVM: SettingsVM) -> String {
         guard let unwrappedStrings = strings else {
             return "None"

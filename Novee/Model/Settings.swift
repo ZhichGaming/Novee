@@ -196,4 +196,14 @@ enum Language: String, Codable, CaseIterable, Hashable {
          YO = "Yoruba",
          ZA = "Zhuang, Chuang",
          ZU = "Zulu"
+    
+    static func getValue(_ value: String) -> String? {
+        for language in Language.allCases {
+            if "\(language)" == value {
+                return language.rawValue
+            }
+        }
+        
+        return nil
+    }
 }

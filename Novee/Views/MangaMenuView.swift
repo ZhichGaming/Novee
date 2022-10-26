@@ -29,7 +29,7 @@ struct MangaMenuView: View {
                 NavigationView {
                     List(mangaVM.mangadexManga) { manga in
                         NavigationLink {
-                            MangaDetailsView(manga: manga)
+                            MangaDetailsView(mangaId: manga.id)
                         } label: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 0) {

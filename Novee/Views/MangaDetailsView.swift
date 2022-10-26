@@ -8,48 +8,69 @@
 import SwiftUI
 
 struct MangaDetailsView: View {
+    @EnvironmentObject var mangaVM: MangaVM
     @EnvironmentObject var settingsVM: SettingsVM
-    @State var manga: MangadexMangaData
+    @State var mangaId: UUID
     @State var collapsed = true
+    
+    var manga: MangadexMangaData {
+        mangaVM.mangadexManga.first { $0.id == mangaId }!
+    }
+    
     
     var body: some View {
         GeometryReader { geo in
-            ScrollView {
-                VStack {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading) {
-                            Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
-                                .font(.largeTitle)
-                            Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
-                            TagView(tags: getTags())
-                        }
-                        Spacer()
-                        AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
-                            image
-                                .resizable()
-                                .scaledToFit()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
-                        .clipped()
-                    }
-                    Divider()
+            VStack {
+                HStack(alignment: .top) {
                     VStack(alignment: .leading) {
-                        Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM))).lineLimit(collapsed ? 5 : nil)
-                        Button(action: {
-                            withAnimation {
-                                collapsed.toggle()
-                            }
-                        }, label: {
-                            Text(collapsed ? "More" : "Less")
-                                .foregroundColor(.accentColor)
-                        })
-                        .buttonStyle(.plain)
+                        Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
+                            .font(.largeTitle)
+                        Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
+                        TagView(tags: getTags())
+                    }
+                    Spacer()
+                    AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
+                    .clipped()
+                }
+                Divider()
+                VStack(alignment: .leading) {
+                    Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM))).lineLimit(collapsed ? 5 : nil)
+                    Button(action: {
+                        withAnimation {
+                            collapsed.toggle()
+                        }
+                    }, label: {
+                        Text(collapsed ? "More" : "Less")
+                            .foregroundColor(.accentColor)
+                    })
+                    .buttonStyle(.plain)
+                }
+                Divider()
+
+                Group {
+                    if manga.chapters != nil {
+                        List(getSortedChapters()) { chapter in
+                            Text("Chapter \(chapter.attributes.chapter ?? "None") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "Unknown language"))")
+                        }
+                        .listStyle(.automatic)
+                    } else {
+                        ProgressView()
                     }
                 }
-                .padding()
+                .listStyle(BorderedListStyle())
+                .onAppear {
+                    mangaVM.getChapters(manga: manga.id)
+                }
             }
+            .padding()
+            
         }
     }
     
@@ -81,6 +102,22 @@ struct MangaDetailsView: View {
         }
         
         return tags
+    }
+    
+    func getSortedChapters() -> [MangadexChapter] {
+        var sortedChapters: [MangadexChapter]
+        sortedChapters = manga.chapters!.sorted(by: { chapter1, chapter2 in
+            guard let verifiedString1 = Double(chapter1.attributes.chapter ?? "0") else {
+                return chapter1.attributes.chapter ?? "" <= chapter2.attributes.chapter ?? ""
+            }
+            guard let verifiedString2 = Double(chapter2.attributes.chapter ?? "0") else {
+                return chapter1.attributes.chapter ?? "" <= chapter2.attributes.chapter ?? ""
+            }
+            
+            return verifiedString1 <= verifiedString2
+        })
+        
+        return sortedChapters
     }
 }
 
@@ -155,8 +192,9 @@ struct TagView: View {
 }
 
 struct MangaDetailsView_Previews: PreviewProvider {
+    let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))])]
     static var previews: some View {
-        MangaDetailsView(manga: MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))]))
+        MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!)
             .frame(width: 500, height: 625)
     }
 }
