@@ -70,8 +70,8 @@ struct MangaMenuView: View {
     }
     
     func getShortenedTags(for manga: MangadexMangaData) -> [MangadexTag] {
-        if manga.attributes.tags!.count >= 5 {
-            let shortenedTags = manga.attributes.tags![0..<5]
+        if manga.attributes.tags!.count >= 3 {
+            let shortenedTags = manga.attributes.tags![0..<3]
             return Array(shortenedTags)
         }
         return manga.attributes.tags!

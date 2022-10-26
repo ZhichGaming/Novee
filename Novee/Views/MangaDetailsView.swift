@@ -20,57 +20,60 @@ struct MangaDetailsView: View {
     
     var body: some View {
         GeometryReader { geo in
-            VStack {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
-                        Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
-                            .font(.largeTitle)
-                        Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
-                        TagView(tags: getTags())
-                    }
-                    Spacer()
-                    AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                    .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
-                    .clipped()
-                }
-                Divider()
-                VStack(alignment: .leading) {
-                    Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM))).lineLimit(collapsed ? 5 : nil)
-                    Button(action: {
-                        withAnimation {
-                            collapsed.toggle()
+            ScrollView {
+                VStack {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading) {
+                            Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
+                                .font(.largeTitle)
+                            Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
+                            TagView(tags: getTags())
                         }
-                    }, label: {
-                        Text(collapsed ? "More" : "Less")
-                            .foregroundColor(.accentColor)
-                    })
-                    .buttonStyle(.plain)
-                }
-                Divider()
-
-                Group {
+                        Spacer()
+                        AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
+                        .clipped()
+                    }
+                    Divider()
+                    VStack(alignment: .leading) {
+                        Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM))).lineLimit(collapsed ? 5 : nil)
+                        Button(action: {
+                            withAnimation {
+                                collapsed.toggle()
+                            }
+                        }, label: {
+                            Text(collapsed ? "More" : "Less")
+                                .foregroundColor(.accentColor)
+                        })
+                        .buttonStyle(.plain)
+                        Spacer()
+                    }
+                    
+                    Divider()
+                
                     if manga.chapters != nil {
                         List(getSortedChapters()) { chapter in
-                            Text("Chapter \(chapter.attributes.chapter ?? "None") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "Unknown language"))")
+                            Text("Chapter \(chapter.attributes.chapter ?? "None") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(chapter.attributes.translatedLanguage)"))")
+                                .frame(height: 25)
                         }
                         .listStyle(.automatic)
+                        .frame(height: geo.size.height * 0.3)
                     } else {
                         ProgressView()
                     }
                 }
-                .listStyle(BorderedListStyle())
-                .onAppear {
-                    mangaVM.getChapters(manga: manga.id)
-                }
+                .padding()
+                
             }
-            .padding()
-            
+        }
+        .onAppear {
+            mangaVM.getChapters(manga: manga.id)
         }
     }
     
