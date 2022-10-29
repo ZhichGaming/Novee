@@ -42,7 +42,9 @@ enum Language: String, Codable, CaseIterable, Hashable {
          CH = "Chamorro",
          CE = "Chechen",
          NY = "Chichewa",
-         ZH = "Chinese",
+         ZH = "Simplified Chinese",
+         ZHRO = "Romanized Chinese",
+         ZHHK = "Traditional Chinese",
          CU = "Old Bulgarian",
          CV = "Chuvash",
          KW = "Cornish",
@@ -91,6 +93,7 @@ enum Language: String, Codable, CaseIterable, Hashable {
          GA = "Irish",
          IT = "Italian",
          JA = "Japanese",
+         JARO = "Romanized Japanese",
          JV = "Javanese",
          KN = "Kannada",
          KR = "Kanuri",
@@ -100,6 +103,7 @@ enum Language: String, Codable, CaseIterable, Hashable {
          KV = "Komi",
          KG = "Kongo",
          KO = "Korean",
+         KORO = "Romanized Korean",
          KJ = "Kwanyama, Kuanyama",
          KU = "Kurdish",
          KY = "Kyrgyz",
@@ -143,6 +147,7 @@ enum Language: String, Codable, CaseIterable, Hashable {
          FA = "Persian",
          PL = "Polish",
          PT = "Portuguese",
+         PTBR = "Brazilian Portugese",
          QU = "Quechua",
          RM = "Romansh",
          RN = "Rundi",
@@ -160,7 +165,8 @@ enum Language: String, Codable, CaseIterable, Hashable {
          SO = "Somali",
          ST = "Sotho, Southern",
          NR = "South Ndebele",
-         ES = "Spanish, Castilian",
+         ES = "Castilian Spanish",
+         ESLA = "Latin American Spanish",
          SU = "Sundanese",
          SW = "Swahili",
          SS = "Swati",
@@ -199,7 +205,7 @@ enum Language: String, Codable, CaseIterable, Hashable {
     
     static func getValue(_ value: String) -> String? {
         for language in Language.allCases {
-            if "\(language)" == value {
+            if "\(language)" == value.replacingOccurrences(of: "-", with: "") {
                 return language.rawValue
             }
         }
