@@ -19,7 +19,7 @@ struct MangadexChapterResponse: Codable {
     var data: [MangadexChapter]
 }
 
-struct MangadexMangaData: Codable, Identifiable {
+struct MangadexMangaData: Codable, Identifiable, Equatable {
     var id: UUID
     var type: String
     var attributes: MangadexMangaAttributes
@@ -27,7 +27,7 @@ struct MangadexMangaData: Codable, Identifiable {
     var chapters: [MangadexChapter]?
 }
 
-struct MangadexMangaAttributes: Codable {
+struct MangadexMangaAttributes: Codable, Equatable {
     var title: [String:String]
     var altTitles: [[String:String]]?
     var description: [String:String]?
@@ -43,52 +43,56 @@ struct MangadexMangaAttributes: Codable {
     var updatedAt: Date
 }
 
-struct MangadexRelationship: Codable, Identifiable {
+struct MangadexRelationship: Codable, Identifiable, Equatable {
     var id: UUID
     var type: String
     var related: String?
     var attributes: MangadexRelationshipAttributes?
 }
 
-struct MangadexRelationshipAttributes: Codable {
+struct MangadexRelationshipAttributes: Codable, Equatable {
     var description: String?
     var volume: String?
     var fileName: String?
     var locale: String?
 }
 
-struct MangadexTag: Codable, Identifiable {
+struct MangadexTag: Codable, Identifiable, Equatable {
     var id: UUID
     var type: String
     var attributes: MangadexTagAttributes
     var relationships: [MangadexRelationship?]
 }
 
-struct MangadexTagAttributes: Codable {
+struct MangadexTagAttributes: Codable, Equatable {
     var name: [String:String]
     var description: [[String:String]]?
-    // Check what this is
     var group: String
 }
 
-
-struct MangadexChapter: Codable, Identifiable {
+struct MangadexChapter: Codable, Identifiable, Equatable {
     var id: UUID
     var type: String
     var attributes: MangadexChapterAttributes
     var relationships: [MangadexChapterRelationship]
 }
 
-struct MangadexChapterAttributes: Codable {
+struct MangadexChapterAttributes: Codable, Equatable {
     var volume: String?
     var chapter: String?
     var title: String?
     var translatedLanguage: String
     var externalUrl: String?
-    var publishAt: Date?
+    var publishAt: Date
 }
 
-struct MangadexChapterRelationship: Codable {
+struct MangadexChapterRelationship: Codable, Equatable, Identifiable {
     var id: UUID
     var type: String
+    var attributes: MangadexGroupAttributes?
+}
+
+struct MangadexGroupAttributes: Codable, Equatable, Hashable {
+    var name: String
+    var website: String?
 }

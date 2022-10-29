@@ -19,7 +19,7 @@ class MangaVM: ObservableObject {
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexResponse? = nil
 
-            guard let url = URL(string: "https://api.mangadex.org/manga?includes[]=author&includes[]=artist&includes[]=cover_art") else {
+            guard let url = URL(string: "https://api.mangadex.org/manga?includes[]=cover_art") else {
                 print("Invalid URL")
                 return
             }
@@ -31,6 +31,10 @@ class MangaVM: ObservableObject {
                     .replacingOccurrences(of: ",\"description\":[]", with: "")
                     .replacingOccurrences(of: ",\"links\":[]", with: "")
                 
+//                #if DEBUG
+//                print(safeData)
+//                #endif
+                
                 do {
                     let decoder = JSONDecoder()
                     decoder.dateDecodingStrategy = .iso8601
@@ -41,6 +45,7 @@ class MangaVM: ObservableObject {
                     }
                 } catch {
                     print(error)
+                    Log.shared.error(error)
                 }
             }
             
@@ -52,13 +57,17 @@ class MangaVM: ObservableObject {
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexChapterResponse? = nil
 
-            guard let url = URL(string: "https://api.mangadex.org/manga/\(manga.uuidString.lowercased())/feed") else {
+            guard let url = URL(string: "https://api.mangadex.org/manga/\(manga.uuidString.lowercased())/feed?includes[]=scanlation_group") else {
                 print("Invalid URL")
                 return
             }
             
             let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
                 guard let data = data else { return }
+                
+//                #if DEBUG
+//                print(String(data: data, encoding: .utf8)! as Any)
+//                #endif
 
                 do {
                     let decoder = JSONDecoder()
@@ -68,11 +77,9 @@ class MangaVM: ObservableObject {
                     DispatchQueue.main.sync {
                         self.mangadexManga[self.mangadexManga.firstIndex { $0.id == manga }!].chapters = result!.data
                     }
-//                    if let JSONString = String(data: data, encoding: String.Encoding.utf8) {
-//                        print(JSONString)
-//                    }
                 } catch {
                     print(error)
+                    Log.shared.error(error)
                 }
             }
             
