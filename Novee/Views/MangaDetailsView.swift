@@ -125,23 +125,23 @@ struct ChapterList: View {
                         .font(selected == Optional(chapter.id) ? .headline : nil)
                     Spacer()
                 }
-                .transaction { transaction in
-                    transaction.animation = nil
-                }
                 
                 if selected == Optional(chapter.id) {
                     VStack(alignment: .leading) {
-                        Divider()
                         HStack {
                             Text("Translation group(s)")
                                 .font(.callout)
                             Spacer()
-                            ForEach(chapter.relationships.filter { $0.type == "scanlation_group" }) { group in
-                                if let url = URL(string: group.attributes?.website ?? "") {
-                                    Link(group.attributes?.name ?? "Unknown", destination: url) 
-                                } else {
-                                    Text(group.attributes?.name ?? "None")
+                            if !chapter.relationships.filter { $0.type == "scanlation_group" }.isEmpty {
+                                ForEach(chapter.relationships.filter { $0.type == "scanlation_group" }) { group in
+                                    if let url = URL(string: group.attributes?.website ?? "") {
+                                        Link(group.attributes?.name ?? "Unknown", destination: url)
+                                    } else {
+                                        Text(group.attributes?.name ?? "None")
+                                    }
                                 }
+                            } else {
+                                Text("None")
                             }
                         }
                         HStack {
@@ -159,14 +159,11 @@ struct ChapterList: View {
                             }
                         }
                     }
-                    .transition(.asymmetric(insertion: .move(edge: .top), removal: .move(edge: .top).combined(with: .opacity)))
                 }
             }
             .frame(maxWidth: .infinity)
             .onTapGesture {
-                withAnimation(.easeInOut) {
-                    selected = chapter.id
-                }
+                selected = chapter.id
             }
         }
         .listStyle(.bordered(alternatesRowBackgrounds: true))
