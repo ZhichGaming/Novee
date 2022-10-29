@@ -30,8 +30,29 @@ struct MangaDetailsView: View {
                     VStack(alignment: .leading) {
                         Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
                             .font(.largeTitle)
+                        /// Alternative manga titles
                         Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
-                        TagView(tags: getTags())
+                            .lineLimit(5)
+
+                        /// Manga author
+                        HStack(spacing: 0) {
+                            /// Checks if author's website and twitter is null
+                            if manga.relationships.first { $0?.type == "author" }??.attributes?.website == nil && manga.relationships.first { $0?.type == "author" }??.attributes?.twitter == nil {
+                                /// If it is null, display the author name as standard text
+                                Text(LocalizedStringKey("**Author:** \(manga.relationships.first { $0?.type == "author" }??.attributes?.name ?? "Unknown")"))
+                            } else {
+                                /// If it is not null, display the author name as link
+                                Text(LocalizedStringKey("**Author:** "))
+                                Link(
+                                    manga.relationships.first { $0?.type == "author" }??.attributes?.name ?? "Unknown",
+                                    destination: URL(string: (manga.relationships.first { $0?.type == "author" }??.attributes?.website ?? manga.relationships.first { $0?.type == "author" }??.attributes?.twitter)!)!)
+                            }
+                        }
+                        
+                        HStack(alignment: .center) {
+                            Text(LocalizedStringKey("**Tags:**"))
+                            TagView(tags: getTags())
+                        }
                     }
                     Spacer()
                     AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
@@ -56,7 +77,7 @@ struct MangaDetailsView: View {
                             }
                         }
                 }
-                .frame(maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
                 
                 Divider()
             
@@ -192,8 +213,7 @@ struct TagView: View {
     var tags: [String]
 
     @State private var totalHeight
-          = CGFloat.zero       // << variant for ScrollView/List
-    //    = CGFloat.infinity   // << variant for VStack
+          = CGFloat.zero
 
     var body: some View {
         VStack {
@@ -201,8 +221,7 @@ struct TagView: View {
                 self.generateContent(in: geometry)
             }
         }
-        .frame(height: totalHeight)// << variant for ScrollView/List
-        //.frame(maxHeight: totalHeight) // << variant for VStack
+        .frame(height: totalHeight)
     }
 
     private func generateContent(in g: GeometryProxy) -> some View {
@@ -212,7 +231,7 @@ struct TagView: View {
         return ZStack(alignment: .topLeading) {
             ForEach(self.tags, id: \.self) { tag in
                 self.item(for: tag)
-                    .padding([.horizontal, .vertical], 4)
+                    .padding([.horizontal, .vertical], 2)
                     .alignmentGuide(.leading, computeValue: { d in
                         if (abs(width - d.width) > g.size.width)
                         {
@@ -240,9 +259,9 @@ struct TagView: View {
 
     private func item(for text: String) -> some View {
         Text(text)
-            .padding(.all, 5)
+            .padding(.all, 3)
             .font(.body)
-            .background(Color.blue)
+            .background(Color.accentColor)
             .foregroundColor(Color.white)
             .cornerRadius(5)
     }

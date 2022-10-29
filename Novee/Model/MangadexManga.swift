@@ -7,16 +7,11 @@
 
 import Foundation
 
+/// **Mangadex manga**
 struct MangadexResponse: Codable {
     var result: String
     var response: String
     var data: [MangadexMangaData]
-}
-
-struct MangadexChapterResponse: Codable {
-    var result: String
-    var response: String
-    var data: [MangadexChapter]
 }
 
 struct MangadexMangaData: Codable, Identifiable, Equatable {
@@ -53,10 +48,18 @@ struct MangadexRelationship: Codable, Identifiable, Equatable {
 struct MangadexRelationshipAttributes: Codable, Equatable {
     var description: String?
     var volume: String?
-    var fileName: String?
     var locale: String?
+    
+    /// **Manga cover**
+    var fileName: String?
+
+    /// **Mangadex author**
+    var name: String?
+    var website: String?
+    var twitter: String?
 }
 
+/// **Mangadex tag**
 struct MangadexTag: Codable, Identifiable, Equatable {
     var id: UUID
     var type: String
@@ -66,8 +69,15 @@ struct MangadexTag: Codable, Identifiable, Equatable {
 
 struct MangadexTagAttributes: Codable, Equatable {
     var name: [String:String]
-    var description: [[String:String]]?
+    var description: [String:String]
     var group: String
+}
+
+/// **Mangadex Chapters**
+struct MangadexChapterResponse: Codable {
+    var result: String
+    var response: String
+    var data: [MangadexChapter]
 }
 
 struct MangadexChapter: Codable, Identifiable, Equatable {
@@ -92,6 +102,7 @@ struct MangadexChapterRelationship: Codable, Equatable, Identifiable {
     var attributes: MangadexGroupAttributes?
 }
 
+/// **Mangadex Scanlation group**
 struct MangadexGroupAttributes: Codable, Equatable, Hashable {
     var name: String
     var website: String?

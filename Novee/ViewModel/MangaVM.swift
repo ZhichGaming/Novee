@@ -19,27 +19,23 @@ class MangaVM: ObservableObject {
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexResponse? = nil
 
-            guard let url = URL(string: "https://api.mangadex.org/manga?includes[]=cover_art") else {
+            guard let url = URL(string: "https://api.mangadex.org/manga?includes[]=author&includes[]=cover_art") else {
                 print("Invalid URL")
                 return
             }
             
             let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
                 guard let data = data else { return }
-                let safeData = String(data: data, encoding: .utf8)!
-                    .replacingOccurrences(of: ",\"altTitles\":[]", with: "")
-                    .replacingOccurrences(of: ",\"description\":[]", with: "")
-                    .replacingOccurrences(of: ",\"links\":[]", with: "")
                 
 //                #if DEBUG
-//                print(safeData)
+//                print(String(data: data, encoding: .utf8)!)
 //                #endif
                 
                 do {
                     let decoder = JSONDecoder()
                     decoder.dateDecodingStrategy = .iso8601
                     
-                    result = try decoder.decode(MangadexResponse.self, from: safeData.data(using: .utf8)!)
+                    result = try decoder.decode(MangadexResponse.self, from: data)
                     DispatchQueue.main.sync {
                         self.mangadexManga = result!.data
                     }
