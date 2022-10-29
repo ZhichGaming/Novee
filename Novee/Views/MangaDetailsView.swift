@@ -144,6 +144,7 @@ struct ChapterList: View {
                                 Text("None")
                             }
                         }
+                        
                         HStack {
                             Text("Upload date")
                                 .font(.callout)
@@ -162,6 +163,7 @@ struct ChapterList: View {
                 }
             }
             .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
             .onTapGesture {
                 selected = chapter.id
             }
