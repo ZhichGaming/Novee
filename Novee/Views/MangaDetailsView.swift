@@ -10,10 +10,14 @@ import SwiftUI
 struct MangaDetailsView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @EnvironmentObject var settingsVM: SettingsVM
+    
     @State var mangaId: UUID
     @State var collapsed = true
     @State var descriptionSize: CGSize = .zero
     
+    @Binding var openedManga: MangadexMangaData?
+    @Binding var openedChapter: MangadexChapter?
+
     var manga: MangadexMangaData {
         mangaVM.mangadexManga.first { $0.id == mangaId }!
     }
@@ -60,15 +64,13 @@ struct MangaDetailsView: View {
                     Text("Chapters")
                         .font(.headline)
                     if manga.chapters != nil {
-                        List(getSortedChapters()) { chapter in
-                            Text("Chapter \(chapter.attributes.chapter ?? "") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(chapter.attributes.translatedLanguage)"))")
-                                .frame(height: 25)
-                        }
+                        ChapterList(manga: manga, openedManga: $openedManga, openedChapter: $openedChapter)
                     } else {
                         ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
-                .frame(maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .padding()
         }
@@ -105,6 +107,69 @@ struct MangaDetailsView: View {
         }
         
         return tags
+    }
+}
+
+struct ChapterList: View {
+    @State var selected: UUID?
+
+    var manga: MangadexMangaData
+    @Binding var openedManga: MangadexMangaData?
+    @Binding var openedChapter: MangadexChapter?
+
+    var body: some View {
+        List(getSortedChapters()) { chapter in
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Chapter \(chapter.attributes.chapter ?? "") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(chapter.attributes.translatedLanguage)"))")
+                        .font(selected == Optional(chapter.id) ? .headline : nil)
+                    Spacer()
+                }
+                .transaction { transaction in
+                    transaction.animation = nil
+                }
+                
+                if selected == Optional(chapter.id) {
+                    VStack(alignment: .leading) {
+                        Divider()
+                        HStack {
+                            Text("Translation group(s)")
+                                .font(.callout)
+                            Spacer()
+                            ForEach(chapter.relationships.filter { $0.type == "scanlation_group" }) { group in
+                                if let url = URL(string: group.attributes?.website ?? "") {
+                                    Link(group.attributes?.name ?? "Unknown", destination: url) 
+                                } else {
+                                    Text(group.attributes?.name ?? "None")
+                                }
+                            }
+                        }
+                        HStack {
+                            Text("Upload date")
+                                .font(.callout)
+                            Spacer()
+                            Text(chapter.attributes.publishAt.formatted(date: .abbreviated, time: .shortened))
+                        }
+
+                        Button("Read") {
+                            openedManga = manga
+                            openedChapter = chapter
+                            if let url = URL(string: "novee://mangaReader") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                    .transition(.asymmetric(insertion: .move(edge: .top), removal: .move(edge: .top).combined(with: .opacity)))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .onTapGesture {
+                withAnimation(.easeInOut) {
+                    selected = chapter.id
+                }
+            }
+        }
+        .listStyle(.bordered(alternatesRowBackgrounds: true))
     }
     
     func getSortedChapters() -> [MangadexChapter] {
@@ -195,9 +260,10 @@ struct TagView: View {
 }
 
 struct MangaDetailsView_Previews: PreviewProvider {
-    let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))])]
+    static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])]
+
     static var previews: some View {
-        MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!)
+        MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, openedManga: .constant(mangaVM[0]), openedChapter: .constant(mangaVM[0].chapters![0]))
             .frame(width: 500, height: 625)
     }
 }

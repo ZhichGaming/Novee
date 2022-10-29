@@ -17,6 +17,7 @@
 		9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */; };
 		9B78B58628FBCE7800E1A837 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58528FBCE7800E1A837 /* SettingsView.swift */; };
 		9B78B58A28FC68EF00E1A837 /* MangadexManga.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58928FC68EF00E1A837 /* MangadexManga.swift */; };
+		9B8A126029096712006C1922 /* MangaReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8A125F29096712006C1922 /* MangaReaderView.swift */; };
 		9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CB28FD8E8F008738D5 /* Log.swift */; };
 		9B8B70CE28FD8EDF008738D5 /* MangaVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */; };
 		9BA53E8F2901E6CD00C6BDDF /* MangaDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */; };
@@ -37,9 +38,11 @@
 		9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NovelMenuView.swift; sourceTree = "<group>"; };
 		9B78B58528FBCE7800E1A837 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9B78B58928FC68EF00E1A837 /* MangadexManga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangadexManga.swift; sourceTree = "<group>"; };
+		9B8A125F29096712006C1922 /* MangaReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaReaderView.swift; sourceTree = "<group>"; };
 		9B8B70CB28FD8E8F008738D5 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaVM.swift; sourceTree = "<group>"; };
 		9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaDetailsView.swift; sourceTree = "<group>"; };
+		9BAED6F0290AD23F00AF0CF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BEF80C629034D8500662F8C /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		9BEF80C82903524A00662F8C /* SettingsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVM.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -74,6 +77,7 @@
 		9B04480B28FB3DA300FD7891 /* Novee */ = {
 			isa = PBXGroup;
 			children = (
+				9BAED6F0290AD23F00AF0CF4 /* Info.plist */,
 				9B04480C28FB3DA300FD7891 /* NoveeApp.swift */,
 				9B78B58728FC503100E1A837 /* Model */,
 				9B78B58828FC503A00E1A837 /* ViewModel */,
@@ -101,6 +105,7 @@
 				9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */,
 				9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */,
 				9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */,
+				9B8A125F29096712006C1922 /* MangaReaderView.swift */,
 				9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */,
 				9B78B58528FBCE7800E1A837 /* SettingsView.swift */,
 			);
@@ -208,6 +213,7 @@
 				9B78B58A28FC68EF00E1A837 /* MangadexManga.swift in Sources */,
 				9BEF80C729034D8500662F8C /* Settings.swift in Sources */,
 				9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */,
+				9B8A126029096712006C1922 /* MangaReaderView.swift in Sources */,
 				9B04480F28FB3DA300FD7891 /* ContentView.swift in Sources */,
 				9B04480D28FB3DA300FD7891 /* NoveeApp.swift in Sources */,
 				9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */,
@@ -344,6 +350,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Novee/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Novee/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -369,6 +376,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Novee/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Novee/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
