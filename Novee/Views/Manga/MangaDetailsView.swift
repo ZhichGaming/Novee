@@ -15,8 +15,7 @@ struct MangaDetailsView: View {
     @State var collapsed = true
     @State var descriptionSize: CGSize = .zero
     
-    @Binding var openedManga: MangadexMangaData?
-    @Binding var openedChapter: MangadexChapter?
+    @State var selectedChapter: MangadexChapter?
 
     var manga: MangadexMangaData {
         mangaVM.mangadexManga.first { $0.id == mangaId }!
@@ -116,7 +115,7 @@ struct MangaDetailsView: View {
                     Text("Chapters")
                         .font(.headline)
                     if manga.chapters != nil {
-                        ChapterList(manga: manga, openedManga: $openedManga, openedChapter: $openedChapter)
+                        ChapterList(manga: manga)
                     } else {
                         ProgressView()
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -149,11 +148,10 @@ struct MangaDetailsView: View {
 }
 
 struct ChapterList: View {
+    @EnvironmentObject var mangaVM: MangaVM
     @State var selected: UUID?
 
     var manga: MangadexMangaData
-    @Binding var openedManga: MangadexMangaData?
-    @Binding var openedChapter: MangadexChapter?
 
     var body: some View {
         List(getSortedChapters()) { chapter in
@@ -191,8 +189,8 @@ struct ChapterList: View {
                         }
 
                         Button("Read") {
-                            openedManga = manga
-                            openedChapter = chapter
+                            mangaVM.openedManga = manga
+                            mangaVM.openedChapter = chapter
                             if let url = URL(string: "novee://mangaReader") {
                                 NSWorkspace.shared.open(url)
                             }
@@ -231,7 +229,7 @@ struct MangaDetailsView_Previews: PreviewProvider {
     static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])]
 
     static var previews: some View {
-        MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, openedManga: .constant(mangaVM[0]), openedChapter: .constant(mangaVM[0].chapters![0]))
+        MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!)
             .frame(width: 500, height: 625)
     }
 }

@@ -80,14 +80,14 @@ struct MangadexChapterResponse: Codable {
     var data: [MangadexChapter]
 }
 
-struct MangadexChapter: Codable, Identifiable, Equatable {
+struct MangadexChapter: Codable, Identifiable, Equatable, Hashable {
     var id: UUID
     var type: String
     var attributes: MangadexChapterAttributes
     var relationships: [MangadexChapterRelationship]
 }
 
-struct MangadexChapterAttributes: Codable, Equatable {
+struct MangadexChapterAttributes: Codable, Equatable, Hashable {
     var volume: String?
     var chapter: String?
     var title: String?
@@ -96,7 +96,7 @@ struct MangadexChapterAttributes: Codable, Equatable {
     var publishAt: Date
 }
 
-struct MangadexChapterRelationship: Codable, Equatable, Identifiable {
+struct MangadexChapterRelationship: Codable, Equatable, Identifiable, Hashable {
     var id: UUID
     var type: String
     var attributes: MangadexGroupAttributes?

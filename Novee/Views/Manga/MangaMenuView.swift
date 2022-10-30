@@ -12,9 +12,6 @@ struct MangaMenuView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @State var searchText = ""
     
-    @Binding var openedManga: MangadexMangaData?
-    @Binding var openedChapter: MangadexChapter?
-    
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 0) {
@@ -22,7 +19,7 @@ struct MangaMenuView: View {
                 NavigationView {
                     List(mangaVM.mangadexManga) { manga in
                         NavigationLink {
-                            MangaDetailsView(mangaId: manga.id, openedManga: $openedManga, openedChapter: $openedChapter)
+                            MangaDetailsView(mangaId: manga.id)
                         } label: {
                             HStack {
                                 VStack(alignment: .leading) {
@@ -75,6 +72,6 @@ struct MangaMenuView: View {
 
 struct MangaMenuView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaMenuView(openedManga: .constant(nil), openedChapter: .constant(nil))
+        MangaMenuView()
     }
 }
