@@ -23,6 +23,7 @@ struct NoveeApp: App {
                 .environmentObject(settingsVM)
                 .presentedWindowToolbarStyle(.unified)
         }
+        .windowStyle(.titleBar)
         
         WindowGroup("Manga Reader") {
             MangaReaderView(openedManga: $openedManga, openedChapter: $openedChapter)

@@ -21,18 +21,52 @@ struct MangaDetailsView: View {
     var manga: MangadexMangaData {
         mangaVM.mangadexManga.first { $0.id == mangaId }!
     }
-    
+    var lastChapter: String {
+        var result = ""
+        let volumeIsEmpty = manga.attributes.lastVolume?.isEmpty ?? true
+        let chapterIsEmpty = manga.attributes.lastChapter?.isEmpty ?? true
+                
+        if !volumeIsEmpty {
+            result.append("Vol " + (manga.attributes.lastVolume!))
+        }
+        
+        if volumeIsEmpty && chapterIsEmpty {
+            result = ""
+        } else if !volumeIsEmpty && !chapterIsEmpty {
+            result.append(", ")
+        }
+        
+        if !chapterIsEmpty {
+            result.append("Chapter " + (manga.attributes.lastChapter!))
+        }
+
+        return result
+    }
+    var tags: String {
+        var result: [String] = []
+        
+        if manga.attributes.tags != nil {
+            for tag in manga.attributes.tags! {
+                result.append(MangaVM.getLocalisedString(tag.attributes.name, settingsVM: settingsVM))
+            }
+        } else {
+            return "No tags"
+        }
+        
+        return result.joined(separator: " - ")
+    }
     
     var body: some View {
         GeometryReader { geo in
             VStack {
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 5) {
                         Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
                             .font(.largeTitle)
-                        /// Alternative manga titles
                         Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
                             .lineLimit(5)
+                        Text(LocalizedStringKey("**Last updated:** \(manga.attributes.updatedAt.formatted(date: .abbreviated, time: .shortened))"))
+                        Text(LocalizedStringKey("**Last chapter:** \(lastChapter)"))
 
                         /// Manga author
                         HStack(spacing: 0) {
@@ -49,10 +83,7 @@ struct MangaDetailsView: View {
                             }
                         }
                         
-                        HStack(alignment: .center) {
-                            Text(LocalizedStringKey("**Tags:**"))
-                            TagView(tags: getTags())
-                        }
+                        Text(LocalizedStringKey("**Tags:** \(tags)"))
                     }
                     Spacer()
                     AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
@@ -114,20 +145,6 @@ struct MangaDetailsView: View {
         }
         
         return titles.joined(separator: ", ")
-    }
-    
-    func getTags() -> [String] {
-        var tags: [String] = []
-        
-        if manga.attributes.tags != nil {
-            for tag in manga.attributes.tags! {
-                tags.append(MangaVM.getLocalisedString(tag.attributes.name, settingsVM: settingsVM))
-            }
-        } else {
-            return ["No tags"]
-        }
-        
-        return tags
     }
 }
 
@@ -209,73 +226,6 @@ struct ChapterList: View {
     }
 }
 
-struct TagView: View {
-    var tags: [String]
-
-    @State private var totalHeight
-          = CGFloat.zero
-
-    var body: some View {
-        VStack {
-            GeometryReader { geometry in
-                self.generateContent(in: geometry)
-            }
-        }
-        .frame(height: totalHeight)
-    }
-
-    private func generateContent(in g: GeometryProxy) -> some View {
-        var width = CGFloat.zero
-        var height = CGFloat.zero
-
-        return ZStack(alignment: .topLeading) {
-            ForEach(self.tags, id: \.self) { tag in
-                self.item(for: tag)
-                    .padding([.horizontal, .vertical], 2)
-                    .alignmentGuide(.leading, computeValue: { d in
-                        if (abs(width - d.width) > g.size.width)
-                        {
-                            width = 0
-                            height -= d.height
-                        }
-                        let result = width
-                        if tag == self.tags.last! {
-                            width = 0 //last item
-                        } else {
-                            width -= d.width
-                        }
-                        return result
-                    })
-                    .alignmentGuide(.top, computeValue: {d in
-                        let result = height
-                        if tag == self.tags.last! {
-                            height = 0 // last item
-                        }
-                        return result
-                    })
-            }
-        }.background(viewHeightReader($totalHeight))
-    }
-
-    private func item(for text: String) -> some View {
-        Text(text)
-            .padding(.all, 3)
-            .font(.body)
-            .background(Color.accentColor)
-            .foregroundColor(Color.white)
-            .cornerRadius(5)
-    }
-
-    private func viewHeightReader(_ binding: Binding<CGFloat>) -> some View {
-        return GeometryReader { geometry -> Color in
-            let rect = geometry.frame(in: .local)
-            DispatchQueue.main.async {
-                binding.wrappedValue = rect.size.height
-            }
-            return .clear
-        }
-    }
-}
 
 struct MangaDetailsView_Previews: PreviewProvider {
     static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])]

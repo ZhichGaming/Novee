@@ -103,9 +103,7 @@
 				9B04480E28FB3DA300FD7891 /* ContentView.swift */,
 				9B78B57D28FBCE5900E1A837 /* HomeView.swift */,
 				9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */,
-				9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */,
-				9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */,
-				9B8A125F29096712006C1922 /* MangaReaderView.swift */,
+				9B9F2068290E1F6E0083CE61 /* Manga */,
 				9B78B58328FBCE7000E1A837 /* NovelMenuView.swift */,
 				9B78B58528FBCE7800E1A837 /* SettingsView.swift */,
 			);
@@ -129,6 +127,16 @@
 				9BEF80C82903524A00662F8C /* SettingsVM.swift */,
 			);
 			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		9B9F2068290E1F6E0083CE61 /* Manga */ = {
+			isa = PBXGroup;
+			children = (
+				9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */,
+				9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */,
+				9B8A125F29096712006C1922 /* MangaReaderView.swift */,
+			);
+			path = Manga;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

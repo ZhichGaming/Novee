@@ -18,16 +18,6 @@ struct MangaMenuView: View {
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 0) {
-                HStack {
-                    TextField("Search", text: $searchText)
-                        .frame(width: geo.size.width * 0.5)
-                        .textFieldStyle(.roundedBorder)
-                        .padding()
-                    
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: 30)
-
                 Divider()
                 NavigationView {
                     List(mangaVM.mangadexManga) { manga in
@@ -35,16 +25,17 @@ struct MangaMenuView: View {
                             MangaDetailsView(mangaId: manga.id, openedManga: $openedManga, openedChapter: $openedChapter)
                         } label: {
                             HStack {
-                                VStack(alignment: .leading, spacing: 0) {
+                                VStack(alignment: .leading) {
                                     Text(manga.attributes.title.first?.value ?? "No title")
                                         .font(.title2)
-                                    Text("Latest chapter: \(manga.attributes.lastChapter ?? "No chapters")")
+                                    Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
                                         .font(.footnote)
                                     HStack {
                                         ForEach(getShortenedTags(for: manga)) { tag in
                                             Text(MangaVM.getLocalisedString(tag.attributes.name, settingsVM: settingsVM))
                                                 .font(.caption)
                                                 .padding(3)
+                                                .padding(.horizontal, 2)
                                                 .foregroundColor(.white)
                                                 .background {
                                                     Color.accentColor.clipShape(RoundedRectangle(cornerRadius: 5))
@@ -70,6 +61,7 @@ struct MangaMenuView: View {
                 }
             }
         }
+        .searchable(text: $searchText, placement: .toolbar)
     }
     
     func getShortenedTags(for manga: MangadexMangaData) -> [MangadexTag] {
