@@ -14,6 +14,8 @@ class MangaVM: ObservableObject {
     }
     
     @Published var mangadexManga: [MangadexMangaData] = []
+    @Published var openedManga: MangadexMangaData?
+    @Published var openedChapter: MangadexChapter?
     
     func fetchManga() {
         DispatchQueue.global(qos: .userInteractive).async {
@@ -27,6 +29,11 @@ class MangaVM: ObservableObject {
             let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
                 guard let data = data else { return }
                 
+                // TODO: REMOVE THIS BEFORE COMMITING ANY CHANGES, TEMPORARY FIX FOR EMPTY DICTIONARIES TRANSFORMED TO ARRAYS
+                let safeData = String(data: data, encoding: .utf8)!
+                    .replacingOccurrences(of: ",\"altTitles\":[]", with: "")
+                    .replacingOccurrences(of: ",\"description\":[]", with: "")
+                    .replacingOccurrences(of: ",\"links\":[]", with: "")
 //                #if DEBUG
 //                print(String(data: data, encoding: .utf8)!)
 //                #endif
@@ -35,7 +42,7 @@ class MangaVM: ObservableObject {
                     let decoder = JSONDecoder()
                     decoder.dateDecodingStrategy = .iso8601
                     
-                    result = try decoder.decode(MangadexResponse.self, from: data)
+                    result = try decoder.decode(MangadexResponse.self, from: safeData.data(using: .utf8)!)
                     DispatchQueue.main.sync {
                         self.mangadexManga = result!.data
                     }
