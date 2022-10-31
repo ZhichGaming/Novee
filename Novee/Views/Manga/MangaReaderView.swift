@@ -10,14 +10,14 @@ import SwiftUI
 struct MangaReaderView: View {
     @EnvironmentObject var mangaVM: MangaVM
     
-    @State var selectedChapter: UUID? = UUID()
+    @State var selectedChapter = UUID()
 
     var body: some View {
         VStack {
             Text("Chapter \(mangaVM.openedChapter?.attributes.chapter ?? "")")
         }
         .onAppear {
-            selectedChapter = mangaVM.openedChapter?.id
+            selectedChapter = mangaVM.openedChapter?.id ?? UUID()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
