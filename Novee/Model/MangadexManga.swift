@@ -85,6 +85,7 @@ struct MangadexChapter: Codable, Identifiable, Equatable, Hashable {
     var type: String
     var attributes: MangadexChapterAttributes
     var relationships: [MangadexChapterRelationship]
+    var pages: MangadexPageResponse?
 }
 
 struct MangadexChapterAttributes: Codable, Equatable, Hashable {
@@ -100,6 +101,28 @@ struct MangadexChapterRelationship: Codable, Equatable, Identifiable, Hashable {
     var id: UUID
     var type: String
     var attributes: MangadexGroupAttributes?
+}
+
+/// **Mangadex chapter page**
+struct MangadexPageResponse: Codable, Hashable {
+    var result: String
+    var baseUrl: String
+    var chapter: MangadexPageChapter
+    
+    var imageUrl: [String] {
+        var result: [String] = []
+        for page in chapter.data {
+            result.append("\(baseUrl)/data/\(chapter.hash)/\(page)")
+        }
+        
+        return result
+    }
+}
+
+struct MangadexPageChapter: Codable, Hashable {
+    var hash: String
+    var data: [String]
+    var dataSaver: [String]
 }
 
 /// **Mangadex Scanlation group**

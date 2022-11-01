@@ -189,8 +189,8 @@ struct ChapterList: View {
                         }
 
                         Button("Read") {
-                            mangaVM.openedManga = manga
-                            mangaVM.openedChapter = chapter
+                            mangaVM.openedMangaId = manga.id
+                            mangaVM.openedChapterId = chapter.id
                             if let url = URL(string: "novee://mangaReader") {
                                 NSWorkspace.shared.open(url)
                             }

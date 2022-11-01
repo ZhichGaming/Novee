@@ -15,9 +15,23 @@ struct MangaReaderView: View {
     var body: some View {
         VStack {
             Text("Chapter \(mangaVM.openedChapter?.attributes.chapter ?? "")")
+            ScrollView {
+                ForEach(mangaVM.openedChapter?.pages?.imageUrl ?? [], id: \.self) { url in
+                    AsyncImage(url: URL(string: url)) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                }
+            }
         }
         .onAppear {
             selectedChapter = mangaVM.openedChapter?.id ?? UUID()
+            if mangaVM.openedChapterId != nil {
+                mangaVM.getPages(for: mangaVM.openedChapterId!)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
@@ -57,8 +71,7 @@ struct MangaReaderView: View {
                             .tag(chapter.id)
                     }
                 }
-                .frame(width: 500)
-                
+                .frame(width: 300)
             }
         }
     }

@@ -14,8 +14,15 @@ class MangaVM: ObservableObject {
     }
     
     @Published var mangadexManga: [MangadexMangaData] = []
-    @Published var openedManga: MangadexMangaData?
-    @Published var openedChapter: MangadexChapter?
+    @Published var openedMangaId: UUID?
+    @Published var openedChapterId: UUID?
+    
+    var openedManga: MangadexMangaData? {
+        mangadexManga.first { $0.id == openedMangaId }
+    }
+    var openedChapter: MangadexChapter? {
+        openedManga?.chapters?.first { $0.id == openedChapterId }
+    }
     
     func fetchManga() {
         DispatchQueue.global(qos: .userInteractive).async {
@@ -88,7 +95,40 @@ class MangaVM: ObservableObject {
             
             task.resume()
         }
+    }
+    
+    func getPages(for chapter: UUID) {
+        DispatchQueue.global(qos: .userInteractive).async {
+            var result: MangadexPageResponse? = nil
 
+            guard let url = URL(string: "https://api.mangadex.org/at-home/server/\(chapter.uuidString.lowercased())") else {
+                print("Invalid URL")
+                return
+            }
+            
+            let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+                guard let data = data else { return }
+                
+//                #if DEBUG
+//                print(String(data: data, encoding: .utf8)! as Any)
+//                #endif
+
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+
+                    result = try decoder.decode(MangadexPageResponse.self, from: data)
+                    DispatchQueue.main.sync {
+                        self.mangadexManga[self.mangadexManga.firstIndex { $0.id == self.openedMangaId }!].chapters?[(self.openedManga?.chapters?.firstIndex { $0.id == chapter })!].pages = result!
+                    }
+                } catch {
+                    print(error)
+                    Log.shared.error(error)
+                }
+            }
+            
+            task.resume()
+        }
     }
     
     static func getLocalisedString(_ strings: [String: String]?, settingsVM: SettingsVM) -> String {
