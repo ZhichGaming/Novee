@@ -46,14 +46,6 @@ struct ContentView: View {
                         }
                     }
                 )
-                NavigationLink(tag: 5, selection: self.$selectedView, destination: { SettingsView() }, label: {
-                        HStack {
-                            Image(systemName: "gear")
-                                .frame(width: 15)
-                            Text("Settings")
-                        }
-                    }
-                )
             }
             .listStyle(.sidebar)
             .onAppear {

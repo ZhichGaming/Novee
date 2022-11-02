@@ -31,5 +31,10 @@ struct NoveeApp: App {
                 .presentedWindowToolbarStyle(.unified)
         }
         .handlesExternalEvents(matching: Set(arrayLiteral: "mangaReader")) // create new window if one doesn't exist
+        
+        SwiftUI.Settings {
+            SettingsView()
+                .environmentObject(settingsVM)
+        }
     }
 }
