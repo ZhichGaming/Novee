@@ -46,7 +46,7 @@ struct MangaDetailsView: View {
         
         if manga.attributes.tags != nil {
             for tag in manga.attributes.tags! {
-                result.append(MangaVM.getLocalisedString(tag.attributes.name, settingsVM: settingsVM))
+                result.append(MangaVM.getLocalisedString(tag.attributes.name))
             }
         } else {
             return "No tags"
@@ -60,7 +60,7 @@ struct MangaDetailsView: View {
             VStack {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(MangaVM.getLocalisedString(manga.attributes.title, settingsVM: settingsVM))
+                        Text(MangaVM.getLocalisedString(manga.attributes.title))
                             .font(.largeTitle)
                         Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
                             .lineLimit(5)
@@ -97,7 +97,7 @@ struct MangaDetailsView: View {
                 }
                 Divider()
                 ScrollView {
-                    Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description, settingsVM: settingsVM)))
+                    Text(LocalizedStringKey(MangaVM.getLocalisedString(manga.attributes.description)))
                         .background {
                             GeometryReader { textSize -> Color in
                                 DispatchQueue.main.async {

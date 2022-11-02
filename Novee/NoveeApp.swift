@@ -9,7 +9,6 @@ import SwiftUI
 
 @main
 struct NoveeApp: App {
-    @StateObject var settingsVM = SettingsVM()
     @StateObject var mangaVM = MangaVM()
 
     var body: some Scene {
@@ -17,7 +16,7 @@ struct NoveeApp: App {
             ContentView()
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
                 .environmentObject(mangaVM)
-                .environmentObject(settingsVM)
+                .environmentObject(SettingsVM.shared)
                 .presentedWindowToolbarStyle(.unified)
         }
         .windowStyle(.titleBar)
@@ -27,14 +26,14 @@ struct NoveeApp: App {
                 .handlesExternalEvents(preferring: Set(arrayLiteral: "mangaReader"), allowing: Set(arrayLiteral: "*")) // activate existing window if exists
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
                 .environmentObject(mangaVM)
-                .environmentObject(settingsVM)
+                .environmentObject(SettingsVM.shared)
                 .presentedWindowToolbarStyle(.unified)
         }
         .handlesExternalEvents(matching: Set(arrayLiteral: "mangaReader")) // create new window if one doesn't exist
         
         SwiftUI.Settings {
             SettingsView()
-                .environmentObject(settingsVM)
+                .environmentObject(SettingsVM.shared)
         }
     }
 }

@@ -144,12 +144,12 @@ class MangaVM: ObservableObject {
         }
     }
     
-    static func getLocalisedString(_ strings: [String: String]?, settingsVM: SettingsVM) -> String {
+    static func getLocalisedString(_ strings: [String: String]?) -> String {
         guard let unwrappedStrings = strings else {
             return "None"
         }
         if unwrappedStrings.isEmpty { return "None" }
-        let primaryLanguageString = unwrappedStrings.first { $0.key.uppercased() == "\(settingsVM.settings.preferedLanguage)" }?.value
+        let primaryLanguageString = unwrappedStrings.first { $0.key.uppercased() == "\(SettingsVM.shared.settings.preferedLanguage)" }?.value
         
         if primaryLanguageString != nil {
             return primaryLanguageString!
