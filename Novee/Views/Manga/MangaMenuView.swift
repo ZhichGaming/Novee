@@ -59,6 +59,9 @@ struct MangaMenuView: View {
             }
         }
         .searchable(text: $searchText, placement: .toolbar)
+        .onSubmit(of: .search) {
+            mangaVM.fetchManga(title: searchText)
+        }
     }
     
     func getShortenedTags(for manga: MangadexMangaData) -> [MangadexTag] {

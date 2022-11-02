@@ -24,11 +24,24 @@ class MangaVM: ObservableObject {
         openedManga?.chapters?.first { $0.id == openedChapterId }
     }
     
-    func fetchManga() {
+    func fetchManga(amount: Int? = nil, offset: Int? = nil, title: String? = nil) {
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexResponse? = nil
 
-            guard let url = URL(string: "https://api.mangadex.org/manga?includes[]=author&includes[]=cover_art") else {
+            var arguments: String {
+                var result = ""
+                
+                result.append(amount == nil ? "" : "limit=\(amount!)")
+                result.append(((amount != nil) && (offset != nil || title != nil)) ? "&" : "")
+                result.append(offset == nil ? "" : "offset=\(offset!)")
+                result.append(((amount != nil || offset != nil) && (title != nil)) ? "&" : "")
+                result.append(title == nil ? "" : "title=\(title!)")
+                result.append((amount != nil || offset != nil || title != nil) ? "&" : "")
+
+                return result
+            }
+            
+            guard let url = URL(string: "https://api.mangadex.org/manga?\(arguments)includes[]=author&includes[]=cover_art") else {
                 print("Invalid URL")
                 return
             }
