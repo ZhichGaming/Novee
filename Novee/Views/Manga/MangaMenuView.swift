@@ -10,7 +10,9 @@ import SwiftUI
 struct MangaMenuView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var mangaVM: MangaVM
-    @State var searchText = ""
+    @State private var searchText = ""
+    @State private var pageNumber = 1
+    @State private var mangaPerPage = 10
     
     var body: some View {
         GeometryReader { geo in
@@ -26,7 +28,7 @@ struct MangaMenuView: View {
                             } label: {
                                 Image(systemName: "chevron.backward")
                             }
-                            .disabled(pageNumber <= 0)
+                            .disabled(pageNumber <= 1)
                             
                             TextField("", value: $pageNumber, format: .number)
                                 .frame(width: 50)
@@ -45,7 +47,10 @@ struct MangaMenuView: View {
         }
         .searchable(text: $searchText, placement: .toolbar)
         .onSubmit(of: .search) {
-            mangaVM.fetchManga(title: searchText)
+            mangaVM.fetchManga(offset: (pageNumber-1) * settingsVM.settings.mangaPerPage, title: searchText)
+        }
+        .onChange(of: pageNumber) { newPage in
+            mangaVM.fetchManga(offset: (newPage-1) * settingsVM.settings.mangaPerPage, title: searchText)
         }
     }
 }

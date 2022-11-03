@@ -18,7 +18,7 @@ struct MangaDetailsView: View {
     @State var selectedChapter: MangadexChapter?
 
     var manga: MangadexMangaData {
-        mangaVM.mangadexManga.first { $0.id == mangaId }!
+        mangaVM.mangadexManga.first { $0.id == mangaId } ?? MangadexMangaData(id: UUID(), type: "", attributes: MangadexMangaAttributes(title: [:], isLocked: false, originalLanguage: "jp", status: "", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [], chapters: nil)
     }
     var lastChapter: String {
         var result = ""
@@ -85,7 +85,7 @@ struct MangaDetailsView: View {
                         Text(LocalizedStringKey("**Tags:** \(tags)"))
                     }
                     Spacer()
-                    AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+                    AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }??.attributes?.fileName ?? "").256.jpg")) { image in
                         image
                             .resizable()
                             .scaledToFit()

@@ -19,6 +19,12 @@ struct MangaSettingsView: View {
                         .tag(language)
                 }
             }
+            
+            Stepper("Manga per page: \(settingsVM.settings.mangaPerPage)", value: Binding(get: {
+                settingsVM.settings.mangaPerPage
+            }, set: {
+                settingsVM.settings.mangaPerPage = $0
+            }), in: 1...100)
         }
     }
 }

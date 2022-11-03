@@ -12,7 +12,7 @@ class SettingsVM: ObservableObject {
     static var shared = SettingsVM()
     
     init() {
-        settings = Settings(preferedLanguage: .EN)
+        settings = Settings(preferedLanguage: .EN, mangaPerPage: 10)
         fetchSettings()
     }
     

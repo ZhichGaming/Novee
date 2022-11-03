@@ -9,6 +9,7 @@ import Foundation
 
 struct Settings: Codable {
     var preferedLanguage: Language
+    var mangaPerPage: Int
 }
 
 enum Language: String, Codable, CaseIterable, Hashable {

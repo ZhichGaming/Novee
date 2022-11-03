@@ -24,19 +24,19 @@ class MangaVM: ObservableObject {
         openedManga?.chapters?.first { $0.id == openedChapterId }
     }
     
-    func fetchManga(amount: Int? = nil, offset: Int? = nil, title: String? = nil) {
+    func fetchManga(offset: Int? = nil, title: String? = nil) {
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexResponse? = nil
 
             var arguments: String {
                 var result = ""
                 
-                result.append(amount == nil ? "" : "limit=\(amount!)")
-                result.append(((amount != nil) && (offset != nil || title != nil)) ? "&" : "")
+                result.append("limit=\(SettingsVM.shared.settings.mangaPerPage)")
+                result.append("&")
                 result.append(offset == nil ? "" : "offset=\(offset!)")
-                result.append(((amount != nil || offset != nil) && (title != nil)) ? "&" : "")
+                result.append((offset != nil && title != nil) ? "&" : "")
                 result.append(title == nil ? "" : "title=\(title!)")
-                result.append((amount != nil || offset != nil || title != nil) ? "&" : "")
+                result.append((offset != nil || title != nil) ? "&" : "")
 
                 return result
             }
