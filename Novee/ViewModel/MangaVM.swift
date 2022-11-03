@@ -45,6 +45,9 @@ class MangaVM: ObservableObject {
                 print("Invalid URL")
                 return
             }
+//            #if DEBUG
+//            print(url)
+//            #endif
             
             let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
                 guard let data = data else { return }
@@ -111,6 +114,8 @@ class MangaVM: ObservableObject {
     }
     
     func getPages(for chapter: UUID) {
+        self.mangadexManga[self.mangadexManga.firstIndex { $0.id == self.openedMangaId }!].chapters?[(self.openedManga?.chapters?.firstIndex { $0.id == chapter })!].pages = nil
+
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexPageResponse? = nil
 

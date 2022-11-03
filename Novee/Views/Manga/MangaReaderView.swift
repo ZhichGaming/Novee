@@ -33,15 +33,7 @@ struct MangaReaderView: View {
                 mangaVM.getPages(for: mangaVM.openedChapterId!)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Button {
-                    
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                }
-                
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {

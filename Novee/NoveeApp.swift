@@ -29,6 +29,15 @@ struct NoveeApp: App {
                 .environmentObject(SettingsVM.shared)
                 .presentedWindowToolbarStyle(.unified)
         }
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("Refresh") {
+                    mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
+                }
+                .keyboardShortcut("r")
+                .disabled(mangaVM.openedChapterId == nil)
+            }
+        }
         .handlesExternalEvents(matching: Set(arrayLiteral: "mangaReader")) // create new window if one doesn't exist
         
         SwiftUI.Settings {
