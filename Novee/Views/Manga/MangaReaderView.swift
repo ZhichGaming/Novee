@@ -10,22 +10,44 @@ import SwiftUI
 struct MangaReaderView: View {
     @EnvironmentObject var mangaVM: MangaVM
     
-    @State var selectedChapter = UUID()
+    @State private var selectedChapter = UUID()
+    @State private var zoom = 1.0
+    @State private var imageSize: CGSize = .zero
 
     var body: some View {
-        VStack {
-            Text("Chapter \(mangaVM.openedChapter?.attributes.chapter ?? "")")
-            ScrollView {
+        GeometryReader { geo in
+            ScrollView([.horizontal, .vertical]) {
                 ForEach(mangaVM.openedChapter?.pages?.imageUrl ?? [], id: \.self) { url in
-                    AsyncImage(url: URL(string: url)) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
+                    AsyncImage(url: URL(string: url)) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                        case .failure:
+                            Button("Failed fetching image.") {
+                                mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
+                            }
+                        @unknown default:
+                            Text("Unknown error. Please try again.")
+                        }
                     }
+                    .frame(width: CGFloat(zoom == 0 ? 1 : zoom) * geo.size.width)
+                    .background {
+                        GeometryReader { imageGeo in
+                            Color.clear
+                                .onAppear {
+                                    self.imageSize = imageGeo.size
+                                }
+                        }
+                    }
+                    .frame(width: imageSize.width)
+                    
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
             selectedChapter = mangaVM.openedChapter?.id ?? UUID()
@@ -34,6 +56,9 @@ struct MangaReaderView: View {
             }
         }
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                TextField("Zoom", value: $zoom, format: .percent)
+                    .textFieldStyle(.plain)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
