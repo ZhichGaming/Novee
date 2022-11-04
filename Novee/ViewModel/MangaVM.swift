@@ -9,15 +9,15 @@ import Foundation
 import SwiftUI
 
 class MangaVM: ObservableObject {
-    @Published var mangadexManga: [MangadexMangaData] = []
+    @Published var mangadexResponse: MangadexResponse?
     @Published var openedMangaId: UUID?
     @Published var openedChapterId: UUID?
     
     var openedManga: MangadexMangaData? {
-        mangadexManga.first { $0.id == openedMangaId }
+        mangadexResponse?.data.first { $0.id == openedMangaId }
     }
     var openedChapter: MangadexChapter? {
-        openedManga?.chapters?.first { $0.id == openedChapterId }
+        openedManga?.chapters?.data.first { $0.id == openedChapterId }
     }
     
     func fetchManga(offset: Int = 0, title: String = "") {
@@ -63,7 +63,7 @@ class MangaVM: ObservableObject {
                     
                     result = try decoder.decode(MangadexResponse.self, from: safeData.data(using: .utf8)!)
                     DispatchQueue.main.sync {
-                        self.mangadexManga = result!.data
+                        self.mangadexResponse = result!
                     }
                 } catch {
                     print(error)
@@ -100,7 +100,7 @@ class MangaVM: ObservableObject {
 
                     result = try decoder.decode(MangadexChapterResponse.self, from: data)
                     DispatchQueue.main.sync {
-                        self.mangadexManga[self.mangadexManga.firstIndex { $0.id == manga }!].chapters = result!.data
+                        self.mangadexResponse?.data[(self.mangadexResponse?.data.firstIndex { $0.id == manga })!].chapters = result!
                     }
                 } catch {
                     print(error)
@@ -113,7 +113,7 @@ class MangaVM: ObservableObject {
     }
     
     func getPages(for chapter: UUID) {
-        self.mangadexManga[self.mangadexManga.firstIndex { $0.id == self.openedMangaId }!].chapters?[(self.openedManga?.chapters?.firstIndex { $0.id == chapter })!].pages = nil
+        self.mangadexResponse?.data[(self.mangadexResponse?.data.firstIndex { $0.id == self.openedMangaId }!)!].chapters?.data[(self.openedManga?.chapters?.data.firstIndex { $0.id == chapter })!].pages = nil
 
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexPageResponse? = nil
@@ -139,7 +139,7 @@ class MangaVM: ObservableObject {
 
                     result = try decoder.decode(MangadexPageResponse.self, from: data)
                     DispatchQueue.main.sync {
-                        self.mangadexManga[self.mangadexManga.firstIndex { $0.id == self.openedMangaId }!].chapters?[(self.openedManga?.chapters?.firstIndex { $0.id == chapter })!].pages = result!
+                        self.mangadexResponse?.data[(self.mangadexResponse?.data.firstIndex { $0.id == self.openedMangaId }!)!].chapters?.data[(self.openedManga?.chapters?.data.firstIndex { $0.id == chapter })!].pages = result!
                     }
                 } catch {
                     print(error)

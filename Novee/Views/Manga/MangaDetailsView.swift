@@ -18,7 +18,7 @@ struct MangaDetailsView: View {
     @State var selectedChapter: MangadexChapter?
 
     var manga: MangadexMangaData {
-        mangaVM.mangadexManga.first { $0.id == mangaId } ?? MangadexMangaData(id: UUID(), type: "", attributes: MangadexMangaAttributes(title: [:], isLocked: false, originalLanguage: "jp", status: "", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [], chapters: nil)
+        mangaVM.mangadexResponse?.data.first { $0.id == mangaId } ?? MangadexMangaData(id: UUID(), type: "", attributes: MangadexMangaAttributes(title: [:], isLocked: false, originalLanguage: "jp", status: "", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [], chapters: nil)
     }
     var lastChapter: String {
         var result = ""
@@ -209,7 +209,7 @@ struct ChapterList: View {
     
     func getSortedChapters() -> [MangadexChapter] {
         var sortedChapters: [MangadexChapter]
-        sortedChapters = manga.chapters!.sorted(by: { chapter1, chapter2 in
+        sortedChapters = manga.chapters!.data.sorted(by: { chapter1, chapter2 in
             guard let verifiedString1 = Double(chapter1.attributes.chapter ?? "0") else {
                 return chapter1.attributes.chapter ?? "" <= chapter2.attributes.chapter ?? ""
             }
@@ -226,7 +226,8 @@ struct ChapterList: View {
 
 
 struct MangaDetailsView_Previews: PreviewProvider {
-    static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])]
+    static let chapters = MangadexChapterResponse(result: "ok", response: "", data: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])
+    static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: chapters)]
 
     static var previews: some View {
         MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!)

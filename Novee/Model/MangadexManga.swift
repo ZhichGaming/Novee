@@ -19,7 +19,7 @@ struct MangadexMangaData: Codable, Identifiable, Equatable {
     var type: String
     var attributes: MangadexMangaAttributes
     var relationships: [MangadexRelationship?]
-    var chapters: [MangadexChapter]?
+    var chapters: MangadexChapterResponse?
 }
 
 struct MangadexMangaAttributes: Codable, Equatable {
@@ -74,7 +74,7 @@ struct MangadexTagAttributes: Codable, Equatable {
 }
 
 /// **Mangadex Chapters**
-struct MangadexChapterResponse: Codable {
+struct MangadexChapterResponse: Codable, Equatable {
     var result: String
     var response: String
     var data: [MangadexChapter]
