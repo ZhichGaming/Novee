@@ -9,10 +9,6 @@ import Foundation
 import SwiftUI
 
 class MangaVM: ObservableObject {
-    init() {
-        fetchManga()
-    }
-    
     @Published var mangadexManga: [MangadexMangaData] = []
     @Published var openedMangaId: UUID?
     @Published var openedChapterId: UUID?
@@ -24,7 +20,7 @@ class MangaVM: ObservableObject {
         openedManga?.chapters?.first { $0.id == openedChapterId }
     }
     
-    func fetchManga(offset: Int? = nil, title: String? = nil) {
+    func fetchManga(offset: Int = 0, title: String = "") {
         DispatchQueue.global(qos: .userInteractive).async {
             var result: MangadexResponse? = nil
 
@@ -33,10 +29,10 @@ class MangaVM: ObservableObject {
                 
                 result.append("limit=\(SettingsVM.shared.settings.mangaPerPage)")
                 result.append("&")
-                result.append(offset == nil ? "" : "offset=\(offset!)")
-                result.append((offset != nil && title != nil) ? "&" : "")
-                result.append(title == nil ? "" : "title=\(title!)")
-                result.append((offset != nil || title != nil) ? "&" : "")
+                result.append("offset=\(offset)")
+                result.append("&")
+                result.append("title=\(title)")
+                result.append("&")
 
                 return result
             }
@@ -87,6 +83,9 @@ class MangaVM: ObservableObject {
                 print("Invalid URL")
                 return
             }
+//            #if DEBUG
+//            print(url)
+//            #endif
             
             let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
                 guard let data = data else { return }
@@ -123,6 +122,9 @@ class MangaVM: ObservableObject {
                 print("Invalid URL")
                 return
             }
+//            #if DEBUG
+//            print(url)
+//            #endif
             
             let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
                 guard let data = data else { return }

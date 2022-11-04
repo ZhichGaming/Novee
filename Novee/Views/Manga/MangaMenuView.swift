@@ -97,6 +97,9 @@ struct MangaList: View {
             }
         }
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            mangaVM.fetchManga()
+        }
     }
     
     func getShortenedTags(for manga: MangadexMangaData) -> [MangadexTag] {
