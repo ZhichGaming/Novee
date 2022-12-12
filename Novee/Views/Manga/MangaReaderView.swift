@@ -12,39 +12,47 @@ struct MangaReaderView: View {
     
     @State private var selectedChapter = UUID()
     @State private var zoom = 1.0
-    @State private var imageSize: CGSize = .zero
 
     var body: some View {
         GeometryReader { geo in
             ScrollView([.horizontal, .vertical]) {
-                LazyVStack {
-                    ForEach(mangaVM.openedChapter?.pages?.imageUrl ?? [], id: \.self) { url in
-                        AsyncImage(url: URL(string: url)) { phase in
-                            switch phase {
-                            case .empty:
-                                ProgressView()
-                            case .success(let image):
+                ForEach(mangaVM.openedChapter?.pages?.imageUrl ?? [], id: \.self) { url in
+                    AsyncImage(url: URL(string: url)) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            var imageSize: CGSize = .zero
+
+                            if geo.size.width < imageSize.width {
                                 image
                                     .resizable()
                                     .scaledToFit()
-                            case .failure:
-                                Button("Failed fetching image.") {
-                                    mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
-                                }
-                            @unknown default:
-                                Text("Unknown error. Please try again.")
-                            }
-                        }
-                        .frame(width: CGFloat(zoom == 0 ? 1 : zoom) * geo.size.width)
-                        .background {
-                            GeometryReader { imageGeo in
-                                Color.clear
-                                    .onAppear {
-                                        self.imageSize = imageGeo.size
+                                    .frame(width: geo.size.width)
+                            } else {
+                                image
+                                    .background {
+                                        GeometryReader { imageGeo in
+                                            Color.clear
+                                                .onAppear {
+                                                    imageSize = imageGeo.size
+                                                }
+                                        }
+                                    }
+                                    .onAppear() {
+                                        print("\(geo.size.width) - \(imageSize.width)")
+                                    }
+                                    .onChange(of: imageSize.width) { _ in
+                                        print("\(geo.size.width) - \(imageSize.width)")
                                     }
                             }
+                        case .failure:
+                            Button("Failed fetching image.") {
+                                mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
+                            }
+                        @unknown default:
+                            Text("Unknown error. Please try again.")
                         }
-                        .frame(width: imageSize.width)
                     }
                 }
             }
