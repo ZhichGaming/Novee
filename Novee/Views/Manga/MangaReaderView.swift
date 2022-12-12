@@ -40,12 +40,6 @@ struct MangaReaderView: View {
                                                 }
                                         }
                                     }
-                                    .onAppear() {
-                                        print("\(geo.size.width) - \(imageSize.width)")
-                                    }
-                                    .onChange(of: imageSize.width) { _ in
-                                        print("\(geo.size.width) - \(imageSize.width)")
-                                    }
                             }
                         case .failure:
                             Button("Failed fetching image.") {
