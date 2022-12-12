@@ -15,7 +15,7 @@ class Log: ObservableObject {
     func error(_ err: Error) {
         DispatchQueue.main.async {
             self.dialog(
-                question: NSLocalizedString("alert.error", comment: ""),
+                question: "Error",
                 text: err.localizedDescription,
                 style: NSAlert.Style.critical)
         }
@@ -25,7 +25,7 @@ class Log: ObservableObject {
         DispatchQueue.main.async {
             self.log(msg)
             self.dialog(
-                question: NSLocalizedString("alert.success", comment: ""),
+                question: "Success",
                 text: msg,
                 style: NSAlert.Style.informational)
         }
@@ -47,7 +47,7 @@ class Log: ObservableObject {
         alert.messageText = question
         alert.informativeText = text
         alert.alertStyle = style
-        alert.addButton(withTitle: NSLocalizedString("button.OK", comment: ""))
+        alert.addButton(withTitle: "OK")
         alert.runModal()
     }
 
