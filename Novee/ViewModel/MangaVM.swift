@@ -34,7 +34,7 @@ class MangaVM: ObservableObject {
                 result.append("title=\(title)")
                 result.append("&")
 
-                return result
+                return result.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
             }
             
             guard let url = URL(string: "https://api.mangadex.org/manga?\(arguments)includes[]=author&includes[]=cover_art") else {
