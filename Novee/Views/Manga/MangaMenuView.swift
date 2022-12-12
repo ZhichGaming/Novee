@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage
 
 struct MangaMenuView: View {
     @EnvironmentObject var settingsVM: SettingsVM
@@ -87,7 +88,7 @@ struct MangaList: View {
                             }
                             
                             Spacer()
-                            AsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+                            CachedAsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
                                 image
                                     .resizable()
                                     .scaledToFit()

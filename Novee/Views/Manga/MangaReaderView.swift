@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage
 
 struct MangaReaderView: View {
     @EnvironmentObject var mangaVM: MangaVM
@@ -17,7 +18,7 @@ struct MangaReaderView: View {
         GeometryReader { geo in
             ScrollView([.horizontal, .vertical]) {
                 ForEach(mangaVM.openedChapter?.pages?.imageUrl ?? [], id: \.self) { url in
-                    AsyncImage(url: URL(string: url)) { phase in
+                    CachedAsyncImage(url: URL(string: url)) { phase in
                         switch phase {
                         case .empty:
                             ProgressView()
