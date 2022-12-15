@@ -17,7 +17,8 @@ struct MangaReaderView: View {
     var body: some View {
         GeometryReader { geo in
             ScrollView([.horizontal, .vertical]) {
-                ForEach(mangaVM.openedChapter?.pages?.imageUrl ?? [], id: \.self) { url in
+                // TODO: Load the images
+                ForEach([String](), id: \.self) { url in
                     CachedAsyncImage(url: URL(string: url)) { phase in
                         switch phase {
                         case .empty:
@@ -42,9 +43,11 @@ struct MangaReaderView: View {
                                     }
                             }
                         case .failure:
-                            Button("Failed fetching image.") {
-                                mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
-                            }
+                            // TODO: Refetch failed images
+//                            Button("Failed fetching image.") {
+//                                mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
+//                            }
+                            Text("Failure")
                         @unknown default:
                             Text("Unknown error. Please try again.")
                         }
@@ -54,10 +57,11 @@ struct MangaReaderView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
-            selectedChapter = mangaVM.openedChapter?.id ?? UUID()
-            if mangaVM.openedChapterId != nil {
-                mangaVM.getPages(for: mangaVM.openedChapterId!)
-            }
+            // TODO: Get pages on appearing
+//            selectedChapter = mangaVM.openedChapter?.id ?? UUID()
+//            if mangaVM.openedChapterId != nil {
+//                mangaVM.getPages(for: mangaVM.openedChapterId!)
+//            }
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -87,10 +91,10 @@ struct MangaReaderView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Picker("Select a chapter", selection: $selectedChapter) {
-                    ForEach(mangaVM.openedManga?.chapters?.data ?? []) { chapter in
-                        Text("Chapter \(chapter.attributes.chapter ?? "") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(mangaVM.openedChapter!.attributes.translatedLanguage)"))")
-                            .tag(chapter.id)
-                    }
+//                    ForEach(mangaVM.openedManga?.chapters?.data ?? []) { chapter in
+//                        Text("Chapter \(chapter.attributes.chapter ?? "") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(mangaVM.openedChapter!.attributes.translatedLanguage)"))")
+//                            .tag(chapter.id)
+//                    }
                 }
                 .frame(width: 300)
             }
@@ -99,9 +103,6 @@ struct MangaReaderView: View {
 }
 
 struct MangaReaderView_Previews: PreviewProvider {
-    static let chapters = MangadexChapterResponse(result: "ok", response: "", data: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])
-    static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: chapters)]
-    
     static var previews: some View {
         MangaReaderView()
             .frame(width: 1000, height: 625)

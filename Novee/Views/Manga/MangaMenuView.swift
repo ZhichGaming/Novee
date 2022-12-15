@@ -50,12 +50,13 @@ struct MangaMenuView: View {
             }
         }
         .searchable(text: $searchText, placement: .toolbar)
-        .onSubmit(of: .search) {
-            mangaVM.fetchManga(offset: (pageNumber-1) * settingsVM.settings.mangaPerPage, title: searchText)
-        }
-        .onChange(of: pageNumber) { newPage in
-            mangaVM.fetchManga(offset: (newPage-1) * settingsVM.settings.mangaPerPage, title: searchText)
-        }
+        // TODO: Search manga
+//        .onSubmit(of: .search) {
+//            mangaVM.fetchManga(offset: (pageNumber-1) * settingsVM.settings.mangaPerPage, title: searchText)
+//        }
+//        .onChange(of: pageNumber) { newPage in
+//            mangaVM.fetchManga(offset: (newPage-1) * settingsVM.settings.mangaPerPage, title: searchText)
+//        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Picker("Source", selection: $selectedSource) {
@@ -74,70 +75,63 @@ struct MangaList: View {
 
     var body: some View {
         VStack {
-            if mangaVM.mangadexResponse?.result == "ok" {
-                List(mangaVM.mangadexResponse!.data) { manga in
-                    NavigationLink {
-                        MangaDetailsView(mangaId: manga.id)
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(manga.attributes.title.first?.value ?? "No title")
-                                    .font(.title2)
-                                Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
-                                    .font(.footnote)
-                                HStack {
-                                    ForEach(getShortenedTags(for: manga)) { tag in
-                                        Text(MangaVM.getLocalisedString(tag.attributes.name))
-                                            .font(.caption)
-                                            .padding(3)
-                                            .padding(.horizontal, 2)
-                                            .foregroundColor(.white)
-                                            .background {
-                                                Color.accentColor.clipShape(RoundedRectangle(cornerRadius: 5))
-                                            }
-                                    }
-                                }
-                            }
-                            
-                            Spacer()
-                            CachedAsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                            } placeholder: {
-                                ProgressView()
-                            }
-                        }
-                        .frame(height: 100)
-                        .contentShape(Rectangle())
-                    }
-                }
-            } else if mangaVM.mangadexResponse == nil {
-                let _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
-                    showingReload = true
-                }
-                
-                ProgressView()
-                    .padding()
-                if showingReload {
-                    Button("Reload") {
-                        mangaVM.fetchManga()
-                    }
-                }
-            }
+            // TODO: Displaying manga list
+//            if mangaVM.mangadexResponse?.result == "ok" {
+//                List(mangaVM.mangadexResponse!.data) { manga in
+//                    NavigationLink {
+//                        MangaDetailsView(mangaId: manga.id)
+//                    } label: {
+//                        HStack {
+//                            VStack(alignment: .leading) {
+//                                Text(manga.attributes.title.first?.value ?? "No title")
+//                                    .font(.title2)
+//                                Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
+//                                    .font(.footnote)
+//                                HStack {
+//                                    ForEach(getShortenedTags(for: manga)) { tag in
+//                                        Text(MangaVM.getLocalisedString(tag.attributes.name))
+//                                            .font(.caption)
+//                                            .padding(3)
+//                                            .padding(.horizontal, 2)
+//                                            .foregroundColor(.white)
+//                                            .background {
+//                                                Color.accentColor.clipShape(RoundedRectangle(cornerRadius: 5))
+//                                            }
+//                                    }
+//                                }
+//                            }
+//
+//                            Spacer()
+//                            CachedAsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }!!.attributes!.fileName!).256.jpg")) { image in
+//                                image
+//                                    .resizable()
+//                                    .scaledToFit()
+//                            } placeholder: {
+//                                ProgressView()
+//                            }
+//                        }
+//                        .frame(height: 100)
+//                        .contentShape(Rectangle())
+//                    }
+//                }
+//            } else if mangaVM.mangadexResponse == nil {
+//                let _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
+//                    showingReload = true
+//                }
+//
+//                ProgressView()
+//                    .padding()
+//                if showingReload {
+//                    Button("Reload") {
+//                        mangaVM.fetchManga()
+//                    }
+//                }
+//            }
         }
-        .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            mangaVM.fetchManga()
-        }
-    }
-    
-    func getShortenedTags(for manga: MangadexMangaData) -> [MangadexTag] {
-        if manga.attributes.tags!.count >= 3 {
-            let shortenedTags = manga.attributes.tags![0..<3]
-            return Array(shortenedTags)
-        }
-        return manga.attributes.tags!
+//        .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
+//        .onAppear {
+//            mangaVM.fetchManga()
+//        }
     }
 }
 

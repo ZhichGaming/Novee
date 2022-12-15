@@ -15,7 +15,6 @@ struct NoveeApp: App {
         WindowGroup {
             ContentView()
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
-                .environmentObject(mangaVM)
                 .environmentObject(SettingsVM.shared)
                 .environmentObject(MangaSourcesVM.shared)
                 .presentedWindowToolbarStyle(.unified)
@@ -26,18 +25,13 @@ struct NoveeApp: App {
             MangaReaderView()
                 .handlesExternalEvents(preferring: Set(arrayLiteral: "mangaReader"), allowing: Set(arrayLiteral: "*")) // activate existing window if exists
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
-                .environmentObject(mangaVM)
                 .environmentObject(SettingsVM.shared)
                 .environmentObject(MangaSourcesVM.shared)
                 .presentedWindowToolbarStyle(.unified)
         }
         .commands {
             CommandGroup(replacing: .newItem) {
-                Button("Refresh") {
-                    mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
-                }
-                .keyboardShortcut("r")
-                .disabled(mangaVM.openedChapterId == nil)
+                
             }
         }
         .handlesExternalEvents(matching: Set(arrayLiteral: "mangaReader")) // create new window if one doesn't exist

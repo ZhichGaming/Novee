@@ -29,19 +29,32 @@ class MangaKakalot: MangaFetcher, MangaSource {
     let baseUrl: String = "https://mangakakalot.com"
 
     // Request parameters
-    enum PageType: String {
-        case mangaList = "manga_list"
+    enum PageType {
+        case mangaList
+        case search
     }
     
     var pageType: PageType
     
     var type: String
     var pageNumber: Int
+    var searchQuery: String = ""
     
     var requestUrl: URL {
-        URL(string: baseUrl + "/"
-        + pageType.rawValue + "?"
-        + "type=\(type)" + "&" + "page=\(pageNumber)")!
+        var result: URL?
+        
+        switch pageType {
+        case .mangaList:
+            result = URL(string: baseUrl + "/"
+                + "manga_list" + "?"
+                + "type=\(type)" + "&" + "page=\(pageNumber)")!
+        case .search:
+            result = URL(string: baseUrl + "/"
+                + "search/story/"
+                + searchQuery.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)!
+        }
+        
+        return result!
     }
     
     // HTML result of the received page

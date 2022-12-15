@@ -2,7 +2,7 @@
 //  MangaSourcesVM.swift
 //  Novee
 //
-//  Created by Nick on 2022-12-13.
+//  Created by Nick on 2022-12-15.
 //
 
 import Foundation
@@ -16,9 +16,7 @@ class MangaSourcesVM: ObservableObject {
 
     @Published var sources: [String: any MangaSource] = [:]
     
-//    var sourcesArray: Published<[MangaSource]> {
     var sourcesArray: [MangaSource] {
-//        Published(wrappedValue: Array(sources.values))
         Array(sources.values)
     }
     
