@@ -12,6 +12,7 @@
 		9B04481128FB3DA400FD7891 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481028FB3DA400FD7891 /* Assets.xcassets */; };
 		9B04481428FB3DA400FD7891 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */; };
 		9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC4C2947AE170014B265 /* CachedAsyncImage */; };
+		9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC502947CDB10014B265 /* SwiftSoup */; };
 		9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B57D28FBCE5900E1A837 /* HomeView.swift */; };
 		9B78B58028FBCE6300E1A837 /* AnimeMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */; };
 		9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */; };
@@ -56,6 +57,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */,
+				9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,6 +180,7 @@
 			name = Novee;
 			packageProductDependencies = (
 				9B71CC4C2947AE170014B265 /* CachedAsyncImage */,
+				9B71CC502947CDB10014B265 /* SwiftSoup */,
 			);
 			productName = Novee;
 			productReference = 9B04480928FB3DA300FD7891 /* Novee.app */;
@@ -209,6 +212,7 @@
 			mainGroup = 9B04480028FB3DA300FD7891;
 			packageReferences = (
 				9B71CC4B2947AE170014B265 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
+				9B71CC4F2947CDB10014B265 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = 9B04480A28FB3DA300FD7891 /* Products */;
 			projectDirPath = "";
@@ -462,6 +466,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		9B71CC4F2947CDB10014B265 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -469,6 +481,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9B71CC4B2947AE170014B265 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
 			productName = CachedAsyncImage;
+		};
+		9B71CC502947CDB10014B265 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B71CC4F2947CDB10014B265 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
