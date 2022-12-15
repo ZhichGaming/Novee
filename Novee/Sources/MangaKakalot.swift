@@ -23,17 +23,18 @@ class MangaKakalot: MangaFetcher, MangaSource {
     
     @Published var mangaData: [Manga] = []
         
+    // Source info
     let label: String = "MangaKakalot"
     let sourceId: String = "mangakakalot"
     let baseUrl: String = "https://mangakakalot.com"
 
+    // Request parameters
     enum PageType: String {
         case mangaList = "manga_list"
     }
     
     var pageType: PageType
     
-    // Request parameters
     var type: String
     var pageNumber: Int
     
@@ -43,6 +44,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         + "type=\(type)" + "&" + "page=\(pageNumber)")!
     }
     
+    // HTML result of the received page
     var htmlPage: String?
     
     func parseManga() {

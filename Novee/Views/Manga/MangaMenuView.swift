@@ -11,9 +11,12 @@ import CachedAsyncImage
 struct MangaMenuView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaSourcesVM: MangaSourcesVM
+    
     @State private var searchText = ""
     @State private var pageNumber = 1
     @State private var mangaPerPage = 10
+    @State private var selectedSource = "mangakakalot"
 
     var body: some View {
         GeometryReader { geo in
@@ -52,6 +55,15 @@ struct MangaMenuView: View {
         }
         .onChange(of: pageNumber) { newPage in
             mangaVM.fetchManga(offset: (newPage-1) * settingsVM.settings.mangaPerPage, title: searchText)
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Picker("Source", selection: $selectedSource) {
+                    ForEach(mangaSourcesVM.sourcesArray, id: \.sourceId) { source in
+                        Text(source.label)
+                    }
+                }
+            }
         }
     }
 }
