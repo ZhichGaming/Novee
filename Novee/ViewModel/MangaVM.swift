@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 class MangaVM: ObservableObject {
+    @Published var mangakakalot = MangaKakalot()
+    
     @Published var mangadexResponse: MangadexResponse?
     @Published var openedMangaId: UUID?
     @Published var openedChapterId: UUID?

@@ -13,6 +13,10 @@
 		9B04481428FB3DA400FD7891 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */; };
 		9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC4C2947AE170014B265 /* CachedAsyncImage */; };
 		9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC502947CDB10014B265 /* SwiftSoup */; };
+		9B71CC562947CEE70014B265 /* MangaKakalot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B71CC552947CEE70014B265 /* MangaKakalot.swift */; };
+		9B71CC582948C24C0014B265 /* Base.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B71CC572948C24C0014B265 /* Base.swift */; };
+		9B71CC5A2948D47D0014B265 /* MangaSourcesVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B71CC592948D47D0014B265 /* MangaSourcesVM.swift */; };
+		9B71CC5C2948F8BB0014B265 /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B71CC5B2948F8BB0014B265 /* Manga.swift */; };
 		9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B57D28FBCE5900E1A837 /* HomeView.swift */; };
 		9B78B58028FBCE6300E1A837 /* AnimeMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */; };
 		9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */; };
@@ -35,6 +39,10 @@
 		9B04481028FB3DA400FD7891 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9B04481528FB3DA400FD7891 /* Novee.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Novee.entitlements; sourceTree = "<group>"; };
+		9B71CC552947CEE70014B265 /* MangaKakalot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaKakalot.swift; sourceTree = "<group>"; };
+		9B71CC572948C24C0014B265 /* Base.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base.swift; sourceTree = "<group>"; };
+		9B71CC592948D47D0014B265 /* MangaSourcesVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaSourcesVM.swift; sourceTree = "<group>"; };
+		9B71CC5B2948F8BB0014B265 /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
 		9B78B57D28FBCE5900E1A837 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9B78B57F28FBCE6300E1A837 /* AnimeMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeMenuView.swift; sourceTree = "<group>"; };
 		9B78B58128FBCE6A00E1A837 /* MangaMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaMenuView.swift; sourceTree = "<group>"; };
@@ -85,10 +93,10 @@
 			children = (
 				9BAED6F0290AD23F00AF0CF4 /* Info.plist */,
 				9B04480C28FB3DA300FD7891 /* NoveeApp.swift */,
-				9B78B58728FC503100E1A837 /* Model */,
 				9B78B58828FC503A00E1A837 /* ViewModel */,
+				9B78B58728FC503100E1A837 /* Model */,
 				9B78B57C28FBCE1F00E1A837 /* Views */,
-				9B71CC4E2947C4410014B265 /* Sources */,
+				9B71CC542947CEA20014B265 /* Sources */,
 				9B04481028FB3DA400FD7891 /* Assets.xcassets */,
 				9B04481528FB3DA400FD7891 /* Novee.entitlements */,
 				9B04481228FB3DA400FD7891 /* Preview Content */,
@@ -104,9 +112,11 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		9B71CC4E2947C4410014B265 /* Sources */ = {
+		9B71CC542947CEA20014B265 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				9B71CC572948C24C0014B265 /* Base.swift */,
+				9B71CC552947CEE70014B265 /* MangaKakalot.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -129,6 +139,7 @@
 			children = (
 				9B78B58928FC68EF00E1A837 /* MangadexManga.swift */,
 				9BEF80C629034D8500662F8C /* Settings.swift */,
+				9B71CC5B2948F8BB0014B265 /* Manga.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -138,6 +149,7 @@
 			children = (
 				9B8B70CB28FD8E8F008738D5 /* Log.swift */,
 				9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */,
+				9B71CC592948D47D0014B265 /* MangaSourcesVM.swift */,
 				9BEF80C82903524A00662F8C /* SettingsVM.swift */,
 			);
 			path = ViewModel;
@@ -246,15 +258,19 @@
 				9BC208042912C91D00A1845E /* MangaSettingsView.swift in Sources */,
 				9B78B58028FBCE6300E1A837 /* AnimeMenuView.swift in Sources */,
 				9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */,
+				9B71CC5A2948D47D0014B265 /* MangaSourcesVM.swift in Sources */,
 				9B78B58A28FC68EF00E1A837 /* MangadexManga.swift in Sources */,
 				9BEF80C729034D8500662F8C /* Settings.swift in Sources */,
+				9B71CC582948C24C0014B265 /* Base.swift in Sources */,
 				9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */,
 				9B8A126029096712006C1922 /* MangaReaderView.swift in Sources */,
 				9B04480F28FB3DA300FD7891 /* ContentView.swift in Sources */,
 				9B04480D28FB3DA300FD7891 /* NoveeApp.swift in Sources */,
 				9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */,
 				9BEF80C92903524A00662F8C /* SettingsVM.swift in Sources */,
+				9B71CC562947CEE70014B265 /* MangaKakalot.swift in Sources */,
 				9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */,
+				9B71CC5C2948F8BB0014B265 /* Manga.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,6 +404,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Novee/Preview Content\"";
+				DEVELOPMENT_TEAM = 78867Z6L4G;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -417,6 +434,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Novee/Preview Content\"";
+				DEVELOPMENT_TEAM = 78867Z6L4G;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
