@@ -12,7 +12,7 @@ struct MangaDetailsView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @EnvironmentObject var settingsVM: SettingsVM
     
-    @State var mangaId: UUID
+    @State var selectedManga: Manga
     @State var collapsed = true
     @State var descriptionSize: CGSize = .zero
         
@@ -22,40 +22,28 @@ struct MangaDetailsView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 5) {
                         // TODO: Details
-//                        Text(MangaVM.getLocalisedString(manga.attributes.title))
-//                            .font(.largeTitle)
-//                        Text(LocalizedStringKey("**Alternative titles:** \(getAltTitles())"))
-//                            .lineLimit(5)
+                        Text(selectedManga.title)
+                            .font(.largeTitle)
+                        Text(LocalizedStringKey(
+                            "**Alternative titles:** \(selectedManga.altTitles?.joined(separator: "; ") ?? "None")"
+                        ))
+                            .lineLimit(5)
 //                        Text(LocalizedStringKey("**Last updated:** \(manga.attributes.updatedAt.formatted(date: .abbreviated, time: .shortened))"))
 //                        Text(LocalizedStringKey("**Last chapter:** \(lastChapter)"))
+                        Text(LocalizedStringKey("**Authors:** \(selectedManga.authors?.joined(separator: ", ") ?? "None")"))
 //
-//                        /// Manga author
-//                        HStack(spacing: 0) {
-//                            /// Checks if author's website and twitter is null
-//                            if manga.relationships.first { $0?.type == "author" }??.attributes?.website == nil && manga.relationships.first { $0?.type == "author" }??.attributes?.twitter == nil {
-//                                /// If it is null, display the author name as standard text
-//                                Text(LocalizedStringKey("**Author:** \(manga.relationships.first { $0?.type == "author" }??.attributes?.name ?? "Unknown")"))
-//                            } else {
-//                                /// If it is not null, display the author name as link
-//                                Text(LocalizedStringKey("**Author:** "))
-//                                Link(
-//                                    manga.relationships.first { $0?.type == "author" }??.attributes?.name ?? "Unknown",
-//                                    destination: URL(string: (manga.relationships.first { $0?.type == "author" }??.attributes?.website ?? manga.relationships.first { $0?.type == "author" }??.attributes?.twitter)!)!)
-//                            }
-//                        }
-//
-//                        Text(LocalizedStringKey("**Tags:** \(tags)"))
+                        Text(LocalizedStringKey("**Tags:** \(selectedManga.tags?.joined(separator: ", ") ?? "None")"))
                     }
                     Spacer()
-//                    CachedAsyncImage(url: URL(string: "https://uploads.mangadex.org/covers/\(manga.id.uuidString.lowercased())/\(manga.relationships.first { $0?.type == "cover_art" }??.attributes?.fileName ?? "").256.jpg")) { image in
-//                        image
-//                            .resizable()
-//                            .scaledToFit()
-//                    } placeholder: {
-//                        ProgressView()
-//                    }
-//                    .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
-//                    .clipped()
+                    CachedAsyncImage(url: selectedManga.imageUrl) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
+                    .clipped()
                 }
                 Divider()
                 ScrollView {
@@ -88,6 +76,11 @@ struct MangaDetailsView: View {
             }
             .padding()
         }
+        .onAppear {
+            Task {
+                await mangaVM.sources[mangaVM.selectedSource]!.getMangaDetails(manga: selectedManga)
+            }
+        }
     }
 }
 
@@ -97,7 +90,7 @@ struct ChapterList: View {
 
     var body: some View {
         EmptyView()
-        // TODO: Manga details
+        // TODO: Manga chapters
 //        List(getSortedChapters()) { chapter in
 //            VStack(alignment: .leading) {
 //                HStack {
@@ -156,7 +149,7 @@ struct ChapterList: View {
 
 struct MangaDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaDetailsView(mangaId: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!)
+        MangaDetailsView(selectedManga: Manga(title: "Hello"))
             .frame(width: 500, height: 625)
     }
 }

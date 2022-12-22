@@ -25,5 +25,8 @@ protocol MangaSource {
     var baseUrl: String { get }
     var sourceId: String { get }
     
-    func parseManga()
+    var mangaData: [Manga] { get set }
+    
+    func getManga() async
+    func getMangaDetails(manga: Manga) async
 }

@@ -8,9 +8,20 @@
 import Foundation
 import SwiftUI
 
-struct Manga {
-    var name: String
+struct Manga: Hashable {
+    var title: String
+    var altTitles: [String]?
     var description: String?
-    var link: URL?
-    var imageLink: URL?
+    var authors: [String]?
+    var tags: [String]?
+    
+    var detailsUrl: URL?
+    var imageUrl: URL?
+    var chapters: [Chapter]?
+}
+
+struct Chapter: Hashable {
+    var title: String
+    var chapterUrl: URL
+    var imageUrls: [URL]
 }
