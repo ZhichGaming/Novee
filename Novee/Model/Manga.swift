@@ -8,7 +8,9 @@
 import Foundation
 import SwiftUI
 
-struct Manga: Hashable {
+struct Manga: Hashable, Identifiable {
+    var id = UUID()
+    
     var title: String
     var altTitles: [String]?
     var description: String?

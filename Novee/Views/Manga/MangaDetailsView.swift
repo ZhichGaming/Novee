@@ -12,10 +12,15 @@ struct MangaDetailsView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @EnvironmentObject var settingsVM: SettingsVM
     
-    @State var selectedManga: Manga
+    @State var selectedMangaIndex: Int
     @State var collapsed = true
     @State var descriptionSize: CGSize = .zero
-        
+    
+    /// Manga of the index passed in
+    var selectedManga: Manga {
+        return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
+    }
+    
     var body: some View {
         GeometryReader { geo in
             VStack {
@@ -149,7 +154,7 @@ struct ChapterList: View {
 
 struct MangaDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaDetailsView(selectedManga: Manga(title: "Hello"))
+        MangaDetailsView(selectedMangaIndex: 0)
             .frame(width: 500, height: 625)
     }
 }

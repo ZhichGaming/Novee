@@ -17,7 +17,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         super.init()
     }
     
-    var mangaData: [Manga] = []
+    @Published var mangaData: [Manga] = []
         
     // Source info
     let label: String = "MangaKakalot"
@@ -72,14 +72,19 @@ class MangaKakalot: MangaFetcher, MangaSource {
             
             let document: Document = try SwiftSoup.parse(htmlPage)
             let mangas: Elements = try document.getElementsByClass("list-truyen-item-wrap")
-                        
+            
+            /// Announce changes
+            DispatchQueue.main.sync {
+                MangaVM.shared.objectWillChange.send()
+            }
+            
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(0).attr("title"))
                 result.description = try manga.children().last()?.text()
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 
-                mangaData.append(result)
+                self.mangaData.append(result)
             }
         } catch {
             Log.shared.error(error)
@@ -133,12 +138,17 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 .replacingOccurrences(of: " ", with: "")
                 .components(separatedBy: ",")
                 .filter { !$0.isEmpty })
-            
-            mangaData[mangaIndex].title = title ?? mangaData[mangaIndex].title
-            mangaData[mangaIndex].altTitles = altTitles ?? mangaData[mangaIndex].altTitles
-            mangaData[mangaIndex].description = description ?? mangaData[mangaIndex].description
-            mangaData[mangaIndex].authors = authors ?? mangaData[mangaIndex].authors
-            mangaData[mangaIndex].tags = tags ?? mangaData[mangaIndex].tags
+//            print(mangaData[mangaIndex].detailsLoadingState)
+
+            DispatchQueue.main.sync {
+                MangaVM.shared.objectWillChange.send()
+                
+                mangaData[mangaIndex].title = title ?? mangaData[mangaIndex].title
+                mangaData[mangaIndex].altTitles = altTitles ?? mangaData[mangaIndex].altTitles
+                mangaData[mangaIndex].description = description ?? mangaData[mangaIndex].description
+                mangaData[mangaIndex].authors = authors ?? mangaData[mangaIndex].authors
+                mangaData[mangaIndex].tags = tags ?? mangaData[mangaIndex].tags
+            }
             // Manganato
 //            let infoElement: Element = try document.getElementsByClass("story-info-right")[0]
 //

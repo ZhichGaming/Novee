@@ -75,9 +75,9 @@ struct MangaList: View {
 
     var body: some View {
         VStack {
-            List(mangaVM.sources[selectedSource]!.mangaData, id: \.self) { manga in
+            List(mangaVM.sources[selectedSource]!.mangaData) { manga in
                 NavigationLink {
-                    MangaDetailsView(selectedManga: manga)
+                    MangaDetailsView(selectedMangaIndex: mangaVM.sources[mangaVM.selectedSource]!.mangaData.firstIndex(of: manga) ?? 0)
                 } label: {
                     HStack {
                         VStack(alignment: .leading) {
