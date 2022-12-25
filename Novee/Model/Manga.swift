@@ -8,6 +8,10 @@
 import Foundation
 import SwiftUI
 
+enum LoadingState {
+    case loading, success, failed
+}
+
 struct Manga: Hashable, Identifiable {
     var id = UUID()
     
@@ -16,6 +20,8 @@ struct Manga: Hashable, Identifiable {
     var description: String?
     var authors: [String]?
     var tags: [String]?
+    
+    var detailsLoadingState: LoadingState = .loading
     
     var detailsUrl: URL?
     var imageUrl: URL?

@@ -69,7 +69,6 @@ struct MangaMenuView: View {
 
 struct MangaList: View {
     @EnvironmentObject var mangaVM: MangaVM
-//    @State private var showingReload = false
     
     @Binding var selectedSource: String
 

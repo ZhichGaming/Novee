@@ -148,6 +148,8 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 mangaData[mangaIndex].description = description ?? mangaData[mangaIndex].description
                 mangaData[mangaIndex].authors = authors ?? mangaData[mangaIndex].authors
                 mangaData[mangaIndex].tags = tags ?? mangaData[mangaIndex].tags
+                
+                mangaData[mangaIndex].detailsLoadingState = .success
             }
             // Manganato
 //            let infoElement: Element = try document.getElementsByClass("story-info-right")[0]
