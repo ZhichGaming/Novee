@@ -130,6 +130,11 @@ struct MangaList: View {
                 await mangaVM.sources[selectedSource]!.getManga()
             }
         }
+        .onChange(of: mangaVM.selectedSource) { _ in
+            Task {
+                await mangaVM.sources[selectedSource]!.getManga()
+            }
+        }
     }
 }
 
