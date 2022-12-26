@@ -13,6 +13,7 @@ class MangaVM: ObservableObject {
     
     init() {
         sources[mangakakalot.sourceId] = mangakakalot
+        sources[manganato.sourceId] = manganato
     }
 
     @Published var sources: [String: any MangaSource] = [:]
@@ -23,4 +24,5 @@ class MangaVM: ObservableObject {
     }
     
     private let mangakakalot = MangaKakalot()
+    private let manganato = MangaNato()
 }

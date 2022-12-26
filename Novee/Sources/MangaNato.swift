@@ -1,5 +1,5 @@
 //
-//  MangaKakalot.swift
+//  MangaNato.swift
 //  Novee
 //
 //  Created by Nick on 2022-12-12.
@@ -9,8 +9,8 @@ import Foundation
 import SwiftSoup
 import SwiftUI
 
-class MangaKakalot: MangaFetcher, MangaSource {
-    init(pageType: MangaKakalot.PageType = .mangaList, type: String = "latest", pageNumber: Int = 1) {
+class MangaNato: MangaFetcher, MangaSource {
+    init(pageType: MangaNato.PageType = .mangaList, type: String = "latest", pageNumber: Int = 1) {
         self.pageType = pageType
         self.type = type
         self.pageNumber = pageNumber
@@ -20,9 +20,9 @@ class MangaKakalot: MangaFetcher, MangaSource {
     @Published var mangaData: [Manga] = []
         
     // Source info
-    let label: String = "MangaKakalot"
-    let sourceId: String = "mangakakalot"
-    let baseUrl: String = "https://mangakakalot.com"
+    let label: String = "MangaNato"
+    let sourceId: String = "manganato"
+    let baseUrl: String = "https://manganato.com"
 
     // Request parameters
     enum PageType {
@@ -42,8 +42,8 @@ class MangaKakalot: MangaFetcher, MangaSource {
         switch pageType {
         case .mangaList:
             result = URL(string: baseUrl + "/"
-                         + "manga_list" + "?"
-                         + "type=\(type)" + "&" + "page=\(pageNumber)")!
+                         + "genre-all" + "/"
+                         + "\(pageNumber)")!
         case .search:
             result = URL(string: baseUrl + "/"
                          + "search/story/"
@@ -71,7 +71,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             }
             
             let document: Document = try SwiftSoup.parse(htmlPage)
-            let mangas: Elements = try document.getElementsByClass("list-truyen-item-wrap")
+            let mangas: Elements = try document.getElementsByClass("content-genres-item")
             
             /// Announce changes
             DispatchQueue.main.sync {
@@ -79,11 +79,11 @@ class MangaKakalot: MangaFetcher, MangaSource {
             }
             
             for manga in mangas.array() {
-                var result = Manga(title: try manga.child(0).attr("title"))
-                result.description = try manga.children().last()?.text()
-                result.detailsUrl = try URL(string: manga.child(0).attr("href"))
+                var result = Manga(title: try manga.child(1).child(0).child(0).text())
+                result.description = try manga.child(1).child(3).text()
+                result.detailsUrl = try URL(string: manga.child(1).child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
-                
+
                 self.mangaData.append(result)
             }
         } catch {
@@ -111,32 +111,29 @@ class MangaKakalot: MangaFetcher, MangaSource {
             }
             
             let document: Document = try SwiftSoup.parse(htmlPage)
-            let infoElement: Element = try document.getElementsByClass("manga-info-text")[0]
-            
+            let infoElement: Element = try document.getElementsByClass("story-info-right")[0]
+
             let title: String? = try infoElement
-                .child(0)
                 .child(0)
                 .text()
             let altTitles: [String]? = try infoElement
-                .getElementsByClass("story-alternative")[0]
+                .select("table > tbody > tr:nth-child(1) > td.table-value > h2")
                 .text()
-                .replacingOccurrences(of: "Alternative :", with: "")
                 .components(separatedBy: ";")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             let description: String? = try document
-                .select("#noidungm")
+                .select("#panel-story-info-description")
                 .text()
+                .replacingOccurrences(of: "Description : ", with: "")
             let authors: [String]? = try infoElement
-                .child(1)
+                .select("table > tbody > tr:nth-child(2) > td.table-value")
                 .text()
-                .replacingOccurrences(of: "Author(s) : ", with: "")
-                .components(separatedBy: ", ")
+                .components(separatedBy: "-")
             let tags: [String]? = try Array(document
-                .select("body > div.container > div.main-wrapper > div.leftCol > div.manga-info-top > ul > li:nth-child(7)")
-                .eachText()[0]
-                .replacingOccurrences(of: "Genres :", with: "")
+                .select("table > tbody > tr:nth-child(4) > td.table-value")
+                .text()
                 .replacingOccurrences(of: " ", with: "")
-                .components(separatedBy: ",")
+                .components(separatedBy: "-")
                 .filter { !$0.isEmpty })
 
             DispatchQueue.main.sync {
