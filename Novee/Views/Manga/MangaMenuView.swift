@@ -117,9 +117,7 @@ struct MangaList: View {
 //            let _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
 //                showingReload = true
 //            }
-
-            ProgressView()
-                .padding()
+//            
 //            if showingReload {
 //                Button("Reload") {
 //                    mangaVM.fetchManga()
