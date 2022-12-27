@@ -138,6 +138,24 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 .replacingOccurrences(of: " ", with: "")
                 .components(separatedBy: ",")
                 .filter { !$0.isEmpty })
+            
+            var chapters: [Chapter] = []
+            
+            for chapterElement in try document.getElementsByClass("chapter-list")[0].children() {
+                chapters.append(
+                    Chapter(
+                        title: try chapterElement
+                            .child(0)
+                            .child(0)
+                            .text(),
+                        chapterUrl: URL(string: try chapterElement
+                            .child(0)
+                            .child(0)
+                            .attr("href"))!
+                    ))
+            }
+
+            result?.chapters = chapters
         } catch {
             Log.shared.error(error)
         }
@@ -156,6 +174,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 mangaData[mangaIndex].description = result.description ?? mangaData[mangaIndex].description
                 mangaData[mangaIndex].authors = result.authors ?? mangaData[mangaIndex].authors
                 mangaData[mangaIndex].tags = result.tags ?? mangaData[mangaIndex].tags
+                mangaData[mangaIndex].chapters = result.chapters ?? mangaData[mangaIndex].chapters
                 
                 mangaData[mangaIndex].detailsLoadingState = .success
             }
@@ -180,6 +199,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 passedSourceMangas[mangaIndex].description = result.description ?? passedSourceMangas[mangaIndex].description
                 passedSourceMangas[mangaIndex].authors = result.authors ?? passedSourceMangas[mangaIndex].authors
                 passedSourceMangas[mangaIndex].tags = result.tags ?? passedSourceMangas[mangaIndex].tags
+                passedSourceMangas[mangaIndex].chapters = result.chapters ?? passedSourceMangas[mangaIndex].chapters
                 
                 passedSourceMangas[mangaIndex].detailsLoadingState = .success
             }

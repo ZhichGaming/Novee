@@ -28,8 +28,10 @@ struct Manga: Hashable, Identifiable {
     var chapters: [Chapter]?
 }
 
-struct Chapter: Hashable {
+struct Chapter: Hashable, Identifiable {
+    var id = UUID()
     var title: String
     var chapterUrl: URL
-    var imageUrls: [URL]
+    var imageUrls: [URL]?
+    var timeUploaded: Date?
 }

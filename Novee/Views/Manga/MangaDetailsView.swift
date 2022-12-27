@@ -74,13 +74,8 @@ struct MangaDetailsView: View {
                         VStack(alignment: .leading) {
                             Text("Chapters")
                                 .font(.headline)
-                            // TODO: Add fetching manga chapters
-                            //                    if manga.chapters != nil {
-                            //                        ChapterList(manga: manga)
-                            //                    } else {
-                            //                        ProgressView()
-                            //                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            //                    }
+
+                            ChapterList(selectedMangaIndex: selectedMangaIndex)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
@@ -109,63 +104,56 @@ struct MangaDetailsView: View {
 
 struct ChapterList: View {
     @EnvironmentObject var mangaVM: MangaVM
+    
+    @State var selectedMangaIndex: Int
     @State var selected: UUID?
 
     var body: some View {
-        EmptyView()
-        // TODO: Manga chapters
-//        List(getSortedChapters()) { chapter in
-//            VStack(alignment: .leading) {
-//                HStack {
-//                    Text("Chapter \(chapter.attributes.chapter ?? "") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(chapter.attributes.translatedLanguage)"))")
-//                        .font(selected == Optional(chapter.id) ? .headline : nil)
-//                    Spacer()
-//                }
-//
-//                if selected == Optional(chapter.id) {
-//                    VStack(alignment: .leading) {
-//                        HStack {
-//                            Text("Translation group(s)")
-//                                .font(.callout)
-//                            Spacer()
-//                            if !chapter.relationships.filter { $0.type == "scanlation_group" }.isEmpty {
-//                                ForEach(chapter.relationships.filter { $0.type == "scanlation_group" }) { group in
-//                                    if let url = URL(string: group.attributes?.website ?? "") {
-//                                        Link(group.attributes?.name ?? "Unknown", destination: url)
-//                                    } else {
-//                                        Text(group.attributes?.name ?? "None")
-//                                    }
+        if let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
+            List(chapters) { chapter in
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text(chapter.title)
+//                            .font(selected == Optional(chapter.id) ? .headline : nil)
+                            .font(.headline)
+                        
+                        Spacer()
+                    }
+                    
+                    if selected == Optional(chapter.id) {
+                        VStack(alignment: .leading) {
+                            // TODO: Implement upload date
+//                            HStack {
+//                                Text("Upload date")
+//                                    .font(.callout)
+//                                Spacer()
+//                                Text(chapter.attributes.publishAt.formatted(date: .abbreviated, time: .shortened))
+//                            }
+
+                            Button("Read") {
+                                // TODO: Implement opening manga
+//                                mangaVM.openedMangaId = manga.id
+//                                mangaVM.openedChapterId = chapter.id
+//                                if let url = URL(string: "novee://mangaReader") {
+//                                    NSWorkspace.shared.open(url)
 //                                }
-//                            } else {
-//                                Text("None")
-//                            }
-//                        }
-//
-//                        HStack {
-//                            Text("Upload date")
-//                                .font(.callout)
-//                            Spacer()
-//                            Text(chapter.attributes.publishAt.formatted(date: .abbreviated, time: .shortened))
-//                        }
-//
-//                        Button("Read") {
-//                            // TODO: Implement opening manga
-//                            mangaVM.openedMangaId = manga.id
-//                            mangaVM.openedChapterId = chapter.id
-//                            if let url = URL(string: "novee://mangaReader") {
-//                                NSWorkspace.shared.open(url)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            .frame(maxWidth: .infinity)
-//            .contentShape(Rectangle())
-//            .onTapGesture {
-//                selected = chapter.id
-//            }
-//        }
-//        .listStyle(.bordered(alternatesRowBackgrounds: true))
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                /// Make entire area tappable
+                .contentShape(Rectangle())
+                /// Select chapter when tapped
+                .onTapGesture {
+                    selected = chapter.id
+                }
+            }
+            .listStyle(.bordered(alternatesRowBackgrounds: true))
+        } else {
+            Text("No chapters have been found.")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }
 
