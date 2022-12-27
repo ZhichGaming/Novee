@@ -12,6 +12,7 @@
 		9B04481128FB3DA400FD7891 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481028FB3DA400FD7891 /* Assets.xcassets */; };
 		9B04481428FB3DA400FD7891 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */; };
 		9B5B1F8E2958FEA100160F6C /* MangaNato.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F8D2958FEA100160F6C /* MangaNato.swift */; };
+		9B5B1F93295A2CFD00160F6C /* ChapMangaNato.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F92295A2CFD00160F6C /* ChapMangaNato.swift */; };
 		9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC4C2947AE170014B265 /* CachedAsyncImage */; };
 		9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC502947CDB10014B265 /* SwiftSoup */; };
 		9B71CC562947CEE70014B265 /* MangaKakalot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B71CC552947CEE70014B265 /* MangaKakalot.swift */; };
@@ -264,6 +265,7 @@
 				9B04480D28FB3DA300FD7891 /* NoveeApp.swift in Sources */,
 				9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */,
 				9BEF80C92903524A00662F8C /* SettingsVM.swift in Sources */,
+				9B5B1F93295A2CFD00160F6C /* ChapMangaNato.swift in Sources */,
 				9B71CC562947CEE70014B265 /* MangaKakalot.swift in Sources */,
 				9B78B58228FBCE6A00E1A837 /* MangaMenuView.swift in Sources */,
 				9B71CC5C2948F8BB0014B265 /* Manga.swift in Sources */,
