@@ -82,6 +82,8 @@ struct MangaList: View {
                         VStack(alignment: .leading) {
                             Text(manga.title)
                                 .font(.title2)
+                            Text(manga.detailsUrl?.host ?? "Unknown host")
+                                .font(.caption)
                             // TODO: Latest chapter
 //                            Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
 //                                .font(.footnote)
