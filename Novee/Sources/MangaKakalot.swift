@@ -164,7 +164,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         }
     }
     
-    func getMangaDetails(manga: Manga, mangaIndex: Int) async {
+    func getMangaDetailsOnSelectedSource(manga: Manga) async {
         if let result = await fetchMangaDetails(manga: manga) {
             DispatchQueue.main.sync {
                 MangaVM.shared.objectWillChange.send()

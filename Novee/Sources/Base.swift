@@ -29,5 +29,5 @@ protocol MangaSource {
     
     func getManga() async
     func getMangaDetails(manga: Manga) async
-    func getMangaDetails(manga: Manga, mangaIndex: Int) async
+    func getMangaDetailsOnSelectedSource(manga: Manga) async
 }
