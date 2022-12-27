@@ -87,19 +87,6 @@ struct MangaList: View {
                             // TODO: Latest chapter
 //                            Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
 //                                .font(.footnote)
-                            // TODO: Tags
-//                            HStack {
-//                                ForEach(getShortenedTags(for: manga)) { tag in
-//                                    Text(MangaVM.getLocalisedString(tag.attributes.name))
-//                                        .font(.caption)
-//                                        .padding(3)
-//                                        .padding(.horizontal, 2)
-//                                        .foregroundColor(.white)
-//                                        .background {
-//                                            Color.accentColor.clipShape(RoundedRectangle(cornerRadius: 5))
-//                                        }
-//                                }
-//                            }
                         }
 
                         Spacer()
