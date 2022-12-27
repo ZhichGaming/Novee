@@ -17,83 +17,91 @@ struct MangaDetailsView: View {
     @State var descriptionSize: CGSize = .zero
     
     /// Manga of the index passed in
-    var selectedManga: Manga {
-        return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
+    var selectedManga: Manga? {
+        if mangaVM.sources[mangaVM.selectedSource]?.mangaData.isEmpty == false {
+            return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
+        }
+        
+        return nil
     }
     
     var body: some View {
-        switch selectedManga.detailsLoadingState {
-        case .success:
-            GeometryReader { geo in
-                VStack {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(selectedManga.title)
-                                .font(.largeTitle)
-                            Text(LocalizedStringKey(
-                                "**Alternative titles:** \(selectedManga.altTitles?.joined(separator: "; ") ?? "None")"
-                            ))
-                            .lineLimit(5)
-                            
-                            Text(LocalizedStringKey("**Authors:** \(selectedManga.authors?.joined(separator: ", ") ?? "None")"))
-
-                            Text(LocalizedStringKey("**Tags:** \(selectedManga.tags?.joined(separator: ", ") ?? "None")"))
-                        }
-                        Spacer()
-                        CachedAsyncImage(url: selectedManga.imageUrl) { image in
-                            image
-                                .resizable()
-                                .scaledToFit()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
-                        .clipped()
-                    }
-                    Divider()
-                    ScrollView {
-                        Text(LocalizedStringKey(selectedManga.description ?? "None"))
-                            .background {
-                                GeometryReader { textSize -> Color in
-                                    DispatchQueue.main.async {
-                                        descriptionSize = textSize.size
-                                    }
-                                    return Color.clear
-                                }
+        if let selectedManga = selectedManga {
+            switch selectedManga.detailsLoadingState {
+            case .success:
+                GeometryReader { geo in
+                    VStack {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(selectedManga.title)
+                                    .font(.largeTitle)
+                                Text(LocalizedStringKey(
+                                    "**Alternative titles:** \(selectedManga.altTitles?.joined(separator: "; ") ?? "None")"
+                                ))
+                                .lineLimit(5)
+                                
+                                Text(LocalizedStringKey("**Authors:** \(selectedManga.authors?.joined(separator: ", ") ?? "None")"))
+                                
+                                Text(LocalizedStringKey("**Tags:** \(selectedManga.tags?.joined(separator: ", ") ?? "None")"))
                             }
+                            Spacer()
+                            CachedAsyncImage(url: selectedManga.imageUrl) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
+                            .clipped()
+                        }
+                        Divider()
+                        ScrollView {
+                            Text(LocalizedStringKey(selectedManga.description ?? "None"))
+                                .background {
+                                    GeometryReader { textSize -> Color in
+                                        DispatchQueue.main.async {
+                                            descriptionSize = textSize.size
+                                        }
+                                        return Color.clear
+                                    }
+                                }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
+                        
+                        Divider()
+                        
+                        VStack(alignment: .leading) {
+                            Text("Chapters")
+                                .font(.headline)
+                            // TODO: Add fetching manga chapters
+                            //                    if manga.chapters != nil {
+                            //                        ChapterList(manga: manga)
+                            //                    } else {
+                            //                        ProgressView()
+                            //                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            //                    }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
-                    
-                    Divider()
-                    
-                    VStack(alignment: .leading) {
-                        Text("Chapters")
-                            .font(.headline)
-                        // TODO: Add fetching manga chapters
-    //                    if manga.chapters != nil {
-    //                        ChapterList(manga: manga)
-    //                    } else {
-    //                        ProgressView()
-    //                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-    //                    }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
                 }
-                .padding()
-            }
-        case .loading:
-            ProgressView()
-                .onAppear {
+            case .loading:
+                ProgressView()
+                    .onAppear {
+                        Task {
+                            await mangaVM.getMangaDetails(for: selectedManga)
+                        }
+                    }
+            case .failed:
+                Text("Fetching failed")
+                Button("Try again") {
                     Task {
                         await mangaVM.sources[mangaVM.selectedSource]!.getMangaDetails(manga: selectedManga)
                     }
                 }
-        case .failed:
-            Text("Fetching failed")
-            Button("Try again") {
-                Task {
-                    await mangaVM.sources[mangaVM.selectedSource]!.getMangaDetails(manga: selectedManga)
-                }
+            case .notFound:
+                Text("A source for the selected manga has not been found.")
             }
         }
     }

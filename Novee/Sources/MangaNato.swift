@@ -10,7 +10,11 @@ import SwiftSoup
 import SwiftUI
 
 class MangaNato: MangaFetcher, MangaSource {
-    init(pageType: MangaNato.PageType = .mangaList, type: String = "latest", pageNumber: Int = 1) {
+    init(label: String = "MangaNato", sourceId: String = "manganato", baseUrl: String = "https://manganato.com", pageType: MangaNato.PageType = .mangaList, type: String = "latest", pageNumber: Int = 1) {
+        self.label = label
+        self.sourceId = sourceId
+        self.baseUrl = baseUrl
+        
         self.pageType = pageType
         self.type = type
         self.pageNumber = pageNumber
@@ -20,9 +24,9 @@ class MangaNato: MangaFetcher, MangaSource {
     @Published var mangaData: [Manga] = []
         
     // Source info
-    let label: String = "MangaNato"
-    let sourceId: String = "manganato"
-    let baseUrl: String = "https://manganato.com"
+    let label: String
+    let sourceId: String
+    let baseUrl: String
 
     // Request parameters
     enum PageType {
@@ -91,64 +95,95 @@ class MangaNato: MangaFetcher, MangaSource {
         }
     }
     
-    func getMangaDetails(manga: Manga) async {
+    func fetchMangaDetails(manga: Manga) async -> Manga? {
+        var htmlPage = ""
+        var result: Manga?
+        
         do {
-            let mangaIndex = mangaData.firstIndex(of: manga)!
-            var htmlPage = ""
+            let (data, _) = try await URLSession.shared.data(from: manga.detailsUrl!)
             
-            do {
-                let (data, _) = try await URLSession.shared.data(from: mangaData[mangaIndex].detailsUrl!)
-                
-                if let stringData = String(data: data, encoding: .utf8) {
-                    if stringData.isEmpty {
-                        Log.shared.msg("An error occured while fetching manga details.")
-                    }
-                    
-                    htmlPage = stringData
+            if let stringData = String(data: data, encoding: .utf8) {
+                if stringData.isEmpty {
+                    Log.shared.msg("An error occured while fetching manga details.")
                 }
-            } catch {
-                Log.shared.error(error)
+                
+                htmlPage = stringData
             }
-            
+
+        
             let document: Document = try SwiftSoup.parse(htmlPage)
             let infoElement: Element = try document.getElementsByClass("story-info-right")[0]
-
-            let title: String? = try infoElement
+            
+            result = Manga(title: try infoElement
                 .child(0)
-                .text()
-            let altTitles: [String]? = try infoElement
+                .text())
+            result?.altTitles = try infoElement
                 .select("table > tbody > tr:nth-child(1) > td.table-value > h2")
                 .text()
                 .components(separatedBy: ";")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            let description: String? = try document
+            result?.description = try document
                 .select("#panel-story-info-description")
                 .text()
                 .replacingOccurrences(of: "Description : ", with: "")
-            let authors: [String]? = try infoElement
+            result?.authors = try infoElement
                 .select("table > tbody > tr:nth-child(2) > td.table-value")
                 .text()
                 .components(separatedBy: "-")
-            let tags: [String]? = try Array(document
+            result?.tags = try Array(document
                 .select("table > tbody > tr:nth-child(4) > td.table-value")
                 .text()
                 .replacingOccurrences(of: " ", with: "")
                 .components(separatedBy: "-")
                 .filter { !$0.isEmpty })
-
+        } catch {
+            Log.shared.error(error)
+        }
+        
+        return result
+    }
+    
+    func getMangaDetails(manga: Manga) async {
+        let mangaIndex = mangaData.firstIndex(of: manga)!
+        if let result = await fetchMangaDetails(manga: manga) {
             DispatchQueue.main.sync {
                 MangaVM.shared.objectWillChange.send()
                 
-                mangaData[mangaIndex].title = title ?? mangaData[mangaIndex].title
-                mangaData[mangaIndex].altTitles = altTitles ?? mangaData[mangaIndex].altTitles
-                mangaData[mangaIndex].description = description ?? mangaData[mangaIndex].description
-                mangaData[mangaIndex].authors = authors ?? mangaData[mangaIndex].authors
-                mangaData[mangaIndex].tags = tags ?? mangaData[mangaIndex].tags
+                mangaData[mangaIndex].title = result.title
+                mangaData[mangaIndex].altTitles = result.altTitles ?? mangaData[mangaIndex].altTitles
+                mangaData[mangaIndex].description = result.description ?? mangaData[mangaIndex].description
+                mangaData[mangaIndex].authors = result.authors ?? mangaData[mangaIndex].authors
+                mangaData[mangaIndex].tags = result.tags ?? mangaData[mangaIndex].tags
                 
                 mangaData[mangaIndex].detailsLoadingState = .success
             }
-        } catch {
-            Log.shared.error(error)
+        } else {
+            Log.shared.msg("An error occured while fetching manga details")
+        }
+    }
+    
+    func getMangaDetails(manga: Manga, mangaIndex: Int) async {
+        if let result = await fetchMangaDetails(manga: manga) {
+            DispatchQueue.main.sync {
+                MangaVM.shared.objectWillChange.send()
+                
+                var passedSourceMangas: [Manga] {
+                    get { MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData }
+                    set { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData = newValue }
+                }
+
+                let mangaIndex = passedSourceMangas.firstIndex(of: manga)!
+                
+                passedSourceMangas[mangaIndex].title = result.title
+                passedSourceMangas[mangaIndex].altTitles = result.altTitles ?? passedSourceMangas[mangaIndex].altTitles
+                passedSourceMangas[mangaIndex].description = result.description ?? passedSourceMangas[mangaIndex].description
+                passedSourceMangas[mangaIndex].authors = result.authors ?? passedSourceMangas[mangaIndex].authors
+                passedSourceMangas[mangaIndex].tags = result.tags ?? passedSourceMangas[mangaIndex].tags
+                
+                passedSourceMangas[mangaIndex].detailsLoadingState = .success
+            }
+        } else {
+           Log.shared.msg("An error occured while fetching manga details")
         }
     }
 }

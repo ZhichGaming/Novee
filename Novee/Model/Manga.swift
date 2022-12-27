@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 enum LoadingState {
-    case loading, success, failed
+    case loading, success, failed, notFound
 }
 
 struct Manga: Hashable, Identifiable {
