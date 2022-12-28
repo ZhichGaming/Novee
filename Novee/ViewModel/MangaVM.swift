@@ -43,7 +43,7 @@ class MangaVM: ObservableObject {
             for source in sourcesArray {
                 if source.baseUrl.contains(finalUrl?.host ?? "") == true {
                     Task {
-                        await sources[source.sourceId]!.getMangaDetailsOnSelectedSource(manga: manga)
+                        await sources[source.sourceId]!.getMangaDetails(manga: manga)
                     }
                     break
                 } else if source.sourceId == sourcesArray.last?.sourceId {

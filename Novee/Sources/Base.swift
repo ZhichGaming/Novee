@@ -9,25 +9,8 @@ import Foundation
 
 class MangaFetcher {
     @Published var mangaData: [Manga] = []
-    
+
     func getMangaDetails(manga: Manga, result: Manga) {
-        let mangaIndex = mangaData.firstIndex(of: manga)!
-        
-        DispatchQueue.main.sync {
-            MangaVM.shared.objectWillChange.send()
-            
-            mangaData[mangaIndex].title = result.title
-            mangaData[mangaIndex].altTitles = result.altTitles ?? mangaData[mangaIndex].altTitles
-            mangaData[mangaIndex].description = result.description ?? mangaData[mangaIndex].description
-            mangaData[mangaIndex].authors = result.authors ?? mangaData[mangaIndex].authors
-            mangaData[mangaIndex].tags = result.tags ?? mangaData[mangaIndex].tags
-            mangaData[mangaIndex].chapters = result.chapters ?? mangaData[mangaIndex].chapters
-            
-            mangaData[mangaIndex].detailsLoadingState = .success
-        }
-    }
-    
-    func getMangaDetailsOnSelectedSource(manga: Manga, result: Manga) {
         DispatchQueue.main.sync {
             MangaVM.shared.objectWillChange.send()
             
@@ -60,5 +43,4 @@ protocol MangaSource {
 
     func getManga() async
     func getMangaDetails(manga: Manga) async
-    func getMangaDetailsOnSelectedSource(manga: Manga) async
 }

@@ -170,12 +170,4 @@ class MangaKakalot: MangaFetcher, MangaSource {
             Log.shared.msg("An error occured while fetching manga details")
         }
     }
-    
-    func getMangaDetailsOnSelectedSource(manga: Manga) async {
-        if let result = await fetchMangaDetails(manga: manga) {
-            super.getMangaDetailsOnSelectedSource(manga: manga, result: result)
-        } else {
-            Log.shared.msg("An error occured while fetching manga details")
-        }
-    }
 }
