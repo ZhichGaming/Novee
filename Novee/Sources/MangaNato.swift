@@ -80,6 +80,9 @@ class MangaNato: MangaFetcher, MangaSource {
                 MangaVM.shared.objectWillChange.send()
             }
             
+            /// Reset mangas
+            mangaData = [Manga]()
+            
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.description = try manga.child(1).child(3).text()

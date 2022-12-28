@@ -80,6 +80,9 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 MangaVM.shared.objectWillChange.send()
             }
             
+            /// Reset mangas
+            mangaData = [Manga]()
+
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(0).attr("title"))
                 result.description = try manga.children().last()?.text()
