@@ -115,12 +115,14 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 .child(0)
                 .child(0)
                 .text())
-            result?.altTitles = try infoElement
-                .getElementsByClass("story-alternative")[0]
-                .text()
-                .replacingOccurrences(of: "Alternative :", with: "")
-                .components(separatedBy: ";")
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            if try !infoElement.getElementsByClass("story-alternative").isEmpty() {
+                result?.altTitles = try infoElement
+                    .getElementsByClass("story-alternative")[0]
+                    .text()
+                    .replacingOccurrences(of: "Alternative :", with: "")
+                    .components(separatedBy: ";")
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            }
             result?.description = try document
                 .select("#noidungm")
                 .text()
