@@ -18,8 +18,9 @@ class MangaFetcher {
                 get { MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData }
                 set { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData = newValue }
             }
-            let mangaIndex = passedSourceMangas.firstIndex(of: manga)!
             
+            let mangaIndex = passedSourceMangas.firstIndex(of: manga) ?? 0
+                        
             passedSourceMangas[mangaIndex].title = result.title
             passedSourceMangas[mangaIndex].altTitles = result.altTitles ?? passedSourceMangas[mangaIndex].altTitles
             passedSourceMangas[mangaIndex].description = result.description ?? passedSourceMangas[mangaIndex].description
