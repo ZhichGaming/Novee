@@ -20,9 +20,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         self.pageNumber = pageNumber
         super.init()
     }
-    
-    @Published var mangaData: [Manga] = []
-        
+            
     // Source info
     let label: String
     let sourceId: String
@@ -88,7 +86,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 
-                self.mangaData.append(result)
+                super.mangaData.append(result)
             }
         } catch {
             Log.shared.error(error)
@@ -164,20 +162,8 @@ class MangaKakalot: MangaFetcher, MangaSource {
     }
     
     func getMangaDetails(manga: Manga) async {
-        let mangaIndex = mangaData.firstIndex(of: manga)!
         if let result = await fetchMangaDetails(manga: manga) {
-            DispatchQueue.main.sync {
-                MangaVM.shared.objectWillChange.send()
-                
-                mangaData[mangaIndex].title = result.title
-                mangaData[mangaIndex].altTitles = result.altTitles ?? mangaData[mangaIndex].altTitles
-                mangaData[mangaIndex].description = result.description ?? mangaData[mangaIndex].description
-                mangaData[mangaIndex].authors = result.authors ?? mangaData[mangaIndex].authors
-                mangaData[mangaIndex].tags = result.tags ?? mangaData[mangaIndex].tags
-                mangaData[mangaIndex].chapters = result.chapters ?? mangaData[mangaIndex].chapters
-                
-                mangaData[mangaIndex].detailsLoadingState = .success
-            }
+            super.getMangaDetails(manga: manga, result: result)
         } else {
             Log.shared.msg("An error occured while fetching manga details")
         }
@@ -185,24 +171,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
     
     func getMangaDetailsOnSelectedSource(manga: Manga) async {
         if let result = await fetchMangaDetails(manga: manga) {
-            DispatchQueue.main.sync {
-                MangaVM.shared.objectWillChange.send()
-                
-                var passedSourceMangas: [Manga] {
-                    get { MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData }
-                    set { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData = newValue }
-                }
-                let mangaIndex = passedSourceMangas.firstIndex(of: manga)!
-                
-                passedSourceMangas[mangaIndex].title = result.title
-                passedSourceMangas[mangaIndex].altTitles = result.altTitles ?? passedSourceMangas[mangaIndex].altTitles
-                passedSourceMangas[mangaIndex].description = result.description ?? passedSourceMangas[mangaIndex].description
-                passedSourceMangas[mangaIndex].authors = result.authors ?? passedSourceMangas[mangaIndex].authors
-                passedSourceMangas[mangaIndex].tags = result.tags ?? passedSourceMangas[mangaIndex].tags
-                passedSourceMangas[mangaIndex].chapters = result.chapters ?? passedSourceMangas[mangaIndex].chapters
-                
-                passedSourceMangas[mangaIndex].detailsLoadingState = .success
-            }
+            super.getMangaDetailsOnSelectedSource(manga: manga, result: result)
         } else {
             Log.shared.msg("An error occured while fetching manga details")
         }

@@ -8,15 +8,44 @@
 import Foundation
 
 class MangaFetcher {
-    func getPage(requestUrl: URL) async -> String? {
-        do {
-            let (data, _) = try await URLSession.shared.data(from: requestUrl)
-            return String(data: data, encoding: .utf8)
-        } catch {
-            Log.shared.error(error)
-        }
+    @Published var mangaData: [Manga] = []
+    
+    func getMangaDetails(manga: Manga, result: Manga) {
+        let mangaIndex = mangaData.firstIndex(of: manga)!
         
-        return nil
+        DispatchQueue.main.sync {
+            MangaVM.shared.objectWillChange.send()
+            
+            mangaData[mangaIndex].title = result.title
+            mangaData[mangaIndex].altTitles = result.altTitles ?? mangaData[mangaIndex].altTitles
+            mangaData[mangaIndex].description = result.description ?? mangaData[mangaIndex].description
+            mangaData[mangaIndex].authors = result.authors ?? mangaData[mangaIndex].authors
+            mangaData[mangaIndex].tags = result.tags ?? mangaData[mangaIndex].tags
+            mangaData[mangaIndex].chapters = result.chapters ?? mangaData[mangaIndex].chapters
+            
+            mangaData[mangaIndex].detailsLoadingState = .success
+        }
+    }
+    
+    func getMangaDetailsOnSelectedSource(manga: Manga, result: Manga) {
+        DispatchQueue.main.sync {
+            MangaVM.shared.objectWillChange.send()
+            
+            var passedSourceMangas: [Manga] {
+                get { MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData }
+                set { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData = newValue }
+            }
+            let mangaIndex = passedSourceMangas.firstIndex(of: manga)!
+            
+            passedSourceMangas[mangaIndex].title = result.title
+            passedSourceMangas[mangaIndex].altTitles = result.altTitles ?? passedSourceMangas[mangaIndex].altTitles
+            passedSourceMangas[mangaIndex].description = result.description ?? passedSourceMangas[mangaIndex].description
+            passedSourceMangas[mangaIndex].authors = result.authors ?? passedSourceMangas[mangaIndex].authors
+            passedSourceMangas[mangaIndex].tags = result.tags ?? passedSourceMangas[mangaIndex].tags
+            passedSourceMangas[mangaIndex].chapters = result.chapters ?? passedSourceMangas[mangaIndex].chapters
+            
+            passedSourceMangas[mangaIndex].detailsLoadingState = .success
+        }
     }
 }
 
@@ -27,6 +56,8 @@ protocol MangaSource {
     
     var mangaData: [Manga] { get set }
     
+    func fetchMangaDetails(manga: Manga) async -> Manga?
+
     func getManga() async
     func getMangaDetails(manga: Manga) async
     func getMangaDetailsOnSelectedSource(manga: Manga) async
