@@ -8,11 +8,11 @@
 import Foundation
 import SwiftUI
 
-enum LoadingState {
+enum LoadingState: Codable {
     case loading, success, failed, notFound
 }
 
-struct Manga: Hashable, Identifiable {
+struct Manga: Hashable, Identifiable, Codable {
     var id = UUID()
     
     var title: String
@@ -28,7 +28,7 @@ struct Manga: Hashable, Identifiable {
     var chapters: [Chapter]?
 }
 
-struct Chapter: Hashable, Identifiable {
+struct Chapter: Hashable, Identifiable, Codable {
     var id = UUID()
     var title: String
     var chapterUrl: URL
