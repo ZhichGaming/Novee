@@ -107,9 +107,17 @@ struct ChapterList: View {
     
     @State var selectedMangaIndex: Int
     @State var selected: UUID?
+    
+    var selectedManga: Manga? {
+        if mangaVM.sources[mangaVM.selectedSource]?.mangaData.isEmpty == false {
+            return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
+        }
+        
+        return nil
+    }
 
     var body: some View {
-        if let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
+        if selectedManga != nil, let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
             List(chapters) { chapter in
                 VStack(alignment: .leading) {
                     HStack {
