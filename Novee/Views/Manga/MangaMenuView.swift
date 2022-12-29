@@ -12,9 +12,11 @@ struct MangaMenuView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var mangaVM: MangaVM
     
-    @State private var searchText = ""
+    @State private var searchQuery = ""
     @State private var pageNumber = 1
-    @State private var mangaPerPage = 10
+    
+    @State private var textfieldPageNumber = 1
+    @State private var textfieldSearchQuery = ""
 
     var body: some View {
         GeometryReader { geo in
@@ -24,6 +26,7 @@ struct MangaMenuView: View {
                     VStack(spacing: 0) {
                         MangaList(selectedSource: $mangaVM.selectedSource)
                         
+                        Divider()
                         HStack {
                             Button {
                                 pageNumber -= 1
@@ -32,9 +35,12 @@ struct MangaMenuView: View {
                             }
                             .disabled(pageNumber <= 1)
                             
-                            TextField("", value: $pageNumber, format: .number)
+                            TextField("", value: $textfieldPageNumber, format: .number)
                                 .frame(width: 50)
                                 .multilineTextAlignment(.center)
+                                .onSubmit {
+                                    pageNumber = textfieldPageNumber
+                                }
                             
                             Button {
                                 pageNumber += 1
@@ -43,18 +49,33 @@ struct MangaMenuView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, maxHeight: 30)
+                        .onChange(of: pageNumber) { _ in
+                            Task {
+                                textfieldPageNumber = pageNumber
+                                if searchQuery.isEmpty {
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: pageNumber)
+                                } else {
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: pageNumber, searchQuery: searchQuery)
+                                }
+                            }
+                        }
+                        .onChange(of: searchQuery) { _ in
+                            Task {
+                                /// Reset page number each time the user searches something else
+                                if searchQuery.isEmpty {
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: 1)
+                                } else {
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: 1, searchQuery: searchQuery)
+                                }
+                            }
+                        }
+                        .onChange(of: mangaVM.selectedSource) { _ in pageNumber = 1; searchQuery = ""; }
                     }
                 }
             }
         }
-        .searchable(text: $searchText, placement: .toolbar)
-        // TODO: Search manga
-//        .onSubmit(of: .search) {
-//            mangaVM.fetchManga(offset: (pageNumber-1) * settingsVM.settings.mangaPerPage, title: searchText)
-//        }
-//        .onChange(of: pageNumber) { newPage in
-//            mangaVM.fetchManga(offset: (newPage-1) * settingsVM.settings.mangaPerPage, title: searchText)
-//        }
+        .searchable(text: $textfieldSearchQuery, placement: .toolbar)
+        .onSubmit(of: .search) { searchQuery = textfieldSearchQuery }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Picker("Source", selection: $mangaVM.selectedSource) {
@@ -116,12 +137,12 @@ struct MangaList: View {
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             Task {
-                await mangaVM.sources[selectedSource]!.getManga()
+                await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
             }
         }
         .onChange(of: mangaVM.selectedSource) { _ in
             Task {
-                await mangaVM.sources[selectedSource]!.getManga()
+                await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
             }
         }
     }

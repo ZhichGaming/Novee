@@ -42,6 +42,7 @@ protocol MangaSource {
     
     func fetchMangaDetails(manga: Manga) async -> Manga?
 
-    func getManga() async
+    func getManga(pageNumber: Int) async
+    func getSearchManga(pageNumber: Int, searchQuery: String) async
     func getMangaDetails(manga: Manga) async
 }

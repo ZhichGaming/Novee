@@ -10,14 +10,11 @@ import SwiftSoup
 import SwiftUI
 
 class MangaNato: MangaFetcher, MangaSource {
-    init(label: String = "MangaNato", sourceId: String = "manganato", baseUrl: String = "https://manganato.com", pageType: MangaNato.PageType = .mangaList, type: String = "latest", pageNumber: Int = 1) {
+    init(label: String = "MangaNato", sourceId: String = "manganato", baseUrl: String = "https://manganato.com") {
         self.label = label
         self.sourceId = sourceId
         self.baseUrl = baseUrl
         
-        self.pageType = pageType
-        self.type = type
-        self.pageNumber = pageNumber
         super.init()
     }
             
@@ -26,39 +23,16 @@ class MangaNato: MangaFetcher, MangaSource {
     let sourceId: String
     let baseUrl: String
 
-    // Request parameters
-    enum PageType {
-        case mangaList
-        case search
-    }
-    
-    var pageType: PageType
-    
-    var type: String
-    var pageNumber: Int
-    var searchQuery: String = ""
-    
-    var requestUrl: URL {
-        var result: URL?
-        
-        switch pageType {
-        case .mangaList:
-            result = URL(string: baseUrl + "/"
-                         + "genre-all" + "/"
-                         + "\(pageNumber)")!
-        case .search:
-            result = URL(string: baseUrl + "/"
-                         + "search/story/"
-                         + searchQuery.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)!
-        }
-        return result!
-    }
-        
-    func getManga() async {
+    func getManga(pageNumber: Int) async {
         do {
             var htmlPage = ""
 
             do {
+                guard let requestUrl = URL(string: baseUrl + "/genre-all/\(pageNumber)") else {
+                    Log.shared.msg("An error occured while formatting the URL")
+                    return
+                }
+                
                 let (data, _) = try await URLSession.shared.data(from: requestUrl)
                 
                 if let stringData = String(data: data, encoding: .utf8) {
@@ -87,6 +61,52 @@ class MangaNato: MangaFetcher, MangaSource {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.description = try manga.child(1).child(3).text()
                 result.detailsUrl = try URL(string: manga.child(1).child(0).child(0).attr("href"))
+                result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
+
+                super.mangaData.append(result)
+            }
+        } catch {
+            Log.shared.error(error)
+        }
+    }
+    
+    func getSearchManga(pageNumber: Int, searchQuery: String) async {
+        do {
+            var htmlPage = ""
+
+            do {
+                guard let requestUrl = URL(string: baseUrl + "/search/story/" + searchQuery.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "?page=\(pageNumber)") else {
+                    Log.shared.msg("An error occured while formatting the URL")
+                    return
+                }
+                
+                let (data, _) = try await URLSession.shared.data(from: requestUrl)
+                
+                if let stringData = String(data: data, encoding: .utf8) {
+                    if stringData.isEmpty {
+                        Log.shared.msg("An error occured while fetching manga.")
+                    }
+                    
+                    htmlPage = stringData
+                }
+            } catch {
+                Log.shared.error(error)
+            }
+            
+            let document: Document = try SwiftSoup.parse(htmlPage)
+            let mangas: Elements = try document.getElementsByClass("search-story-item")
+            
+            /// Announce changes
+            DispatchQueue.main.sync {
+                MangaVM.shared.objectWillChange.send()
+            }
+            
+            /// Reset mangas
+            mangaData = [Manga]()
+            
+            for manga in mangas.array() {
+                var result = Manga(title: try manga.child(1).child(0).child(0).text())
+                result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
 
                 super.mangaData.append(result)
