@@ -131,9 +131,12 @@ struct ChapterList: View {
                 .frame(maxWidth: .infinity)
                 /// Make entire area tappable
                 .contentShape(Rectangle())
-                /// Select chapter when tapped
-                .onTapGesture {
-                    selected = chapter.id
+                .onTapGesture(count: 2) {
+                    if let selectedManga = selectedManga {
+                        MangaReaderView(manga: selectedManga, chapter: chapter)
+                            .environmentObject(mangaVM)
+                            .openNewWindow(with: "Novee")
+                    }
                 }
             }
             .listStyle(.bordered(alternatesRowBackgrounds: true))

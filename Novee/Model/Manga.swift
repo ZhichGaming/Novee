@@ -7,12 +7,13 @@
 
 import Foundation
 import SwiftUI
+import AppKit
 
-enum LoadingState: Codable {
+enum LoadingState {
     case loading, success, failed, notFound
 }
 
-struct Manga: Hashable, Identifiable, Codable {
+struct Manga: Hashable, Identifiable {
     var id = UUID()
     
     var title: String
@@ -28,10 +29,12 @@ struct Manga: Hashable, Identifiable, Codable {
     var chapters: [Chapter]?
 }
 
-struct Chapter: Hashable, Identifiable, Codable {
+struct Chapter: Hashable, Identifiable {
     var id = UUID()
     var title: String
+
     var chapterUrl: URL
-    var imageUrls: [URL]?
+    var images: [NSImage]?
+
     var timeUploaded: Date?
 }

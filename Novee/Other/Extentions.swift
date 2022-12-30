@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 extension URL {
     func getFinalURL() -> URL? {
@@ -22,5 +23,24 @@ extension URL {
         task.resume()
         _ = semaphore.wait(timeout: .distantFuture)
         return finalURL
+    }
+}
+
+extension View {
+    private func newWindowInternal(with title: String) -> NSWindow {
+        let window = NSWindow(
+            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false)
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.title = title
+        window.makeKeyAndOrderFront(nil)
+        return window
+    }
+    
+    func openNewWindow(with title: String = "new Window") {
+        self.newWindowInternal(with: title).contentView = NSHostingView(rootView: self)
     }
 }

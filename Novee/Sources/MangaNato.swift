@@ -182,9 +182,72 @@ class MangaNato: MangaFetcher, MangaSource {
     
     func getMangaDetails(manga: Manga) async {
         if let result = await fetchMangaDetails(manga: manga) {
-            super.getMangaDetails(manga: manga, result: result)
+            super.assignMangaDetails(manga: manga, result: result)
         } else {
             Log.shared.msg("An error occured while fetching manga details")
         }
+    }
+    
+    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage]? {
+        var htmlPage = ""
+        var result = [NSImage]()
+
+        var selectedMangaIndex: Int? {
+            MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData.firstIndex { $0.id == manga.id }
+        }
+        
+        var selectedChapterIndex: Int? { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData[selectedMangaIndex ?? 0].chapters?.firstIndex { $0.id == chapter.id }
+        }
+        
+        Task { @MainActor in
+            MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData[selectedMangaIndex ?? 0].chapters?[selectedChapterIndex ?? 0].images = [NSImage]()
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
+
+            if let stringData = String(data: data, encoding: .utf8) {
+                if stringData.isEmpty {
+                    Log.shared.msg("An error occured while fetching manga pages.")
+                }
+                
+                htmlPage = stringData
+            }
+            
+            let document: Document = try SwiftSoup.parse(htmlPage)
+
+            let images = try document.getElementsByClass("container-chapter-reader")[0].children().filter { $0.nodeName() == "img" }
+            
+            for imageElement in images {
+                guard let imageUrl = URL(string: try imageElement.attr("src")) else {
+                    Log.shared.msg("An error occured while fetching an image url.")
+                    return nil
+                }
+                
+                var request = URLRequest(url: imageUrl)
+
+                request.setValue(baseUrl, forHTTPHeaderField: "Referer")
+                
+                if selectedMangaIndex == nil || selectedChapterIndex == nil {
+                    Log.shared.msg("An error occured while getting an index.")
+                    return nil
+                }
+
+                /// Wait for previous page to finish saving before going to the next one. This may stop all the pages from loading if a single page is corrupted.
+                while images.firstIndex(of: imageElement) != result.count - 1 {
+                    try await Task.sleep(nanoseconds: 100000000)
+                }
+                
+                await super.getImage(request: request, manga: manga, chapter: chapter) { image in
+                    if let image = image {
+                        result.append(image)
+                    }
+                }
+            }
+        } catch {
+            Log.shared.error(error)
+        }
+        
+        return result
     }
 }
