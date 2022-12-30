@@ -18,7 +18,7 @@ struct MangaDetailsView: View {
     
     /// Manga of the index passed in
     var selectedManga: Manga? {
-        if mangaVM.sources[mangaVM.selectedSource]?.mangaData.isEmpty == false {
+        if mangaVM.sources[mangaVM.selectedSource]!.mangaData.isEmpty == false {
             return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
         }
         
@@ -120,33 +120,12 @@ struct ChapterList: View {
         if selectedManga != nil, let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
             List(chapters) { chapter in
                 VStack(alignment: .leading) {
+                    // TODO: Chapter upload date
                     HStack {
                         Text(chapter.title)
-//                            .font(selected == Optional(chapter.id) ? .headline : nil)
                             .font(.headline)
                         
                         Spacer()
-                    }
-                    
-                    if selected == Optional(chapter.id) {
-                        VStack(alignment: .leading) {
-                            // TODO: Implement upload date
-//                            HStack {
-//                                Text("Upload date")
-//                                    .font(.callout)
-//                                Spacer()
-//                                Text(chapter.attributes.publishAt.formatted(date: .abbreviated, time: .shortened))
-//                            }
-
-                            Button("Read") {
-                                // TODO: Implement opening manga
-//                                mangaVM.openedMangaId = manga.id
-//                                mangaVM.openedChapterId = chapter.id
-//                                if let url = URL(string: "novee://mangaReader") {
-//                                    NSWorkspace.shared.open(url)
-//                                }
-                            }
-                        }
                     }
                 }
                 .frame(maxWidth: .infinity)

@@ -63,48 +63,7 @@ struct MangaReaderView: View {
 //                mangaVM.getPages(for: mangaVM.openedChapterId!)
 //            }
         }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                TextField("Zoom", value: $zoom, format: .percent)
-                    .textFieldStyle(.plain)
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    
-                } label: {
-                    HStack {
-                        Text("Previous chapter")
-                        Image(systemName: "arrow.left")
-                    }
-                }
-                
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    
-                } label: {
-                    HStack {
-                        Text("Next chapter")
-                        Image(systemName: "arrow.right")
-                    }
-                }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Picker("Select a chapter", selection: $selectedChapter) {
-//                    ForEach(mangaVM.openedManga?.chapters?.data ?? []) { chapter in
-//                        Text("Chapter \(chapter.attributes.chapter ?? "") (\(Language.getValue(chapter.attributes.translatedLanguage.uppercased()) ?? "\(mangaVM.openedChapter!.attributes.translatedLanguage)"))")
-//                            .tag(chapter.id)
-//                    }
-                }
-                .frame(width: 300)
             }
         }
-    }
-}
-
-struct MangaReaderView_Previews: PreviewProvider {
-    static var previews: some View {
-        MangaReaderView()
-            .frame(width: 1000, height: 625)
     }
 }
