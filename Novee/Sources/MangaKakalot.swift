@@ -75,7 +75,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             var htmlPage = ""
             
             do {
-                guard let requestUrl = URL(string: baseUrl + "/search/story/" + searchQuery.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "?page=\(pageNumber)") else {
+                guard let requestUrl = URL(string: baseUrl + "/search/story/" + searchQuery.replacingOccurrences(of: " ", with: "_").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "?page=\(pageNumber)") else {
                     Log.shared.msg("An error occured while formatting the URL")
                     return
                 }
