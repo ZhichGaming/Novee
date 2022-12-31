@@ -76,5 +76,5 @@ protocol MangaSource {
     func getManga(pageNumber: Int) async
     func getSearchManga(pageNumber: Int, searchQuery: String) async
     func getMangaDetails(manga: Manga) async
-    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage]?
+    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage]
 }

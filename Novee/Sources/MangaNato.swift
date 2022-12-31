@@ -188,7 +188,7 @@ class MangaNato: MangaFetcher, MangaSource {
         }
     }
     
-    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage]? {
+    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage] {
         var htmlPage = ""
         var result = [NSImage]()
 
@@ -221,7 +221,7 @@ class MangaNato: MangaFetcher, MangaSource {
             for imageElement in images {
                 guard let imageUrl = URL(string: try imageElement.attr("src")) else {
                     Log.shared.msg("An error occured while fetching an image url.")
-                    return nil
+                    return []
                 }
                 
                 var request = URLRequest(url: imageUrl)
@@ -230,7 +230,7 @@ class MangaNato: MangaFetcher, MangaSource {
                 
                 if selectedMangaIndex == nil || selectedChapterIndex == nil {
                     Log.shared.msg("An error occured while getting an index.")
-                    return nil
+                    return []
                 }
 
                 /// Wait for previous page to finish saving before going to the next one. This may stop all the pages from loading if a single page is corrupted.

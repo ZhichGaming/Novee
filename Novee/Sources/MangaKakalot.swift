@@ -194,7 +194,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         }
     }
     
-    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage]? {
+    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage] {
         var htmlPage = ""
         var result = [NSImage]()
 
@@ -227,7 +227,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             for imageElement in images {
                 guard let imageUrl = URL(string: try imageElement.attr("src")) else {
                     Log.shared.msg("An error occured while fetching an image url.")
-                    return nil
+                    return []
                 }
                 
                 var request = URLRequest(url: imageUrl)
@@ -236,12 +236,12 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 
                 if selectedMangaIndex == nil || selectedChapterIndex == nil {
                     Log.shared.msg("An error occured while getting an index.")
-                    return nil
+                    return []
                 }
 
                 /// Wait for previous page to finish saving before going to the next one. This may stop all the pages from loading if a single page is corrupted.
                 while images.firstIndex(of: imageElement) ?? 0 > result.count {
-                    try await Task.sleep(nanoseconds: 100000000)
+                    usleep(10000)
                 }
                 
                 await super.getImage(request: request, manga: manga, chapter: chapter) { image in
