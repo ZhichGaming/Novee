@@ -233,9 +233,11 @@ class MangaNato: MangaFetcher, MangaSource {
                     return []
                 }
 
+                var repeatCount = 0
                 /// Wait for previous page to finish saving before going to the next one. This may stop all the pages from loading if a single page is corrupted.
-                while images.firstIndex(of: imageElement) != result.count - 1 {
-                    try await Task.sleep(nanoseconds: 100000000)
+                while images.firstIndex(of: imageElement) ?? 0 > result.count && repeatCount < 3000 {
+                    usleep(10000)
+                    repeatCount += 1
                 }
                 
                 await super.getImage(request: request, manga: manga, chapter: chapter) { image in
