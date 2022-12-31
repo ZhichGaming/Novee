@@ -17,16 +17,20 @@ struct MangaReaderView: View {
     @State var chapter: Chapter
 
     var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            Text(manga.title + " " + chapter.title)
-                .font(.title)
+        GeometryReader { geometry in
+            ScrollView([.vertical]) {
+                Text(manga.title + " " + chapter.title)
+                    .font(.title)
 
-            ForEach(chapter.images ?? [], id: \.self) { nsImage in
-                Image(nsImage: nsImage)
-                    .scaledToFit()
+                ForEach(chapter.images ?? [], id: \.self) { nsImage in
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .aspectRatio(contentMode: nsImage.size.width > geometry.size.width ? .fit : .fill)
+                            .frame(maxWidth: nsImage.size.width < geometry.size.width ? nsImage.size.width : geometry.size.width)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             Task {
                 chapter.images = await mangaVM
