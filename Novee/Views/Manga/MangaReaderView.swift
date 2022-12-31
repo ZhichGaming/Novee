@@ -20,7 +20,7 @@ struct MangaReaderView: View {
         ScrollView([.horizontal, .vertical]) {
             Text(manga.title + " " + chapter.title)
                 .font(.title)
-            // TODO: Load the images
+
             ForEach(chapter.images ?? [], id: \.self) { nsImage in
                 Image(nsImage: nsImage)
                     .scaledToFit()
