@@ -18,7 +18,7 @@ struct MangaDetailsView: View {
     
     /// Manga of the index passed in
     var selectedManga: Manga? {
-        if mangaVM.sources[mangaVM.selectedSource]!.mangaData.isEmpty == false {
+        if mangaVM.sources[mangaVM.selectedSource]!.mangaData.count > selectedMangaIndex {
             return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
         }
         
@@ -109,7 +109,7 @@ struct ChapterList: View {
     @State var selected: UUID?
     
     var selectedManga: Manga? {
-        if mangaVM.sources[mangaVM.selectedSource]?.mangaData.isEmpty == false {
+        if mangaVM.sources[mangaVM.selectedSource]?.mangaData.count ?? 0 > selectedMangaIndex {
             return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
         }
         
