@@ -75,7 +75,10 @@ class MangaKakalot: MangaFetcher, MangaSource {
             var htmlPage = ""
             
             do {
-                guard let requestUrl = URL(string: baseUrl + "/search/story/" + searchQuery.replacingOccurrences(of: " ", with: "_").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "?page=\(pageNumber)") else {
+                let regex = try NSRegularExpression(pattern: "[^a-zA-Z0-9-._~ ]", options: [])
+                let safeSearchQuery = regex.stringByReplacingMatches(in: searchQuery, options: [], range: NSRange(location: 0, length: searchQuery.utf16.count), withTemplate: "").replacingOccurrences(of: " ", with: "_")
+                
+                guard let requestUrl = URL(string: baseUrl + "/search/story/" + safeSearchQuery + "?page=\(pageNumber)") else {
                     Log.shared.msg("An error occured while formatting the URL")
                     return
                 }
