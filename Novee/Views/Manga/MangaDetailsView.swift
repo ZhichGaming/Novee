@@ -135,7 +135,7 @@ struct ChapterList: View {
                     if let selectedManga = selectedManga {
                         MangaReaderView(manga: selectedManga, chapter: chapter)
                             .environmentObject(mangaVM)
-                            .openNewWindow(with: "Novee")
+                            .openNewWindow(with: selectedManga.title + " - " + chapter.title)
                     }
                 }
             }
