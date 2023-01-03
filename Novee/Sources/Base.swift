@@ -62,6 +62,23 @@ class MangaFetcher {
         task.resume()
         result(nil)
     }
+    
+    func resetMangas() {
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData = []
+    }
+    
+    func resetChapters(for manga: Manga) {
+        guard let index = MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData.firstIndex(where: { $0.id == manga.id }) else {
+            Log.shared.msg("Couldn't reset chapters as such a manga was not found.")
+            return
+        }
+        
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].chapters = []
+    }
+    
+    func resetChapters(index: Int) {
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].chapters = []
+    }
 }
 
 protocol MangaSource {

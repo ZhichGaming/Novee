@@ -26,24 +26,24 @@ class MangaNato: MangaFetcher, MangaSource {
     func getManga(pageNumber: Int) async {
         do {
             var htmlPage = ""
-
-            do {
-                guard let requestUrl = URL(string: baseUrl + "/genre-all/\(pageNumber)") else {
-                    Log.shared.msg("An error occured while formatting the URL")
-                    return
+            
+            DispatchQueue.main.async {
+                super.resetMangas()
+            }
+            
+            guard let requestUrl = URL(string: baseUrl + "/genre-all/\(pageNumber)") else {
+                Log.shared.msg("An error occured while formatting the URL")
+                return
+            }
+            
+            let (data, _) = try await URLSession.shared.data(from: requestUrl)
+            
+            if let stringData = String(data: data, encoding: .utf8) {
+                if stringData.isEmpty {
+                    Log.shared.msg("An error occured while fetching manga.")
                 }
                 
-                let (data, _) = try await URLSession.shared.data(from: requestUrl)
-                
-                if let stringData = String(data: data, encoding: .utf8) {
-                    if stringData.isEmpty {
-                        Log.shared.msg("An error occured while fetching manga.")
-                    }
-                    
-                    htmlPage = stringData
-                }
-            } catch {
-                Log.shared.error(error)
+                htmlPage = stringData
             }
             
             let document: Document = try SwiftSoup.parse(htmlPage)
@@ -53,9 +53,6 @@ class MangaNato: MangaFetcher, MangaSource {
             DispatchQueue.main.sync {
                 MangaVM.shared.objectWillChange.send()
             }
-            
-            /// Reset mangas
-            mangaData = [Manga]()
             
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())

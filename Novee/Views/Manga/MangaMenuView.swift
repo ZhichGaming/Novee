@@ -78,6 +78,16 @@ struct MangaMenuView: View {
         .onSubmit(of: .search) { searchQuery = textfieldSearchQuery }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button {
+                    Task {
+                        await mangaVM.sources[mangaVM.selectedSource]?.getManga(pageNumber: pageNumber)
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+            }
+            
+            ToolbarItem(placement: .primaryAction) {
                 Picker("Source", selection: $mangaVM.selectedSource) {
                     ForEach(mangaVM.sourcesArray, id: \.sourceId) { source in
                         Text(source.label)
