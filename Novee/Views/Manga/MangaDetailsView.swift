@@ -13,8 +13,10 @@ struct MangaDetailsView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     
     @State var selectedMangaIndex: Int
-    @State var collapsed = true
-    @State var descriptionSize: CGSize = .zero
+
+    @State private var descriptionSize: CGSize = .zero
+    @State private var descriptionCollapsed = false
+    @State private var isHoveringOverDescription = false
     
     /// Manga of the index passed in
     var selectedManga: Manga? {
@@ -55,19 +57,51 @@ struct MangaDetailsView: View {
                             .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
                             .clipped()
                         }
+                        
                         Divider()
-                        ScrollView {
-                            Text(LocalizedStringKey(selectedManga.description ?? "None"))
-                                .background {
-                                    GeometryReader { textSize -> Color in
+                        
+                        VStack {
+                            HStack {
+                                Text("Description")
+                                    .font(.headline)
+
+                                Image(systemName: "chevron.right")
+                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 90 : 0))
+                                    .onHover { isHovered in
+                                        self.isHoveringOverDescription = isHovered
                                         DispatchQueue.main.async {
-                                            descriptionSize = textSize.size
+                                            if (self.isHoveringOverDescription) {
+                                                NSCursor.pointingHand.push()
+                                            } else {
+                                                NSCursor.pop()
+                                            }
                                         }
-                                        return Color.clear
                                     }
+                                    .onTapGesture {
+                                        withAnimation {
+                                            descriptionCollapsed.toggle()
+                                        }
+                                    }
+                                
+                                Spacer()
+                            }
+                            
+                            if !descriptionCollapsed {
+                                ScrollView {
+                                    Text(LocalizedStringKey(selectedManga.description ?? "None"))
+                                        .background {
+                                            GeometryReader { textSize -> Color in
+                                                DispatchQueue.main.async {
+                                                    descriptionSize = textSize.size
+                                                }
+                                                return Color.clear
+                                            }
+                                        }
                                 }
+                                .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
+                                .transition(.opacity)
+                            }
                         }
-                        .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
                         
                         Divider()
                         
