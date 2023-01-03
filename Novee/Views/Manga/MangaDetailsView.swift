@@ -66,7 +66,7 @@ struct MangaDetailsView: View {
                                     .font(.headline)
 
                                 Image(systemName: "chevron.right")
-                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 90 : 0))
+                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
                                     .onHover { isHovered in
                                         self.isHoveringOverDescription = isHovered
                                         DispatchQueue.main.async {
