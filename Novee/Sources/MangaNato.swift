@@ -175,7 +175,7 @@ class MangaNato: MangaFetcher, MangaSource {
                     ))
             }
 
-            result?.chapters = chapters
+            result?.chapters = chapters.reversed()
         } catch {
             Log.shared.error(error)
         }

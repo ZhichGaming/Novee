@@ -28,6 +28,21 @@ class MangaVM: ObservableObject {
     private let manganato = MangaNato()
     private let chapmanganato = ChapMangaNato()
     
+    func changeChapter(chapter: Chapter, manga: Manga, offset: Int = 1) -> Chapter? {
+        if let chapterIndex: Int = manga.chapters?.firstIndex(where: { $0.id == chapter.id }) {
+            guard let chapters = manga.chapters else {
+                Log.shared.msg("Error: Chapters are empty!")
+                return nil
+            }
+            
+            if chapterIndex + offset >= 0 && chapterIndex + offset < chapters.count {
+                return chapters[chapterIndex + offset]
+            }
+        }
+        
+        return nil
+    }
+    
     func getMangaDetails(for manga: Manga) async {
         let mangaIndex = (sources[selectedSource]?.mangaData.firstIndex(of: manga))!
         let finalUrl = sources[selectedSource]?.mangaData[mangaIndex].detailsUrl?.getFinalURL()

@@ -108,6 +108,8 @@ struct ChapterList: View {
     @State var selectedMangaIndex: Int
     @State var selected: UUID?
     
+    @State var window: NSWindow = NSWindow()
+    
     var selectedManga: Manga? {
         if mangaVM.sources[mangaVM.selectedSource]?.mangaData.count ?? 0 > selectedMangaIndex {
             return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
@@ -118,7 +120,7 @@ struct ChapterList: View {
 
     var body: some View {
         if selectedManga != nil, let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
-            List(chapters) { chapter in
+            List(chapters.reversed()) { chapter in
                 VStack(alignment: .leading) {
                     // TODO: Chapter upload date
                     HStack {
@@ -133,9 +135,17 @@ struct ChapterList: View {
                 .contentShape(Rectangle())
                 .onTapGesture(count: 2) {
                     if let selectedManga = selectedManga {
-                        MangaReaderView(manga: selectedManga, chapter: chapter)
-                            .environmentObject(mangaVM)
-                            .openNewWindow(with: selectedManga.title + " - " + chapter.title)
+                        window = NSWindow(
+                            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
+                            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+                            backing: .buffered,
+                            defer: false)
+                        window.center()
+                        window.isReleasedWhenClosed = false
+                        window.title = selectedManga.title + " - " + chapter.title
+                        window.makeKeyAndOrderFront(nil)
+                        window.contentView = NSHostingView(rootView: MangaReaderView(manga: selectedManga, chapter: chapter, window: $window)
+                            .environmentObject(mangaVM))
                     }
                 }
             }
