@@ -69,7 +69,7 @@ class MangaFetcher {
     
     func resetChapters(for manga: Manga) {
         guard let index = MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData.firstIndex(where: { $0.id == manga.id }) else {
-            Log.shared.msg("Couldn't reset chapters as such a manga was not found.")
+            Log.shared.msg("Failed to reset chapters as the selected manga could not be found.")
             return
         }
         
@@ -78,6 +78,25 @@ class MangaFetcher {
     
     func resetChapters(index: Int) {
         MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].chapters = []
+    }
+    
+    /// These functions are here if they are ever going to be used. They are useless at the time of being written since the pages are currently not stored within MangaVM. 
+    func resetPages(manga: Manga, chapter: Chapter) {
+        guard let mangaIndex = MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData.firstIndex(where: { $0.id == manga.id }) else {
+            Log.shared.msg("Failed to reset chapter pages as the selected manga could not be found.")
+            return
+        }
+        
+        guard let chapterIndex = MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData.firstIndex(where: { $0.id == manga.id }) else {
+            Log.shared.msg("Failed to reset chapter pages as the selected chapter could not be found.")
+            return
+        }
+        
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = []
+    }
+    
+    func resetPages(mangaIndex: Int, chapterIndex: Int) {
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = []
     }
 }
 

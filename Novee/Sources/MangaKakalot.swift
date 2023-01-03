@@ -71,26 +71,22 @@ class MangaKakalot: MangaFetcher, MangaSource {
         do {
             var htmlPage = ""
             
-            do {
-                let regex = try NSRegularExpression(pattern: "[^a-zA-Z0-9-._~ ]", options: [])
-                let safeSearchQuery = regex.stringByReplacingMatches(in: searchQuery, options: [], range: NSRange(location: 0, length: searchQuery.utf16.count), withTemplate: "").replacingOccurrences(of: " ", with: "_")
-                
-                guard let requestUrl = URL(string: baseUrl + "/search/story/" + safeSearchQuery + "?page=\(pageNumber)") else {
-                    Log.shared.msg("An error occured while formatting the URL")
-                    return
-                }
+            let regex = try NSRegularExpression(pattern: "[^a-zA-Z0-9-._~ ]", options: [])
+            let safeSearchQuery = regex.stringByReplacingMatches(in: searchQuery, options: [], range: NSRange(location: 0, length: searchQuery.utf16.count), withTemplate: "").replacingOccurrences(of: " ", with: "_")
+            
+            guard let requestUrl = URL(string: baseUrl + "/search/story/" + safeSearchQuery + "?page=\(pageNumber)") else {
+                Log.shared.msg("An error occured while formatting the URL")
+                return
+            }
 
-                let (data, _) = try await URLSession.shared.data(from: requestUrl)
-                
-                if let stringData = String(data: data, encoding: .utf8) {
-                    if stringData.isEmpty {
-                        Log.shared.msg("An error occured while fetching manga.")
-                    }
-                    
-                    htmlPage = stringData
+            let (data, _) = try await URLSession.shared.data(from: requestUrl)
+            
+            if let stringData = String(data: data, encoding: .utf8) {
+                if stringData.isEmpty {
+                    Log.shared.msg("An error occured while fetching manga.")
                 }
-            } catch {
-                Log.shared.error(error)
+                
+                htmlPage = stringData
             }
             
             let document: Document = try SwiftSoup.parse(htmlPage)
@@ -203,10 +199,6 @@ class MangaKakalot: MangaFetcher, MangaSource {
         }
         
         var selectedChapterIndex: Int? { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData[selectedMangaIndex ?? 0].chapters?.firstIndex { $0.id == chapter.id }
-        }
-        
-        Task { @MainActor in
-            MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData[selectedMangaIndex ?? 0].chapters?[selectedChapterIndex ?? 0].images = [NSImage]()
         }
         
         do {
