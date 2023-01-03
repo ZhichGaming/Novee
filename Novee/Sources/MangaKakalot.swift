@@ -227,7 +227,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
 
             let images = try document.getElementsByClass("container-chapter-reader")[0].children().filter { $0.nodeName() == "img" }
 
-            for imageElement in images {
+            for (index, imageElement) in images.enumerated() {
                 guard let imageUrl = URL(string: try imageElement.attr("src")) else {
                     Log.shared.msg("An error occured while fetching an image url.")
                     return []
@@ -244,15 +244,22 @@ class MangaKakalot: MangaFetcher, MangaSource {
 
                 var repeatCount = 0
                 /// Wait for previous page to finish saving before going to the next one. This may stop all the pages from loading if a single page is corrupted.
-                while images.firstIndex(of: imageElement) ?? 0 > result.count && repeatCount < 3000 {
+                while index > result.count && repeatCount < 3000 {
                     usleep(10000)
                     repeatCount += 1
                 }
                 
+                let semaphore = DispatchSemaphore(value: 0)
+                
                 await super.getImage(request: request, manga: manga, chapter: chapter) { image in
                     if let image = image {
                         result.append(image)
+                        semaphore.signal()
                     }
+                }
+                
+                DispatchQueue.global().sync {
+                    semaphore.wait()
                 }
             }
         } catch {
