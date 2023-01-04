@@ -65,23 +65,15 @@ struct MangaDetailsView: View {
                                 Text("Description")
                                     .font(.headline)
 
-                                Image(systemName: "chevron.right")
-                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
-                                    .onHover { isHovered in
-                                        self.isHoveringOverDescription = isHovered
-                                        DispatchQueue.main.async {
-                                            if (self.isHoveringOverDescription) {
-                                                NSCursor.pointingHand.push()
-                                            } else {
-                                                NSCursor.pop()
-                                            }
-                                        }
+                                Button {
+                                    withAnimation {
+                                        descriptionCollapsed.toggle()
                                     }
-                                    .onTapGesture {
-                                        withAnimation {
-                                            descriptionCollapsed.toggle()
-                                        }
-                                    }
+                                } label: {
+                                    Image(systemName: "chevron.right")
+                                        .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
+                                }
+                                .buttonStyle(.plain)
                                 
                                 Spacer()
                             }
@@ -105,13 +97,8 @@ struct MangaDetailsView: View {
                         
                         Divider()
                         
-                        VStack(alignment: .leading) {
-                            Text("Chapters")
-                                .font(.headline)
-
-                            ChapterList(selectedMangaIndex: selectedMangaIndex)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        ChapterList(selectedMangaIndex: selectedMangaIndex)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     .padding()
                 }
@@ -142,6 +129,10 @@ struct ChapterList: View {
     @State var selectedMangaIndex: Int
     @State var selected: UUID?
     
+    @State private var ascendingOrder = true
+    @State private var showingSearch = false
+    @State private var chapterQuery = ""
+    
     @State var window: NSWindow = NSWindow()
     
     var selectedManga: Manga? {
@@ -151,43 +142,115 @@ struct ChapterList: View {
         
         return nil
     }
+    
+    var filteredChapters: [Chapter]? {
+        var result: [Chapter]?
+        
+        if let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
+            if ascendingOrder {
+                result = chapters
+            } else {
+                result = chapters.reversed()
+            }
+            
+            if !chapterQuery.isEmpty {
+                result = result?.filter { $0.title.uppercased().contains(chapterQuery.uppercased()) }
+            }
+        }
+        
+        return result
+    }
 
     var body: some View {
-        if selectedManga != nil, let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
-            List(chapters.reversed()) { chapter in
-                VStack(alignment: .leading) {
-                    // TODO: Chapter upload date
-                    HStack {
-                        Text(chapter.title)
-                            .font(.headline)
+        if selectedManga != nil, let filteredChapters = filteredChapters {
+            VStack {
+                HStack {
+                    Text("Chapters")
+                        .font(.headline)
+                    
+                    if showingSearch {
+                        TextField("Search for a chapter", text: $chapterQuery)
+                            .textFieldStyle(.roundedBorder)
+                    } else {
+                        if let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
+                            Spacer()
                         
-                        Spacer()
+                            Button("Read first") {
+                                openWindow(
+                                    title: selectedManga!.title + " - " + chapters.first!.title,
+                                    view: MangaReaderView(manga: selectedManga!, chapter: chapters.first!, window: $window).environmentObject(mangaVM))
+                            }
+                            .disabled(filteredChapters.isEmpty)
+                            
+                            Button("Read last") {
+                                openWindow(
+                                    title: selectedManga!.title + " - " + chapters.last!.title,
+                                    view: MangaReaderView(manga: selectedManga!, chapter: chapters.last!, window: $window).environmentObject(mangaVM))
+                            }
+                            .disabled(filteredChapters.isEmpty)
+
+                            Spacer()
+                        }
+                    }
+                    
+                    Button {
+                        showingSearch.toggle()
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                    }
+                    .keyboardShortcut(showingSearch ? .cancelAction : nil)
+                    
+                    Button {
+                        ascendingOrder.toggle()
+                    } label: {
+                        if ascendingOrder {
+                            Image(systemName: "arrow.up")
+                        } else {
+                            Image(systemName: "arrow.down")
+                        }
                     }
                 }
-                .frame(maxWidth: .infinity)
-                /// Make entire area tappable
-                .contentShape(Rectangle())
-                .onTapGesture(count: 2) {
-                    if let selectedManga = selectedManga {
-                        window = NSWindow(
-                            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
-                            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-                            backing: .buffered,
-                            defer: false)
-                        window.center()
-                        window.isReleasedWhenClosed = false
-                        window.title = selectedManga.title + " - " + chapter.title
-                        window.makeKeyAndOrderFront(nil)
-                        window.contentView = NSHostingView(rootView: MangaReaderView(manga: selectedManga, chapter: chapter, window: $window)
-                            .environmentObject(mangaVM))
+                
+                List(filteredChapters.reversed()) { chapter in
+                    VStack(alignment: .leading) {
+                        // TODO: Chapter upload date
+                        HStack {
+                            Text(chapter.title)
+                                .font(.headline)
+                            
+                            Spacer()
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    /// Make entire area tappable
+                    .contentShape(Rectangle())
+                    .onTapGesture(count: 2) {
+                        if let selectedManga = selectedManga {
+                            openWindow(
+                                title: selectedManga.title + " - " + chapter.title,
+                                view: MangaReaderView(manga: selectedManga, chapter: chapter, window: $window).environmentObject(mangaVM))
+                        }
                     }
                 }
+                .listStyle(.bordered(alternatesRowBackgrounds: true))
             }
-            .listStyle(.bordered(alternatesRowBackgrounds: true))
         } else {
             Text("No chapters have been found.")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+    
+    private func openWindow(title: String, view: some View) {
+        window = NSWindow(
+            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false)
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.title = title
+        window.makeKeyAndOrderFront(nil)
+        window.contentView = NSHostingView(rootView: view)
     }
 }
 
