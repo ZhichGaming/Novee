@@ -24,7 +24,7 @@ struct MangaMenuView: View {
                 Divider()
                 NavigationView {
                     VStack(spacing: 0) {
-                        MangaList(selectedSource: $mangaVM.selectedSource)
+                        MangaColumnView(selectedSource: $mangaVM.selectedSource)
                         
                         Divider()
                         HStack {
@@ -98,7 +98,7 @@ struct MangaMenuView: View {
     }
 }
 
-struct MangaList: View {
+struct MangaColumnView: View {
     @EnvironmentObject var mangaVM: MangaVM
     
     @Binding var selectedSource: String

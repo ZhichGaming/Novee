@@ -15,6 +15,7 @@ struct NoveeApp: App {
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
                 .environmentObject(SettingsVM.shared)
                 .environmentObject(MangaVM.shared)
+                .environmentObject(MangaListVM.shared)
                 .presentedWindowToolbarStyle(.unified)
         }
         .windowStyle(.titleBar)

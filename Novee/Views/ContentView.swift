@@ -14,23 +14,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                NavigationLink(tag: 1, selection: self.$selectedView, destination: { HomeView() }, label: {
-                        HStack {
-                            Image(systemName: "house")
-                                .frame(width: 15)
-                            Text("Home")
-                        }
-                    }
-                )
-                NavigationLink(tag: 2, selection: self.$selectedView, destination: { AnimeMenuView() }, label: {
-                        HStack {
-                            Image(systemName: "tv")
-                                .frame(width: 15)
-                            Text("Anime")
-                        }
-                    }
-                )
-                NavigationLink(tag: 3, selection: self.$selectedView, destination: { MangaMenuView() }, label: {
+                NavigationLink(tag: 1, selection: self.$selectedView, destination: { MangaMenuView() }, label: {
                         HStack {
                             Image(systemName: "book.closed")
                                 .frame(width: 15)
@@ -38,11 +22,12 @@ struct ContentView: View {
                         }
                     }
                 )
-                NavigationLink(tag: 4, selection: self.$selectedView, destination: { NovelMenuView() }, label: {
+                
+                NavigationLink(tag: 2, selection: self.$selectedView, destination: { MangaListView() }, label: {
                         HStack {
-                            Image(systemName: "book")
+                            Image(systemName: "list.bullet")
                                 .frame(width: 15)
-                            Text("Novels")
+                            Text("List")
                         }
                     }
                 )
