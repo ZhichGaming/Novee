@@ -194,13 +194,6 @@ class MangaKakalot: MangaFetcher, MangaSource {
         var htmlPage = ""
         var result = [NSImage]()
 
-        var selectedMangaIndex: Int? {
-            MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData.firstIndex { $0.id == manga.id }
-        }
-        
-        var selectedChapterIndex: Int? { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData[selectedMangaIndex ?? 0].chapters?.firstIndex { $0.id == chapter.id }
-        }
-        
         do {
             let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
 
@@ -225,11 +218,6 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 var request = URLRequest(url: imageUrl)
 
                 request.setValue(baseUrl, forHTTPHeaderField: "Referer")
-                
-                if selectedMangaIndex == nil || selectedChapterIndex == nil {
-                    Log.shared.msg("An error occured while getting an index.")
-                    return []
-                }
                 
                 let semaphore = DispatchSemaphore(value: 0)
                 
