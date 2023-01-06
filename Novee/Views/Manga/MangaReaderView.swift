@@ -12,6 +12,7 @@ struct MangaReaderView: View {
     @EnvironmentObject var mangaVM: MangaVM
     
     @State private var zoom = 1.0
+    @State private var showingDetailsSheet = false
     
     let manga: Manga
     @State var chapter: Chapter
@@ -59,6 +60,15 @@ struct MangaReaderView: View {
                     .getMangaPages(manga: manga, chapter: chapter)
             }
         }
+        .sheet(isPresented: $showingDetailsSheet) { MangaReaderDetailsView(manga: manga, chapter: chapter) }
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                showingDetailsSheet = true
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .padding()
+        }
     }
 }
 
@@ -93,5 +103,166 @@ struct ChangeChaptersView: View {
             }
         }
         .padding()
+    }
+}
+
+struct MangaReaderDetailsView: View {
+    @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
+    
+    @Environment(\.dismiss) var dismiss
+    
+    let manga: Manga
+    let chapter: Chapter
+    
+    @State private var selectedMangaStatus: MangaStatus = .reading
+    @State private var selectedMangaRating: MangaRating = .none
+    @State private var selectedLastChapter: UUID = UUID()
+    
+    @State private var selectedMangaListElement: MangaListElement?
+    
+    @State private var createNewEntry = false
+    
+    var body: some View {
+        VStack {
+            HStack {
+                CachedAsyncImage(url: manga.imageUrl) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .clipped()
+                } placeholder: {
+                    ProgressView()
+                }
+                
+                VStack(alignment: .leading) {
+                    Text(manga.title)
+                        .font(.title2.bold())
+                    Text(chapter.title)
+                        .font(.headline)
+                }
+                
+                Spacer()
+            }
+            
+            TabView {
+                HStack {
+                    VStack {
+                        Button("Add new entry") {
+                            selectedMangaListElement = MangaListElement(manga: [:], status: .reading, rating: .none)
+                            createNewEntry = true
+                        }
+                                                
+                        Button("Find manually") {
+                            
+                        }
+                        
+                        Spacer()
+                        Text(mangaListVM.findInList(manga: manga)?.manga.first?.value.title ?? "Manga not found")
+                        
+                        if let url = mangaListVM.findInList(manga: manga)?.manga.first?.value.imageUrl {
+                            CachedAsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    Divider()
+                        .padding(.horizontal)
+                    
+                    VStack {
+                        Text("Manga options")
+
+                        Group {
+                            Picker("Status", selection: $selectedMangaStatus) {
+                                ForEach(MangaStatus.allCases, id: \.rawValue) {
+                                    Text($0.rawValue)
+                                        .tag($0)
+                                }
+                            }
+                            
+                            Picker("Rating", selection: $selectedMangaRating) {
+                                ForEach(MangaRating.allCases, id: \.rawValue) {
+                                    Text($0.rawValue)
+                                        .tag($0)
+                                }
+                            }
+                            
+                            Picker("Last chapter", selection: $selectedLastChapter) {
+                                ForEach(manga.chapters ?? []) {
+                                    Text($0.title)
+                                        .tag($0.id)
+                                }
+                            }
+                        }
+                        .disabled(selectedMangaListElement == nil)
+                        
+                        HStack {
+                            Spacer()
+                            Button("Cancel", role: .cancel) {
+                                dismiss()
+                            }
+                            
+                            Button(createNewEntry ? "Add to list" : "Save") {
+                                if createNewEntry {
+                                    mangaListVM.addToList(
+                                        source: mangaVM.selectedSource,
+                                        manga: manga,
+                                        lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                                        status: selectedMangaStatus,
+                                        rating: selectedMangaRating
+                                    )
+                                } else {
+                                    mangaListVM.updateListEntry(
+                                        id: selectedMangaListElement!.id,
+                                        newValue: MangaListElement(
+                                            manga: [mangaVM.selectedSource: manga],
+                                            lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                                            status: selectedMangaStatus,
+                                            rating: selectedMangaRating
+                                        )
+                                    )
+                                }
+                                
+                                dismiss()
+                            }
+                            .disabled(selectedMangaListElement == nil)
+                        }
+                    }
+                }
+                .padding()
+                .tabItem {
+                    Text("Manga list")
+                }
+                
+                VStack {
+                    
+                }
+                .padding()
+                .tabItem {
+                    Text("Reading options")
+                }
+            }
+        }
+        .frame(width: 500, height: 300)
+        .padding()
+        .onAppear {
+            selectedMangaListElement = mangaListVM.findInList(manga: manga)
+        }
+        .onChange(of: selectedMangaListElement) { _ in
+            if let selectedMangaListElement = selectedMangaListElement {
+                selectedMangaStatus = selectedMangaListElement.status
+                selectedMangaRating = selectedMangaListElement.rating
+                
+                selectedLastChapter = manga.chapters?.first { $0.title == selectedMangaListElement.lastChapter }?.id ?? UUID()
+            }
+        }
     }
 }

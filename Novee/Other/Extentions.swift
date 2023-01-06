@@ -44,3 +44,20 @@ extension View {
         self.newWindowInternal(with: title).contentView = NSHostingView(rootView: self)
     }
 }
+
+extension MangaStatus {
+    func getStatusColor() -> Color {
+        switch self {
+        case .completed:
+            return Color.green
+        case .dropped:
+            return Color.red
+        case .reading:
+            return Color.orange
+        case .waiting:
+            return Color.yellow
+        case .toRead:
+            return Color.purple
+        }
+    }
+}

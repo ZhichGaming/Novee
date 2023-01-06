@@ -125,6 +125,7 @@ struct MangaDetailsView: View {
 
 struct ChapterList: View {
     @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
     
     @State var selectedMangaIndex: Int
     @State var selected: UUID?
@@ -228,7 +229,7 @@ struct ChapterList: View {
                         if let selectedManga = selectedManga {
                             openWindow(
                                 title: selectedManga.title + " - " + chapter.title,
-                                view: MangaReaderView(manga: selectedManga, chapter: chapter, window: $window).environmentObject(mangaVM))
+                                view: MangaReaderView(manga: selectedManga, chapter: chapter, window: $window).environmentObject(mangaVM).environmentObject(mangaListVM))
                         }
                     }
                 }

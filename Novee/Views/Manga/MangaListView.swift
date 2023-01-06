@@ -46,7 +46,7 @@ struct MangaListRowView: View {
     
     var body: some View {
         HStack {
-            Text(manga.manga.first?.title ?? "No title")
+            Text(manga.manga.first?.value.title ?? "No title")
                 .frame(width: geo.size.width * 0.3, alignment: .leading)
             Text(manga.lastChapter ?? "No last chapter")
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
@@ -56,10 +56,10 @@ struct MangaListRowView: View {
                 .padding(.horizontal, 3)
                 .background {
                     RoundedRectangle(cornerRadius: 5)
-                        .foregroundColor(getStatusColor(for: manga))
+                        .foregroundColor(manga.status.getStatusColor())
                 }
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
-            Text(manga.rating?.rawValue ?? "No rating")
+            Text(manga.rating.rawValue)
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
         }
         .frame(maxWidth: .infinity)
@@ -68,21 +68,6 @@ struct MangaListRowView: View {
             RoundedRectangle(cornerRadius: 5)
                 .foregroundColor(Color(nsColor: NSColor.textBackgroundColor))
                 .shadow(radius: 2)
-        }
-    }
-    
-    private func getStatusColor(for: MangaListElement) -> Color {
-        switch manga.status {
-        case .completed:
-            return Color.green
-        case .dropped:
-            return Color.red
-        case .reading:
-            return Color.orange
-        case .waiting:
-            return Color.yellow
-        case .toRead:
-            return Color.purple
         }
     }
 }
