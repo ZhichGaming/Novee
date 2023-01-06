@@ -209,7 +209,7 @@ class MangaNato: MangaFetcher, MangaSource {
 
             let images = try document.getElementsByClass("container-chapter-reader")[0].children().filter { $0.nodeName() == "img" }
             
-            for (index, imageElement) in images.enumerated() {
+            for imageElement in images {
                 guard let imageUrl = URL(string: try imageElement.attr("src")) else {
                     Log.shared.msg("An error occured while fetching an image url.")
                     return []
@@ -222,13 +222,6 @@ class MangaNato: MangaFetcher, MangaSource {
                 if selectedMangaIndex == nil || selectedChapterIndex == nil {
                     Log.shared.msg("An error occured while getting an index.")
                     return []
-                }
-
-                var repeatCount = 0
-                /// Wait for previous page to finish saving before going to the next one. This may stop all the pages from loading if a single page is corrupted.
-                while index > result.count && repeatCount < 3000 {
-                    usleep(10000)
-                    repeatCount += 1
                 }
                 
                 let semaphore = DispatchSemaphore(value: 0)
