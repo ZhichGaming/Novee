@@ -30,4 +30,6 @@ struct MangaListElement: Hashable, Identifiable {
     var lastChapter: String?
     var status: MangaStatus
     var rating: MangaRating
+    var lastReadDate: Date?
+    var creationDate: Date
 }

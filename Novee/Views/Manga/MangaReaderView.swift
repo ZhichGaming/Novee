@@ -150,7 +150,7 @@ struct MangaReaderDetailsView: View {
                 HStack {
                     VStack {
                         Button("Add new entry") {
-                            selectedMangaListElement = MangaListElement(manga: [:], status: .reading, rating: .none)
+                            selectedMangaListElement = MangaListElement(manga: [:], status: .reading, rating: .none, creationDate: Date.now)
                             createNewEntry = true
                         }
                                                 
@@ -217,7 +217,8 @@ struct MangaReaderDetailsView: View {
                                         manga: manga,
                                         lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
                                         status: selectedMangaStatus,
-                                        rating: selectedMangaRating
+                                        rating: selectedMangaRating,
+                                        lastReadDate: Date.now
                                     )
                                 } else {
                                     mangaListVM.updateListEntry(
@@ -226,7 +227,9 @@ struct MangaReaderDetailsView: View {
                                             manga: [mangaVM.selectedSource: manga],
                                             lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
                                             status: selectedMangaStatus,
-                                            rating: selectedMangaRating
+                                            rating: selectedMangaRating,
+                                            lastReadDate: Date.now,
+                                            creationDate: Date.now
                                         )
                                     )
                                 }

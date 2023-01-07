@@ -22,8 +22,8 @@ class MangaListVM: ObservableObject {
     
     @Published var list: [MangaListElement]
     
-    func addToList(source: String, manga: Manga, lastChapter: String? = nil, status: MangaStatus, rating: MangaRating = .none) {
-        list.append(MangaListElement(manga: [source: manga], lastChapter: lastChapter, status: status, rating: rating))
+    func addToList(source: String, manga: Manga, lastChapter: String? = nil, status: MangaStatus, rating: MangaRating = .none, creationDate: Date = Date.now, lastReadDate: Date? = nil) {
+        list.append(MangaListElement(manga: [source: manga], lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
     }
     
     func updateListEntry(id: UUID, newValue: MangaListElement) {
