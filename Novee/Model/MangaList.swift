@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MangaStatus: String, Hashable, CaseIterable {
+enum MangaStatus: String, Hashable, CaseIterable, Codable {
     case dropped = "Dropped"
     case completed = "Completed"
     case reading = "Reading"
@@ -15,7 +15,7 @@ enum MangaStatus: String, Hashable, CaseIterable {
     case toRead = "To read"
 }
 
-enum MangaRating: String, Hashable, CaseIterable {
+enum MangaRating: String, Hashable, CaseIterable, Codable {
     case horrible = "Horrible"
     case bad = "Bad"
     case good = "Good"
@@ -23,7 +23,7 @@ enum MangaRating: String, Hashable, CaseIterable {
     case none = "None"
 }
 
-struct MangaListElement: Hashable, Identifiable {
+struct MangaListElement: Hashable, Identifiable, Codable {
     let id = UUID()
     
     var manga: [String: Manga] /// Manga from different sources
@@ -32,4 +32,13 @@ struct MangaListElement: Hashable, Identifiable {
     var rating: MangaRating
     var lastReadDate: Date?
     var creationDate: Date
+    
+    enum CodingKeys: CodingKey {
+        case manga
+        case lastChapter
+        case status
+        case rating
+        case lastReadDate
+        case creationDate
+    }
 }
