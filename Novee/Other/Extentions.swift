@@ -61,6 +61,34 @@ extension MangaStatus {
         }
     }
 }
+
+extension NSImage {
+    func pngData() -> Data? {
+        if let tiffRepresentation = self.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) {
+            return bitmapImage.representation(using: .png, properties: [:])
+        }
+        
+        return nil
+    }
+}
+
+extension String {
+    func sanitized() -> String {
+        let invalidCharacters = CharacterSet(charactersIn: "\\/:*?\"<>|")
+            .union(.newlines)
+            .union(.illegalCharacters)
+            .union(.controlCharacters)
+        
+        return self
+            .components(separatedBy: invalidCharacters)
+            .joined(separator: "")
+    }
+    
+    mutating func sanitize() -> Void {
+        self = self.sanitized()
+    }
+}
+
 extension URL {
     static let mangaListStorageUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("list", conformingTo: .folder)
