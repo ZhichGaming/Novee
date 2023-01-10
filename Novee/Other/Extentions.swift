@@ -93,3 +93,10 @@ extension URL {
     static let mangaListStorageUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("list", conformingTo: .folder)
 }
+
+extension Array {
+    mutating func rearrange(fromIndex: Int, toIndex: Int){
+        let element = self.remove(at: fromIndex)
+        self.insert(element, at: toIndex)
+    }
+}

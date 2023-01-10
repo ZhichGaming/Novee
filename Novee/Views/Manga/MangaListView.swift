@@ -230,6 +230,8 @@ struct MangaListDetailsSheetView: View {
 
     @Environment(\.dismiss) var dismiss
     
+    @State private var mangaKeysArray: [String] = []
+    
     @State private var selectedSource: String = ""
     @State private var selectedLastChapter: String = ""
     @State private var selectedMangaRating: String = ""
@@ -242,62 +244,115 @@ struct MangaListDetailsSheetView: View {
             
             TabView {
                 ScrollView {
-                    ForEach(Array(passedManga.manga.values), id: \.id) { manga in
-                        HStack {
-                            VStack {
-                                CachedAsyncImage(url: manga.imageUrl) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFit()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                
-                                Text(manga.title)
-                                    .font(.headline)
-                            }
-                            .frame(width: 200)
-                            .padding(.trailing)
+                    ForEach(mangaKeysArray, id: \.self) { key in
+                        if let manga = passedManga.manga[key] {
+                            Text(mangaVM.sources[key]?.label ?? "")
+                                .font(.title2.bold())
+                                .padding(.top)
                             
-                            List {
-                                if let description = manga.description {
-                                    Text("Description")
+                            HStack {
+                                VStack {
+                                    CachedAsyncImage(url: manga.imageUrl) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
+                                    
+                                    Text(manga.title)
                                         .font(.headline)
-                                    Text(description)
-                                    Spacer()
                                 }
+                                .frame(width: 200)
+                                .padding(.trailing)
                                 
-                                if let tags = manga.tags {
-                                    Text("Tags")
-                                        .font(.headline)
-                                    Text(tags.joined(separator: ", "))
-                                    Spacer()
-                                }
-                                
-                                if let altTitles = manga.altTitles?.joined(separator: ", ") {
-                                    Text("Alternative titles")
-                                        .font(.headline)
-                                    Text(altTitles)
-                                    Spacer()
-                                }
-                                
-                                if let authors = manga.authors?.joined(separator: ", ") {
-                                    Text("Authors")
-                                        .font(.headline)
-                                    Text(authors)
-                                    Spacer()
-                                }
-
-                                if let detailsUrl = manga.detailsUrl {
-                                    Link("URL source", destination: detailsUrl)
+                                List {
+                                    if let description = manga.description {
+                                        Text("Description")
+                                            .font(.headline)
+                                        Text(description)
+                                        Spacer()
+                                    }
+                                    
+                                    if let tags = manga.tags {
+                                        Text("Tags")
+                                            .font(.headline)
+                                        Text(tags.joined(separator: ", "))
+                                        Spacer()
+                                    }
+                                    
+                                    if let altTitles = manga.altTitles?.joined(separator: ", ") {
+                                        Text("Alternative titles")
+                                            .font(.headline)
+                                        Text(altTitles)
+                                        Spacer()
+                                    }
+                                    
+                                    if let authors = manga.authors?.joined(separator: ", ") {
+                                        Text("Authors")
+                                            .font(.headline)
+                                        Text(authors)
+                                        Spacer()
+                                    }
+                                    
+                                    if let detailsUrl = manga.detailsUrl {
+                                        Link("URL source", destination: detailsUrl)
+                                    }
                                 }
                             }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                Button {
+                                    if let currentIndex = mangaKeysArray.firstIndex(of: key) {
+                                        withAnimation {
+                                            mangaKeysArray.rearrange(fromIndex: currentIndex, toIndex: currentIndex - 1)
+                                        }
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.up")
+                                }
+                                .disabled((mangaKeysArray.firstIndex(of: key) ?? 0) - 1 < 0)
+                                
+                                Button {
+                                    if let currentIndex = mangaKeysArray.firstIndex(of: key) {
+                                        withAnimation {
+                                            mangaKeysArray.rearrange(fromIndex: currentIndex, toIndex: currentIndex + 1)
+                                        }
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.down")
+                                }
+                                .disabled(mangaKeysArray.firstIndex(of: key) ?? mangaKeysArray.count >= mangaKeysArray.count - 1)
 
-                        Divider()
-                            .padding(.horizontal)
+                                Button {
+                                    if let currentIndex = mangaKeysArray.firstIndex(of: key) {
+                                        withAnimation {
+                                            mangaKeysArray.remove(at: currentIndex)
+                                            return () // This is to remove the warning of withAnimation being unused.
+                                        }
+                                        
+                                        if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
+                                            mangaListVM
+                                                .list[listElementIndex]
+                                                .manga
+                                                .removeValue(forKey: key)
+                                        }
+                                    }
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal)
+                        }
+                    }
+                    .onAppear {
+                        mangaKeysArray = Array(passedManga.manga.keys)
                     }
                 }
                 .tabItem {
