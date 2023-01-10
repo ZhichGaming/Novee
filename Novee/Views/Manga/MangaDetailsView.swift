@@ -10,6 +10,7 @@ import CachedAsyncImage
 
 struct MangaDetailsView: View {
     @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
     @EnvironmentObject var settingsVM: SettingsVM
     
     @State var selectedMangaIndex: Int
@@ -101,6 +102,15 @@ struct MangaDetailsView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     .padding()
+                }
+                .onAppear {
+                    if let mangaListId = mangaListVM.findInList(manga: selectedManga)?.id {
+                        mangaListVM.updateMangaInListElement(
+                            id: mangaListId,
+                            source: mangaVM.selectedSource,
+                            manga: selectedManga
+                        )
+                    }
                 }
             case .loading:
                 ProgressView()

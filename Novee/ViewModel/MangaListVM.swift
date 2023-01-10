@@ -50,6 +50,14 @@ class MangaListVM: ObservableObject {
         list.append(MangaListElement(manga: [source: manga], lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
     }
     
+    func updateMangaInListElement(id: UUID, source: String, manga: Manga) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].manga[source] = manga
+        } else {
+            Log.shared.msg("A list entry with this UUID could not be found.")
+        }
+    }
+    
     func updateListEntry(id: UUID, newValue: MangaListElement) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index] = newValue
