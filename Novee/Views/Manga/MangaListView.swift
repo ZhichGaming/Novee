@@ -236,6 +236,7 @@ struct MangaListDetailsSheetView: View {
     @State private var selectedLastChapter: String = ""
     @State private var selectedMangaRating: String = ""
     @State private var selectedMangaStatus: String = ""
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         VStack {
@@ -438,6 +439,30 @@ struct MangaListDetailsSheetView: View {
                             Text("Creation date:")
                             Text(passedManga.creationDate.formatted(date: .abbreviated, time: .standard))
                                 .font(.body)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Destructive")
+                            .font(.headline)
+                            .padding(.top)
+                        
+                        HStack {
+                            Button("Remove from list", role: .destructive) {
+                                showingDeleteAlert = true
+                            }
+                            .foregroundColor(.red)
+                            .alert("Warning", isPresented: $showingDeleteAlert) {
+                                Button("Cancel", role: .cancel) { }
+                                Button("Delete", role: .destructive) {
+                                    if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
+                                        mangaListVM.list.remove(at: listElementIndex)
+                                        dismiss()
+                                    }
+                                }
+                            } message: {
+                                Text("Are you sure you want to delete this element from your list? This action is irreversible.")
+                            }
                         }
                     }
                     
