@@ -10,18 +10,9 @@ import SwiftSoup
 import SwiftUI
 
 class MangaKakalot: MangaFetcher, MangaSource {
-    init(label: String = "MangaKakalot", sourceId: String = "mangakakalot", baseUrl: String = "https://mangakakalot.com") {
-        self.label = label
-        self.sourceId = sourceId
-        self.baseUrl = baseUrl
-        
-        super.init()
+    override init(label: String = "MangaKakalot", sourceId: String = "mangakakalot", baseUrl: String = "https://mangakakalot.com") {
+        super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
-            
-    // Source info
-    let label: String
-    let sourceId: String
-    let baseUrl: String
  
     func getManga(pageNumber: Int) async {
         do {

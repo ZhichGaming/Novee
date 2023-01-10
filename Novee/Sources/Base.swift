@@ -9,6 +9,17 @@ import Foundation
 import AppKit
 
 class MangaFetcher {
+    init(label: String, sourceId: String, baseUrl: String) {
+        self.label = label
+        self.sourceId = sourceId
+        self.baseUrl = baseUrl
+    }
+    
+    // Source info
+    let label: String
+    let sourceId: String
+    let baseUrl: String
+    
     @Published var mangaData: [Manga] = []
 
     func assignMangaDetails(manga: Manga, result: Manga) {
