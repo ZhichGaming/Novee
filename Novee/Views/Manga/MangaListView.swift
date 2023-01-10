@@ -182,7 +182,7 @@ struct MangaListView: View {
                 }
                 .sheet(item: $mangaDetailsSheet) { mangaListElement in
                     MangaListDetailsSheetView(passedManga: mangaListElement)
-                        .frame(width: 700, height: 500)
+                        .frame(width: 700, height: 550)
                 }
             }
             .frame(width: geo.size.width)
@@ -337,10 +337,7 @@ struct MangaListDetailsSheetView: View {
                                         }
                                         
                                         if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
-                                            mangaListVM
-                                                .list[listElementIndex]
-                                                .manga
-                                                .removeValue(forKey: key)
+                                            mangaListVM.list[listElementIndex].manga.removeValue(forKey: key)
                                         }
                                     }
                                 } label: {
