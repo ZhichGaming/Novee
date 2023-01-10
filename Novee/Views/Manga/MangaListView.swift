@@ -362,7 +362,7 @@ struct MangaListDetailsSheetView: View {
                 VStack(alignment: .leading) {
                     VStack(alignment: .leading) {
                         Text("Manga status/rating")
-                            .font(.title2.bold())
+                            .font(.headline)
                         
                         Picker("Manga status", selection: $selectedMangaStatus) {
                             ForEach(MangaStatus.allCases, id: \.rawValue) { status in
@@ -393,7 +393,7 @@ struct MangaListDetailsSheetView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Last read chapter")
-                            .font(.title2.bold())
+                            .font(.headline)
                         
                         Picker("Chapter source", selection: $selectedSource) {
                             ForEach(Array(passedManga.manga.keys), id: \.self) { key in
@@ -425,7 +425,7 @@ struct MangaListDetailsSheetView: View {
 
                     VStack(alignment: .leading) {
                         Text("Dates")
-                            .font(.title2.bold())
+                            .font(.headline)
                         
                         HStack {
                             Text("Last read date:")
