@@ -58,6 +58,30 @@ class MangaListVM: ObservableObject {
         }
     }
     
+    func updateStatus(id: UUID, to status: MangaStatus) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].status = status
+        } else {
+            Log.shared.msg("A list entry with this UUID could not be found.")
+        }
+    }
+    
+    func updateRating(id: UUID, to rating: MangaRating) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].rating = rating
+        } else {
+            Log.shared.msg("A list entry with this UUID could not be found.")
+        }
+    }
+    
+    func updateLastChapter(id: UUID, to chapter: String) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].lastChapter = chapter
+        } else {
+            Log.shared.msg("A list entry with this UUID could not be found.")
+        }
+    }
+    
     func findInList(manga: Manga) -> MangaListElement? {
         let inputTitles = [manga.title] + (manga.altTitles ?? [])
         

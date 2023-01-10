@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage
 
 struct MangaListView: View {
     @EnvironmentObject var mangaListVM: MangaListVM
@@ -13,6 +14,7 @@ struct MangaListView: View {
     @State private var listQuery = ""
     @State private var showingSearchDetailsSheet = false
     @State private var selectedSortingStyle = "Recently updated"
+    @State private var mangaDetailsSheet: MangaListElement?
     
     @State private var showingWaiting = true
     @State private var showingReading = true
@@ -168,10 +170,19 @@ struct MangaListView: View {
                 
                 Divider()
                 ScrollView {
-                    ForEach(mangaListVM.list) { manga in
-                        MangaListRowView(manga: manga, geo: geo)
+                    ForEach(filteredList) { mangaListElement in
+                        Button {
+                            mangaDetailsSheet = mangaListElement
+                        } label: {
+                            MangaListRowView(manga: mangaListElement, geo: geo)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding()
+                }
+                .sheet(item: $mangaDetailsSheet) { mangaListElement in
+                    MangaListDetailsSheetView(passedManga: mangaListElement)
+                        .frame(width: 700, height: 500)
                 }
             }
             .frame(width: geo.size.width)
@@ -180,7 +191,7 @@ struct MangaListView: View {
 }
 
 struct MangaListRowView: View {
-    @State var manga: MangaListElement
+    var manga: MangaListElement
     let geo: GeometryProxy
     
     var body: some View {
@@ -208,6 +219,194 @@ struct MangaListRowView: View {
                 .foregroundColor(Color(nsColor: NSColor.textBackgroundColor))
                 .shadow(radius: 2)
         }
+    }
+}
+
+struct MangaListDetailsSheetView: View {
+    @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
+    
+    let passedManga: MangaListElement
+
+    @Environment(\.dismiss) var dismiss
+    
+    @State private var selectedSource: String = ""
+    @State private var selectedLastChapter: String = ""
+    @State private var selectedMangaRating: String = ""
+    @State private var selectedMangaStatus: String = ""
+    
+    var body: some View {
+        VStack {
+            Text(passedManga.manga.first?.value.title ?? "None")
+                .font(.title2.bold())
+            
+            TabView {
+                ScrollView {
+                    ForEach(Array(passedManga.manga.values), id: \.id) { manga in
+                        HStack {
+                            VStack {
+                                CachedAsyncImage(url: manga.imageUrl) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                
+                                Text(manga.title)
+                                    .font(.headline)
+                            }
+                            .frame(width: 200)
+                            .padding(.trailing)
+                            
+                            List {
+                                if let description = manga.description {
+                                    Text("Description")
+                                        .font(.headline)
+                                    Text(description)
+                                    Spacer()
+                                }
+                                
+                                if let tags = manga.tags {
+                                    Text("Tags")
+                                        .font(.headline)
+                                    Text(tags.joined(separator: ", "))
+                                    Spacer()
+                                }
+                                
+                                if let altTitles = manga.altTitles?.joined(separator: ", ") {
+                                    Text("Alternative titles")
+                                        .font(.headline)
+                                    Text(altTitles)
+                                    Spacer()
+                                }
+                                
+                                if let authors = manga.authors?.joined(separator: ", ") {
+                                    Text("Authors")
+                                        .font(.headline)
+                                    Text(authors)
+                                    Spacer()
+                                }
+
+                                if let detailsUrl = manga.detailsUrl {
+                                    Link("URL source", destination: detailsUrl)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+
+                        Divider()
+                            .padding(.horizontal)
+                    }
+                }
+                .tabItem {
+                    Text("Manga details")
+                }
+                
+                VStack(alignment: .leading) {
+                    VStack(alignment: .leading) {
+                        Text("Manga status/rating")
+                            .font(.title2.bold())
+                        
+                        Picker("Manga status", selection: $selectedMangaStatus) {
+                            ForEach(MangaStatus.allCases, id: \.rawValue) { status in
+                                Text(status.rawValue)
+                                    .tag(status.rawValue)
+                            }
+                        }
+                        .onChange(of: selectedMangaStatus) { newStatus in
+                            mangaListVM.updateStatus(
+                                id: passedManga.id,
+                                to: MangaStatus(rawValue: newStatus) ?? passedManga.status
+                            )
+                        }
+                        
+                        Picker("Manga rating", selection: $selectedMangaRating) {
+                            ForEach(MangaRating.allCases, id: \.rawValue) { rating in
+                                Text(rating.rawValue)
+                                    .tag(rating.rawValue)
+                            }
+                        }
+                        .onChange(of: selectedMangaRating) { newRating in
+                            mangaListVM.updateRating(
+                                id: passedManga.id,
+                                to: MangaRating(rawValue: newRating) ?? passedManga.rating
+                            )
+                        }
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Last read chapter")
+                            .font(.title2.bold())
+                        
+                        Picker("Chapter source", selection: $selectedSource) {
+                            ForEach(Array(passedManga.manga.keys), id: \.self) { key in
+                                Text(mangaVM.sources[key]?.label ?? key)
+                                    .tag(key)
+                            }
+                        }
+                        
+                        Picker("Last chapter", selection: $selectedLastChapter) {
+                            ForEach(passedManga.manga[selectedSource]?.chapters ?? [], id: \.id) { chapter in
+                                Text(chapter.title)
+                                    .tag(chapter.title)
+                            }
+                        }
+                        .disabled(!passedManga.manga.keys.contains(selectedSource))
+                        .onChange(of: selectedLastChapter) { newChapter in
+                            mangaListVM.updateLastChapter(
+                                id: passedManga.id,
+                                to: newChapter
+                            )
+                        }
+                        
+                        HStack {
+                            Text("Current last chapter:")
+                            Text(passedManga.lastChapter ?? "None")
+                        }
+                    }
+                    .padding(.vertical)
+
+                    VStack(alignment: .leading) {
+                        Text("Dates")
+                            .font(.title2.bold())
+                        
+                        HStack {
+                            Text("Last read date:")
+                            Text(passedManga.lastReadDate?.formatted(date: .abbreviated, time: .standard) ?? "None")
+                                .font(.body)
+                        }
+                        .padding(.vertical, 3)
+
+                        HStack {
+                            Text("Creation date:")
+                            Text(passedManga.creationDate.formatted(date: .abbreviated, time: .standard))
+                                .font(.body)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+                .tabItem {
+                    Text("List details")
+                }
+                .onAppear {
+                    selectedMangaRating = passedManga.rating.rawValue
+                    selectedMangaStatus = passedManga.status.rawValue
+                }
+            }
+            
+            HStack {
+                Spacer()
+                
+                Button("Done") {
+                    dismiss()
+                }
+            }
+        }
+        .padding()
     }
 }
 
