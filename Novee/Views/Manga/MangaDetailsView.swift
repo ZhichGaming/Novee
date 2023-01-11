@@ -36,8 +36,19 @@ struct MangaDetailsView: View {
                     VStack {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 5) {
-                                Text(selectedManga.title)
-                                    .font(.largeTitle)
+                                HStack(spacing: 0) {
+                                    if let detailsUrl = selectedManga.detailsUrl {
+                                        Link(destination: detailsUrl) {
+                                            Text("\(selectedManga.title)")
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                        .font(.largeTitle)
+                                    } else {
+                                        Text("\(selectedManga.title)")
+                                            .font(.largeTitle)
+                                    }
+                                }
+                                
                                 Text(LocalizedStringKey(
                                     "**Alternative titles:** \(selectedManga.altTitles?.joined(separator: "; ") ?? "None")"
                                 ))
