@@ -236,8 +236,11 @@ struct MangaListDetailsSheetView: View {
     @State private var selectedLastChapter: String = ""
     @State private var selectedMangaRating: String = ""
     @State private var selectedMangaStatus: String = ""
-    @State private var showingDeleteAlert = false
     
+    @State private var showingDeleteAlert = false
+    @State private var showingLastChapterSelection = false
+    @State private var selectedLastReadDate: Date = Date.now
+
     var body: some View {
         VStack {
             Text(passedManga.manga.first?.value.title ?? "None")
@@ -426,15 +429,35 @@ struct MangaListDetailsSheetView: View {
                             .font(.headline)
                         
                         HStack {
-                            Text("Last read date:")
-                            Text(passedManga.lastReadDate?.formatted(date: .abbreviated, time: .standard) ?? "None")
-                                .font(.body)
+                            if showingLastChapterSelection {
+                                DatePicker(
+                                    "Last read date:",
+                                    selection: $selectedLastReadDate,
+                                    displayedComponents: .date
+                                )
+                                .onChange(of: selectedLastReadDate) { newDate in
+                                    mangaListVM.updateLastReadDate(id: passedManga.id, to: newDate)
+                                }
+                            }
+                            
+                            Button(showingLastChapterSelection ? "Remove last read date" : "Add last read date") {
+                                showingLastChapterSelection.toggle()
+                            }
+                            .onAppear {
+                                showingLastChapterSelection = passedManga.lastReadDate != nil
+                                selectedLastReadDate = passedManga.lastReadDate ?? selectedLastReadDate
+                            }
+                            .onChange(of: showingLastChapterSelection) { showingLastChapter in
+                                if !showingLastChapter {
+                                    mangaListVM.updateLastReadDate(id: passedManga.id, to: nil)
+                                }
+                            }
                         }
                         .padding(.vertical, 3)
 
                         HStack {
                             Text("Creation date:")
-                            Text(passedManga.creationDate.formatted(date: .abbreviated, time: .standard))
+                            Text(passedManga.creationDate.formatted(date: .abbreviated, time: .omitted))
                                 .font(.body)
                         }
                     }

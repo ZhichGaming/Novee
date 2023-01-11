@@ -90,6 +90,14 @@ class MangaListVM: ObservableObject {
         }
     }
     
+    func updateLastReadDate(id: UUID, to date: Date?) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].lastReadDate = date
+        } else {
+            Log.shared.msg("A list entry with this UUID could not be found.")
+        }
+    }
+    
     func findInList(manga: Manga) -> MangaListElement? {
         let inputTitles = [manga.title] + (manga.altTitles ?? [])
         
