@@ -18,6 +18,7 @@ struct MangaDetailsView: View {
     @State private var descriptionSize: CGSize = .zero
     @State private var descriptionCollapsed = false
     @State private var isHoveringOverDescription = false
+    @State private var isHoveringOverTitle = false
     
     /// Manga of the index passed in
     var selectedManga: Manga? {
@@ -36,16 +37,27 @@ struct MangaDetailsView: View {
                     VStack {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 5) {
-                                HStack(spacing: 0) {
-                                    if let detailsUrl = selectedManga.detailsUrl {
-                                        Link(destination: detailsUrl) {
-                                            Text("\(selectedManga.title)")
-                                                .multilineTextAlignment(.leading)
-                                        }
-                                        .font(.largeTitle)
-                                    } else {
-                                        Text("\(selectedManga.title)")
-                                            .font(.largeTitle)
+                                Button(selectedManga.title) {
+                                    let pasteBoard = NSPasteboard.general
+                                    pasteBoard.clearContents()
+                                    pasteBoard.writeObjects([selectedManga.title as NSString])
+                                }
+                                .background {
+                                    Color.secondary
+                                        .opacity(isHoveringOverTitle ? 0.1 : 0.0)
+                                }
+                                .onHover { hoverState in
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isHoveringOverTitle = hoverState
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                .font(.largeTitle)
+                                .help("Click to copy title")
+                                
+                                if let detailsUrl = selectedManga.detailsUrl {
+                                    Link(destination: detailsUrl) {
+                                        Label("Open in browser", systemImage: "arrow.up.forward.app")
                                     }
                                 }
                                 
