@@ -34,7 +34,7 @@ class MangaListVM: ObservableObject {
     func decode() {
         do {
             if !FileManager().fileExists(atPath: URL.mangaListStorageUrl.path) {
-                FileManager().createFile(atPath: URL.mangaListStorageUrl.path, contents: nil)
+                FileManager().createFile(atPath: URL.mangaListStorageUrl.path, contents: Data([]))
                 return
             }
             
