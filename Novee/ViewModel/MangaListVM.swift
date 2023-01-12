@@ -33,7 +33,10 @@ class MangaListVM: ObservableObject {
     
     func decode() {
         do {
-            if !FileManager().fileExists(atPath: URL.mangaListStorageUrl.path) { return }
+            if !FileManager().fileExists(atPath: URL.mangaListStorageUrl.path) {
+                FileManager().createFile(atPath: URL.mangaListStorageUrl.path, contents: nil)
+                return
+            }
             
             if let data = FileManager().contents(atPath: URL.mangaListStorageUrl.path) {
                 let decoded = try JSONDecoder().decode([MangaListElement].self, from: data)
