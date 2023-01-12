@@ -20,13 +20,20 @@ struct Manga: Hashable, Identifiable, Codable {
     var altTitles: [String]?
     var description: String?
     var authors: [String]?
-    var tags: [String]?
+    var tags: [MangaTag]?
     
     var detailsLoadingState: LoadingState = .loading
     
     var detailsUrl: URL?
     var imageUrl: URL?
     var chapters: [Chapter]?
+}
+
+struct MangaTag: Hashable, Identifiable, Codable {
+    var id = UUID()
+    
+    var name: String
+    var url: URL?
 }
 
 struct Chapter: Hashable, Identifiable, Codable {

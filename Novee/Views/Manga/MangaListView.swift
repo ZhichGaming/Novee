@@ -281,7 +281,7 @@ struct MangaListDetailsSheetView: View {
                                     if let tags = manga.tags {
                                         Text("Tags")
                                             .font(.headline)
-                                        Text(tags.joined(separator: ", "))
+                                        Text(tags.map { $0.name }.joined(separator: ", "))
                                         Spacer()
                                     }
                                     

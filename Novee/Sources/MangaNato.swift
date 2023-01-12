@@ -120,7 +120,8 @@ class MangaNato: MangaFetcher, MangaSource {
 
             let document: Document = try SwiftSoup.parse(htmlPage)
             let infoElement: Element = try document.getElementsByClass("story-info-right")[0]
-            
+            let tags: [Element] = try document.select("body > div.body-site > div.container.container-main > div.container-main-left > div.panel-story-info > div.story-info-right > table > tbody > tr:nth-child(4) > td.table-value")[0].children().array().filter { $0.hasClass("a-h") }
+
             result = Manga(title: try infoElement
                 .child(0)
                 .text())
@@ -137,12 +138,9 @@ class MangaNato: MangaFetcher, MangaSource {
                 .select("table > tbody > tr:nth-child(2) > td.table-value")
                 .text()
                 .components(separatedBy: "-")
-            result?.tags = try Array(document
-                .select("table > tbody > tr:nth-child(4) > td.table-value")
-                .text()
-                .replacingOccurrences(of: " ", with: "")
-                .components(separatedBy: "-")
-                .filter { !$0.isEmpty })
+            result?.tags = try tags.map { tag in
+                try MangaTag(name: tag.text(), url: URL(string: tag.attr("href")))
+            }
             
             var chapters: [Chapter] = []
             

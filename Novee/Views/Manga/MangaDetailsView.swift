@@ -18,7 +18,6 @@ struct MangaDetailsView: View {
     @State private var descriptionSize: CGSize = .zero
     @State private var descriptionCollapsed = false
     @State private var isHoveringOverDescription = false
-    @State private var isHoveringOverTitle = false
     
     /// Manga of the index passed in
     var selectedManga: Manga? {
@@ -35,53 +34,7 @@ struct MangaDetailsView: View {
             case .success:
                 GeometryReader { geo in
                     VStack {
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 5) {
-                                Button(selectedManga.title) {
-                                    let pasteBoard = NSPasteboard.general
-                                    pasteBoard.clearContents()
-                                    pasteBoard.writeObjects([selectedManga.title as NSString])
-                                }
-                                .background {
-                                    Color.secondary
-                                        .opacity(isHoveringOverTitle ? 0.1 : 0.0)
-                                }
-                                .onHover { hoverState in
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        isHoveringOverTitle = hoverState
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                                .font(.largeTitle)
-                                .help("Click to copy title")
-                                
-                                if let detailsUrl = selectedManga.detailsUrl {
-                                    Link(destination: detailsUrl) {
-                                        Label("Open in browser", systemImage: "arrow.up.forward.app")
-                                    }
-                                }
-                                
-                                Text(LocalizedStringKey(
-                                    "**Alternative titles:** \(selectedManga.altTitles?.joined(separator: "; ") ?? "None")"
-                                ))
-                                .lineLimit(5)
-                                
-                                Text(LocalizedStringKey("**Authors:** \(selectedManga.authors?.joined(separator: ", ") ?? "None")"))
-                                
-                                Text(LocalizedStringKey("**Tags:** \(selectedManga.tags?.joined(separator: ", ") ?? "None")"))
-                            }
-                            Spacer()
-                            CachedAsyncImage(url: selectedManga.imageUrl) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                            } placeholder: {
-                                ProgressView()
-                            }
-                            .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
-                            .clipped()
-                        }
-                        
+                        MangaInfoView(geo: geo, selectedManga: selectedManga)
                         Divider()
                         
                         VStack {
@@ -152,6 +105,69 @@ struct MangaDetailsView: View {
             case .notFound:
                 Text("A source for the selected manga has not been found.")
             }
+        }
+    }
+}
+
+struct MangaInfoView: View {
+    @State private var isHoveringOverTitle = false
+
+    let geo: GeometryProxy
+    var selectedManga: Manga
+    
+    var body: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 5) {
+                Button(selectedManga.title) {
+                    let pasteBoard = NSPasteboard.general
+                    pasteBoard.clearContents()
+                    pasteBoard.writeObjects([selectedManga.title as NSString])
+                }
+                .background {
+                    Color.secondary
+                        .opacity(isHoveringOverTitle ? 0.1 : 0.0)
+                }
+                .onHover { hoverState in
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isHoveringOverTitle = hoverState
+                    }
+                }
+                .buttonStyle(.plain)
+                .font(.largeTitle)
+                .help("Click to copy title")
+                
+                if let detailsUrl = selectedManga.detailsUrl {
+                    Link(destination: detailsUrl) {
+                        Label("Open in browser", systemImage: "arrow.up.forward.app")
+                    }
+                }
+                
+                Text(LocalizedStringKey(
+                    "**Alternative titles:** \(selectedManga.altTitles?.joined(separator: "; ") ?? "None")"
+                ))
+                .lineLimit(5)
+                
+                Text(LocalizedStringKey("**Authors:** \(selectedManga.authors?.joined(separator: ", ") ?? "None")"))
+                
+                HStack {
+                    if selectedManga.tags?.map { $0.url }.contains(nil) ?? true {
+                        Text("**Tags:** \(selectedManga.tags?.map { $0.name }.joined(separator: ", ") ?? "None")")
+                    } else {
+                        Text(LocalizedStringKey("**Tags:** " + (selectedManga.tags?.map { "[\($0.name)](\($0.url!))" }.joined(separator: ", ") ?? "None")))
+                    }
+                    
+                }
+            }
+            Spacer()
+            CachedAsyncImage(url: selectedManga.imageUrl) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(maxWidth: geo.size.width * 0.4, maxHeight: geo.size.height * 0.4)
+            .clipped()
         }
     }
 }

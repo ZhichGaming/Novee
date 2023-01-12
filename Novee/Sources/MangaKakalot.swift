@@ -120,6 +120,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         
             let document: Document = try SwiftSoup.parse(htmlPage)
             let infoElement: Element = try document.getElementsByClass("manga-info-text")[0]
+            let tags: [Element] = try document.select("body > div.container > div.main-wrapper > div.leftCol > div.manga-info-top > ul > li:nth-child(7)").array().filter { $0.hasClass("nofollow") }
             
             result = Manga(title: try infoElement
                 .child(0)
@@ -141,13 +142,9 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 .text()
                 .replacingOccurrences(of: "Author(s) : ", with: "")
                 .components(separatedBy: ", ")
-            result?.tags = try Array(document
-                .select("body > div.container > div.main-wrapper > div.leftCol > div.manga-info-top > ul > li:nth-child(7)")
-                .eachText()[0]
-                .replacingOccurrences(of: "Genres :", with: "")
-                .replacingOccurrences(of: " ", with: "")
-                .components(separatedBy: ",")
-                .filter { !$0.isEmpty })
+            result?.tags = try tags.map { tag in
+                try MangaTag(name: tag.text(), url: URL(string: tag.attr("href")))
+            }
             
             var chapters: [Chapter] = []
             
