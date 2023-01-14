@@ -7,13 +7,21 @@
 
 import SwiftUI
 import CachedAsyncImage
+import SystemNotification
 
 struct MangaReaderView: View {
     @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
+    @StateObject var notification = SystemNotificationContext()
     
     @State private var zoom = 1.0
     @State private var showingDetailsSheet = false
+    @State private var showingCustomizedAddToListSheet = false
     
+    @State private var selectedMangaStatus: MangaStatus = .reading
+    @State private var selectedMangaRating: MangaRating = .none
+    @State private var selectedLastChapter: UUID = UUID()
+
     let manga: Manga
     @State var chapter: Chapter
     @Binding var window: NSWindow
@@ -40,6 +48,13 @@ struct MangaReaderView: View {
                 
                 ChangeChaptersView(manga: manga, chapter: $chapter)
             }
+            .overlay {
+                Rectangle()
+                    .fill(.clear)
+                    .allowsHitTesting(false)
+                    .systemNotification(notification)
+                    .offset(y: 10)
+            }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: chapter) { [chapter] newChapter in
                 if chapter.id != newChapter.id {
@@ -54,6 +69,45 @@ struct MangaReaderView: View {
             }
         }
         .onAppear {
+            if mangaListVM.findInList(manga: manga) == nil {
+                notification.present(configuration: .init(duration: 15)) {
+                    VStack {
+                        VStack(alignment: .leading) {
+                            Text("Add this manga to your list?")
+                                .font(.footnote.bold())
+                                .foregroundColor(.primary.opacity(0.6))
+                            Text("Swipe to dismiss")
+                                .font(.footnote.bold())
+                                .foregroundColor(.primary.opacity(0.4))
+                        }
+                        .frame(width: 225, alignment: .leading)
+
+                        HStack {
+                            Button {
+                                showingCustomizedAddToListSheet = true
+                            } label: {
+                                Text("Add with options")
+                            }
+                            
+                            Button {
+                                mangaListVM.addToList(
+                                    source: mangaVM.selectedSource,
+                                    manga: manga,
+                                    lastChapter: chapter.title,
+                                    status: .reading,
+                                    rating: .none,
+                                    lastReadDate: Date.now
+                                )
+                            } label: {
+                                Text("Add")
+                            }
+                        }
+                        .frame(width: 225, alignment: .trailing)
+                    }
+                    .frame(width: 300, height: 75)
+                }
+            }
+            
             Task {
                 chapter.images = await mangaVM
                     .sources[mangaVM.selectedSource]!
@@ -96,6 +150,56 @@ struct MangaReaderView: View {
                 }
             }
             .frame(width: 500, height: 300)
+            .padding()
+        }
+        .sheet(isPresented: $showingCustomizedAddToListSheet) {
+            VStack {
+                Text(manga.title)
+                    .font(.headline)
+
+                Group {
+                    Picker("Status", selection: $selectedMangaStatus) {
+                        ForEach(MangaStatus.allCases, id: \.rawValue) {
+                            Text($0.rawValue)
+                                .tag($0)
+                        }
+                    }
+                    
+                    Picker("Rating", selection: $selectedMangaRating) {
+                        ForEach(MangaRating.allCases, id: \.rawValue) {
+                            Text($0.rawValue)
+                                .tag($0)
+                        }
+                    }
+                    
+                    Picker("Last chapter", selection: $selectedLastChapter) {
+                        ForEach(manga.chapters ?? []) {
+                            Text($0.title)
+                                .tag($0.id)
+                        }
+                    }
+                }
+                
+                HStack {
+                    Spacer()
+                    Button("Cancel", role: .cancel) {
+                        showingCustomizedAddToListSheet = false
+                    }
+                    
+                    Button("Add to list") {
+                        mangaListVM.addToList(
+                            source: mangaVM.selectedSource,
+                            manga: manga,
+                            lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                            status: selectedMangaStatus,
+                            rating: selectedMangaRating,
+                            lastReadDate: Date.now
+                        )
+                        
+                        showingCustomizedAddToListSheet = false
+                    }
+                }
+            }
             .padding()
         }
         .overlay(alignment: .bottomTrailing) {
