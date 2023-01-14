@@ -18,6 +18,8 @@ struct MangaReaderView: View {
     @State private var showingDetailsSheet = false
     @State private var showingCustomizedAddToListSheet = false
     
+    @State private var oldChapterTitle = ""
+    
     @State private var selectedMangaStatus: MangaStatus = .reading
     @State private var selectedMangaRating: MangaRating = .none
     @State private var selectedLastChapter: UUID = UUID()
@@ -64,6 +66,41 @@ struct MangaReaderView: View {
                         self.chapter.images = await mangaVM
                             .sources[mangaVM.selectedSource]!
                             .getMangaPages(manga: manga, chapter: self.chapter)
+                    }
+                    
+                    if let index = mangaListVM.list.firstIndex(where: { $0.id == mangaListVM.findInList(manga: manga)?.id }) {
+                        print(chapter.title)
+                        if newChapter.title > mangaListVM.list[index].lastChapter ?? "" {
+                            oldChapterTitle = mangaListVM.list[index].lastChapter ?? ""
+                            mangaListVM.list[index].lastChapter = newChapter.title
+                            print("Inside: " + newChapter.title)
+                            
+                            notification.present {
+                                VStack {
+                                    VStack(alignment: .leading) {
+                                        Text("Last read chapter updated!")
+                                            .font(.footnote.bold())
+                                            .foregroundColor(.primary.opacity(0.6))
+                                        Text("Swipe to dismiss")
+                                            .font(.footnote.bold())
+                                            .foregroundColor(.primary.opacity(0.4))
+                                    }
+                                    .frame(width: 225, alignment: .leading)
+
+                                    HStack {
+                                        Button {
+                                            mangaListVM.list[index].lastChapter = oldChapterTitle
+                                        } label: {
+                                            Text("Undo")
+                                        }
+                                    }
+                                    .frame(width: 225, alignment: .trailing)
+                                }
+                                .frame(width: 300, height: 75)
+                            }
+                        }
+                    } else {
+                        print("Index in MangaReaderView onChange of chapter is nil!")
                     }
                 }
             }
