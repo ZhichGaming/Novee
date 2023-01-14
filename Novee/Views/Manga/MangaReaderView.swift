@@ -113,6 +113,8 @@ struct MangaReaderView: View {
                     }
                     .frame(width: 300, height: 75)
                 }
+            } else {
+                updateChapterNotification(newChapter: chapter)
             }
             
             Task {
