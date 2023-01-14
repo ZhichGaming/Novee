@@ -11,6 +11,7 @@
 		9B04480F28FB3DA300FD7891 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B04480E28FB3DA300FD7891 /* ContentView.swift */; };
 		9B04481128FB3DA400FD7891 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481028FB3DA400FD7891 /* Assets.xcassets */; };
 		9B04481428FB3DA400FD7891 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B04481328FB3DA400FD7891 /* Preview Assets.xcassets */; };
+		9B1BFB2B29708E8C003DEAC8 /* SystemNotification in Frameworks */ = {isa = PBXBuildFile; productRef = 9B1BFB2A29708E8C003DEAC8 /* SystemNotification */; };
 		9B5B1F8E2958FEA100160F6C /* MangaNato.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F8D2958FEA100160F6C /* MangaNato.swift */; };
 		9B5B1F91295A1BAC00160F6C /* Extentions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F90295A1BAC00160F6C /* Extentions.swift */; };
 		9B5B1F93295A2CFD00160F6C /* ChapMangaNato.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F92295A2CFD00160F6C /* ChapMangaNato.swift */; };
@@ -72,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B1BFB2B29708E8C003DEAC8 /* SystemNotification in Frameworks */,
 				9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */,
 				9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */,
 			);
@@ -213,6 +215,7 @@
 			packageProductDependencies = (
 				9B71CC4C2947AE170014B265 /* CachedAsyncImage */,
 				9B71CC502947CDB10014B265 /* SwiftSoup */,
+				9B1BFB2A29708E8C003DEAC8 /* SystemNotification */,
 			);
 			productName = Novee;
 			productReference = 9B04480928FB3DA300FD7891 /* Novee.app */;
@@ -245,6 +248,7 @@
 			packageReferences = (
 				9B71CC4B2947AE170014B265 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
 				9B71CC4F2947CDB10014B265 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+				9B1BFB2929708E8C003DEAC8 /* XCRemoteSwiftPackageReference "SystemNotification" */,
 			);
 			productRefGroup = 9B04480A28FB3DA300FD7891 /* Products */;
 			projectDirPath = "";
@@ -500,6 +504,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9B1BFB2929708E8C003DEAC8 /* XCRemoteSwiftPackageReference "SystemNotification" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/danielsaidi/SystemNotification";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.3;
+			};
+		};
 		9B71CC4B2947AE170014B265 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/lorenzofiamingo/swiftui-cached-async-image";
@@ -519,6 +531,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9B1BFB2A29708E8C003DEAC8 /* SystemNotification */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B1BFB2929708E8C003DEAC8 /* XCRemoteSwiftPackageReference "SystemNotification" */;
+			productName = SystemNotification;
+		};
 		9B71CC4C2947AE170014B265 /* CachedAsyncImage */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9B71CC4B2947AE170014B265 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
