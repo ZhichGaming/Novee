@@ -215,7 +215,7 @@ struct ChapterList: View {
     }
 
     var body: some View {
-        if selectedManga != nil, let filteredChapters = filteredChapters {
+        if let selectedManga = selectedManga, let filteredChapters = filteredChapters {
             VStack {
                 HStack {
                     Text("Chapters")
@@ -230,15 +230,19 @@ struct ChapterList: View {
                         
                             Button("Read first") {
                                 openWindow(
-                                    title: selectedManga!.title + " - " + chapters.first!.title,
-                                    view: MangaReaderView(manga: selectedManga!, chapter: chapters.first!, window: $window).environmentObject(mangaVM))
+                                    title: selectedManga.title + " - " + chapters.first!.title,
+                                    manga: selectedManga,
+                                    chapter: chapters.first!
+                                )
                             }
                             .disabled(filteredChapters.isEmpty)
                             
                             Button("Read last") {
                                 openWindow(
-                                    title: selectedManga!.title + " - " + chapters.last!.title,
-                                    view: MangaReaderView(manga: selectedManga!, chapter: chapters.last!, window: $window).environmentObject(mangaVM))
+                                    title: selectedManga.title + " - " + chapters.last!.title,
+                                    manga: selectedManga,
+                                    chapter: chapters.last!
+                                )
                             }
                             .disabled(filteredChapters.isEmpty)
 
@@ -278,11 +282,11 @@ struct ChapterList: View {
                     /// Make entire area tappable
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2) {
-                        if let selectedManga = selectedManga {
-                            openWindow(
-                                title: selectedManga.title + " - " + chapter.title,
-                                view: MangaReaderView(manga: selectedManga, chapter: chapter, window: $window).environmentObject(mangaVM).environmentObject(mangaListVM).environmentObject(notification))
-                        }
+                        openWindow(
+                            title: selectedManga.title + " - " + chapter.title,
+                            manga: selectedManga,
+                            chapter: chapter
+                        )
                     }
                 }
                 .listStyle(.bordered(alternatesRowBackgrounds: true))
@@ -293,7 +297,7 @@ struct ChapterList: View {
         }
     }
     
-    private func openWindow(title: String, view: some View) {
+    private func openWindow(title: String, manga: Manga, chapter: Chapter) {
         window = NSWindow(
             contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
@@ -303,7 +307,12 @@ struct ChapterList: View {
         window.isReleasedWhenClosed = false
         window.title = title
         window.makeKeyAndOrderFront(nil)
-        window.contentView = NSHostingView(rootView: view)
+        window.contentView = NSHostingView(
+            rootView: MangaReaderView(manga: manga, chapter: chapter, window: $window)
+                .environmentObject(mangaVM)
+                .environmentObject(mangaListVM)
+                .environmentObject(notification)
+        )
     }
 }
 
