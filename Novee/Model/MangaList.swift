@@ -27,7 +27,13 @@ struct MangaListElement: Hashable, Identifiable, Codable {
     let id = UUID()
     
     var manga: [String: Manga] /// Manga from different sources
-    var lastChapter: String?
+    var lastChapter: String? {
+        didSet {
+            if lastChapter != nil {
+                lastReadDate = Date.now
+            }
+        }
+    }
     var status: MangaStatus
     var rating: MangaRating
     var lastReadDate: Date?
