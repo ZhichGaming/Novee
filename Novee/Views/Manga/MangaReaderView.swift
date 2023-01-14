@@ -120,6 +120,7 @@ struct MangaReaderView: View {
                         HStack {
                             Button {
                                 showingCustomizedAddToListSheet = true
+                                notification.dismiss()
                             } label: {
                                 Text("Add with options")
                             }
@@ -133,6 +134,8 @@ struct MangaReaderView: View {
                                     rating: .none,
                                     lastReadDate: Date.now
                                 )
+                                
+                                notification.dismiss()
                             } label: {
                                 Text("Add")
                             }
