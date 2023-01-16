@@ -118,4 +118,30 @@ class MangaListVM: ObservableObject {
         
         return nil
     }
+    
+    func changeStaleReadingStatus(id: UUID) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            let fiveDaysAgo = Calendar.current.date(byAdding: .day, value: -5, to: Date())!
+
+            if list[index].lastReadDate ?? Date.now < fiveDaysAgo {
+                let containsLastChapter = Array(list[index].manga.values).map { manga in
+                    let chapterTitles = (manga.chapters ?? []).map { $0.title }
+                    
+                    if let lastTitle = chapterTitles.last, lastTitle == list[index].lastChapter ?? "" {
+                        return true
+                    }
+                    
+                    return false
+                }.contains(true)
+                
+                if containsLastChapter {
+                    list[index].status = .waiting
+                } else {
+                    list[index].status = .dropped
+                }
+            }
+        } else {
+            print("Error at changeStaleReadingStatus: Cannot find an element in the list with the id \(id)")
+        }
+    }
 }
