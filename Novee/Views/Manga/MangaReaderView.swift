@@ -50,13 +50,6 @@ struct MangaReaderView: View {
                 
                 ChangeChaptersView(manga: manga, chapter: $chapter)
             }
-            .overlay {
-                Rectangle()
-                    .fill(.clear)
-                    .allowsHitTesting(false)
-                    .systemNotification(notification)
-                    .offset(y: 10)
-            }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: chapter) { [chapter] newChapter in
                 if chapter.id != newChapter.id {
@@ -72,6 +65,7 @@ struct MangaReaderView: View {
                 }
             }
         }
+        .systemNotification(notification)
         .onAppear {
             if mangaListVM.findInList(manga: manga) == nil {
                 notification.present(configuration: .init(duration: 15)) {
