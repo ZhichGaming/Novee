@@ -56,65 +56,23 @@ struct MangaReaderView: View {
                     window.title = manga.title + " - " + newChapter.title
                     
                     Task {
-                        self.chapter.images = await mangaVM
-                            .sources[mangaVM.selectedSource]!
-                            .getMangaPages(manga: manga, chapter: self.chapter)
+                        await fetchImages()
                     }
                     
-                    updateChapterNotification(newChapter: newChapter)
+                    showUpdateChapterNotification(newChapter: newChapter)
                 }
             }
         }
         .systemNotification(notification)
         .onAppear {
             if mangaListVM.findInList(manga: manga) == nil {
-                notification.present(configuration: .init(duration: 15)) {
-                    VStack {
-                        VStack(alignment: .leading) {
-                            Text("Add this manga to your list?")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.6))
-                            Text("Swipe to dismiss")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.4))
-                        }
-                        .frame(width: 225, alignment: .leading)
-
-                        HStack {
-                            Button {
-                                showingCustomizedAddToListSheet = true
-                                notification.dismiss()
-                            } label: {
-                                Text("Add with options")
-                            }
-                            
-                            Button {
-                                mangaListVM.addToList(
-                                    source: mangaVM.selectedSource,
-                                    manga: manga,
-                                    lastChapter: chapter.title,
-                                    status: .reading,
-                                    rating: .none,
-                                    lastReadDate: Date.now
-                                )
-                                
-                                notification.dismiss()
-                            } label: {
-                                Text("Add")
-                            }
-                        }
-                        .frame(width: 225, alignment: .trailing)
-                    }
-                    .frame(width: 300, height: 75)
-                }
+                showAddMangaNotification()
             } else {
-                updateChapterNotification(newChapter: chapter)
+                showUpdateChapterNotification(newChapter: chapter)
             }
             
             Task {
-                chapter.images = await mangaVM
-                    .sources[mangaVM.selectedSource]!
-                    .getMangaPages(manga: manga, chapter: chapter)
+                await fetchImages()
             }
         }
         .sheet(isPresented: $showingDetailsSheet) {
@@ -215,7 +173,49 @@ struct MangaReaderView: View {
         }
     }
     
-    private func updateChapterNotification(newChapter: Chapter) {
+    private func showAddMangaNotification() {
+        notification.present(configuration: .init(duration: 15)) {
+            VStack {
+                VStack(alignment: .leading) {
+                    Text("Add this manga to your list?")
+                        .font(.footnote.bold())
+                        .foregroundColor(.primary.opacity(0.6))
+                    Text("Swipe to dismiss")
+                        .font(.footnote.bold())
+                        .foregroundColor(.primary.opacity(0.4))
+                }
+                .frame(width: 225, alignment: .leading)
+
+                HStack {
+                    Button {
+                        showingCustomizedAddToListSheet = true
+                        notification.dismiss()
+                    } label: {
+                        Text("Add with options")
+                    }
+                    
+                    Button {
+                        mangaListVM.addToList(
+                            source: mangaVM.selectedSource,
+                            manga: manga,
+                            lastChapter: chapter.title,
+                            status: .reading,
+                            rating: .none,
+                            lastReadDate: Date.now
+                        )
+                        
+                        notification.dismiss()
+                    } label: {
+                        Text("Add")
+                    }
+                }
+                .frame(width: 225, alignment: .trailing)
+            }
+            .frame(width: 300, height: 75)
+        }
+    }
+    
+    private func showUpdateChapterNotification(newChapter: Chapter) {
         if let index = mangaListVM.list.firstIndex(where: { $0.id == mangaListVM.findInList(manga: manga)?.id }) {
             if newChapter.title > mangaListVM.list[index].lastChapter ?? "" {
                 oldChapterTitle = mangaListVM.list[index].lastChapter ?? ""
@@ -248,6 +248,16 @@ struct MangaReaderView: View {
             }
         } else {
             print("Index in MangaReaderView onChange of chapter is nil!")
+        }
+    }
+    
+    private func fetchImages() async {
+        await mangaVM.sources[mangaVM.selectedSource]!.getMangaPages(manga: manga, chapter: self.chapter) { nsImage in
+            if self.chapter.images == nil {
+                self.chapter.images = []
+            }
+            
+            self.chapter.images?.append(nsImage)
         }
     }
 }
