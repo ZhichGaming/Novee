@@ -35,11 +35,34 @@ struct MangaReaderView: View {
                 
                 if let images = chapter.images {
                     VStack(spacing: 0) {
-                        ForEach(images, id: \.self) { nsImage in
-                            Image(nsImage: nsImage)
-                                .resizable()
-                                .aspectRatio(contentMode: nsImage.size.width > geometry.size.width ? .fit : .fill)
-                                .frame(maxWidth: nsImage.size.width < geometry.size.width ? nsImage.size.width : geometry.size.width)
+                        ForEach(0..<images.keys.count, id: \.self) { index in
+                            if let currentImageElement = images[index] {
+                                switch currentImageElement.loadingState {
+                                case .success:
+                                    if let image = images.first { $0.key == index }?.value.image {
+                                        Image(nsImage: image)
+                                            .resizable()
+                                            .aspectRatio(contentMode: image.size.width > geometry.size.width ? .fit : .fill)
+                                            .frame(maxWidth: image.size.width < geometry.size.width ? image.size.width : geometry.size.width)
+                                    }
+                                case .failed:
+                                    Button("Failed to fetch image.") {
+                                        Task { @MainActor in
+                                            await mangaVM.sources[mangaVM.selectedSource]!
+                                                .refetchMangaPage(chapter: chapter, pageIndex: index) { image in
+                                                    Task { @MainActor in
+                                                        chapter.images?[index] = image
+                                                    }
+                                                }
+                                        }
+                                    }
+                                case .loading:
+                                    ProgressView()
+                                // This case is useless for images, it is only used for manga details.
+                                case .notFound:
+                                    EmptyView()
+                                }
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -252,12 +275,12 @@ struct MangaReaderView: View {
     }
     
     private func fetchImages() async {
-        await mangaVM.sources[mangaVM.selectedSource]!.getMangaPages(manga: manga, chapter: self.chapter) { nsImage in
-            if self.chapter.images == nil {
-                self.chapter.images = []
+        chapter.images = [:]
+        
+        await mangaVM.sources[mangaVM.selectedSource]!.getMangaPages(manga: manga, chapter: self.chapter) { index, nsImage in
+            Task { @MainActor in
+                chapter.images?[index] = nsImage
             }
-            
-            self.chapter.images?.append(nsImage)
         }
     }
 }

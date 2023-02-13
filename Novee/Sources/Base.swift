@@ -44,17 +44,32 @@ class MangaFetcher {
         }
     }
     
-    func getImage(request: URLRequest, manga: Manga, chapter: Chapter, result: @escaping (NSImage?) -> Void) async {
-        var selectedMangaIndex: Int? {
-            MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData.firstIndex { $0.id == manga.id }
+    func refetchMangaPage(chapter: Chapter, pageIndex: Int, returnImage: @escaping (MangaImage) -> Void) async {
+        guard let imageUrl = chapter.images?[pageIndex]?.url else {
+            Log.shared.msg("An error occured while refetching image.")
+            return
         }
         
-        var selectedChapterIndex: Int? { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData[selectedMangaIndex ?? 0].chapters?.firstIndex { $0.id == chapter.id }
-        }
+        returnImage(MangaImage(image: nil, url: imageUrl, loadingState: .loading))
         
+        var request = URLRequest(url: imageUrl)
+
+        request.setValue(baseUrl, forHTTPHeaderField: "Referer")
+        
+        await getImage(request: request) { image in
+            if let image = image {
+                returnImage(MangaImage(image: image, url: imageUrl, loadingState: .success))
+            } else {
+                returnImage(MangaImage(image: nil, url: imageUrl, loadingState: .failed))
+            }
+        }
+    }
+    
+    func getImage(request: URLRequest, result: @escaping (NSImage?) -> Void) async {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 Log.shared.error(error)
+                result(nil)
                 return
             }
             
@@ -71,7 +86,6 @@ class MangaFetcher {
         }
         
         task.resume()
-        result(nil)
     }
     
     func resetMangas() {
@@ -103,11 +117,11 @@ class MangaFetcher {
             return
         }
         
-        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = []
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = [:]
     }
     
     func resetPages(mangaIndex: Int, chapterIndex: Int) {
-        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = []
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = [:]
     }
 }
 
@@ -123,5 +137,6 @@ protocol MangaSource {
     func getManga(pageNumber: Int) async
     func getSearchManga(pageNumber: Int, searchQuery: String) async
     func getMangaDetails(manga: Manga) async
-    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage]
+    func refetchMangaPage(chapter: Chapter, pageIndex: Int, returnImage: @escaping (MangaImage) -> Void) async
+    func getMangaPages(manga: Manga, chapter: Chapter, returnImage: @escaping (Int, MangaImage) -> Void) async
 }

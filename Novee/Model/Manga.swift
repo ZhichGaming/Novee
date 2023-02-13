@@ -41,7 +41,7 @@ struct Chapter: Hashable, Identifiable, Codable {
     var title: String
 
     var chapterUrl: URL
-    var images: [NSImage]?
+    var images: [Int:MangaImage]?
 
     var timeUploaded: Date?
 
@@ -51,4 +51,11 @@ struct Chapter: Hashable, Identifiable, Codable {
         case chapterUrl
         case timeUploaded
     }
+}
+
+struct MangaImage: Hashable {
+    var image: NSImage?
+    
+    var url: URL?
+    var loadingState: LoadingState = .loading
 }

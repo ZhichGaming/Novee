@@ -178,9 +178,8 @@ class MangaKakalot: MangaFetcher, MangaSource {
         }
     }
     
-    func getMangaPages(manga: Manga, chapter: Chapter) async -> [NSImage] {
+    func getMangaPages(manga: Manga, chapter: Chapter, returnImage: @escaping (Int, MangaImage) -> Void) async {
         var htmlPage = ""
-        var result = [NSImage]()
 
         do {
             let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
@@ -196,34 +195,31 @@ class MangaKakalot: MangaFetcher, MangaSource {
             let document: Document = try SwiftSoup.parse(htmlPage)
 
             let images = try document.getElementsByClass("container-chapter-reader")[0].children().filter { $0.nodeName() == "img" }
-
-            for imageElement in images {
+            
+            images.enumerated().forEach { index, image in
+                returnImage(index, MangaImage(image: nil, loadingState: .loading))
+            }
+            
+            for (index, imageElement) in images.enumerated() {
                 guard let imageUrl = URL(string: try imageElement.attr("src")) else {
                     Log.shared.msg("An error occured while fetching an image url.")
-                    return []
+                    return
                 }
                 
                 var request = URLRequest(url: imageUrl)
 
                 request.setValue(baseUrl, forHTTPHeaderField: "Referer")
-                
-                let semaphore = DispatchSemaphore(value: 0)
-                
-                await super.getImage(request: request, manga: manga, chapter: chapter) { image in
+                                
+                await super.getImage(request: request) { image in
                     if let image = image {
-                        result.append(image)
-                        semaphore.signal()
+                        returnImage(index, MangaImage(image: image, url: imageUrl, loadingState: .success))
+                    } else {
+                        returnImage(index, MangaImage(image: image, url: imageUrl, loadingState: .failed))
                     }
-                }
-                
-                DispatchQueue.global().sync {
-                    semaphore.wait()
                 }
             }
         } catch {
             Log.shared.error(error)
         }
-        
-        return result
     }
 }
