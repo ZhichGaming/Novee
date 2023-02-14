@@ -170,13 +170,15 @@ struct MangaListView: View {
                 
                 Divider()
                 ScrollView {
-                    ForEach(filteredList) { mangaListElement in
-                        Button {
-                            mangaDetailsSheet = mangaListElement
-                        } label: {
-                            MangaListRowView(manga: mangaListElement, geo: geo)
+                    LazyVStack {
+                        ForEach(filteredList) { mangaListElement in
+                            Button {
+                                mangaDetailsSheet = mangaListElement
+                            } label: {
+                                MangaListRowView(manga: mangaListElement, geo: geo)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                     .padding()
                 }
