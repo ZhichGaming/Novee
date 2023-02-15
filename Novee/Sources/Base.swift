@@ -133,10 +133,16 @@ protocol MangaSource {
     var mangaData: [Manga] { get set }
     
     func fetchMangaDetails(manga: Manga) async -> Manga?
-
-    func getManga(pageNumber: Int) async
-    func getSearchManga(pageNumber: Int, searchQuery: String) async
-    func getMangaDetails(manga: Manga) async
+    
+    @discardableResult
+    func getManga(pageNumber: Int) async -> [Manga]
+    
+    @discardableResult
+    func getSearchManga(pageNumber: Int, searchQuery: String) async -> [Manga]
+    
+    @discardableResult
+    func getMangaDetails(manga: Manga) async -> Manga?
+    
     func refetchMangaPage(chapter: Chapter, pageIndex: Int, returnImage: @escaping (MangaImage) -> Void) async
     func getMangaPages(manga: Manga, chapter: Chapter, returnImage: @escaping (Int, MangaImage) -> Void) async
 }

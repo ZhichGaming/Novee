@@ -14,7 +14,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
  
-    func getManga(pageNumber: Int) async {
+    func getManga(pageNumber: Int) async -> [Manga] {
         do {
             var htmlPage = ""
             
@@ -24,7 +24,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             
             guard let requestUrl = URL(string: baseUrl + "/manga_list?page=\(pageNumber)") else {
                 Log.shared.msg("An error occured while formatting the URL")
-                return
+                return []
             }
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
@@ -45,6 +45,8 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 MangaVM.shared.objectWillChange.send()
             }
             
+            var finalResult: [Manga] = []
+            
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(0).attr("title"))
                 result.description = try manga.children().last()?.text()
@@ -52,13 +54,17 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 
                 super.mangaData.append(result)
+                finalResult.append(result)
             }
+            
+            return finalResult
         } catch {
             Log.shared.error(error)
+            return []
         }
     }
     
-    func getSearchManga(pageNumber: Int, searchQuery: String) async {
+    func getSearchManga(pageNumber: Int, searchQuery: String) async -> [Manga] {
         do {
             var htmlPage = ""
             
@@ -67,7 +73,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             
             guard let requestUrl = URL(string: baseUrl + "/search/story/" + safeSearchQuery + "?page=\(pageNumber)") else {
                 Log.shared.msg("An error occured while formatting the URL")
-                return
+                return []
             }
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
@@ -90,16 +96,21 @@ class MangaKakalot: MangaFetcher, MangaSource {
             
             /// Reset mangas
             mangaData = [Manga]()
-
+            var finalResult: [Manga] = []
+            
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 
                 super.mangaData.append(result)
+                finalResult.append(result)
             }
+            
+            return finalResult
         } catch {
             Log.shared.error(error)
+            return []
         }
     }
     
@@ -170,11 +181,13 @@ class MangaKakalot: MangaFetcher, MangaSource {
         return result
     }
     
-    func getMangaDetails(manga: Manga) async {
+    func getMangaDetails(manga: Manga) async -> Manga? {
         if let result = await fetchMangaDetails(manga: manga) {
             super.assignMangaDetails(manga: manga, result: result)
+            return result
         } else {
             Log.shared.msg("An error occured while fetching manga details")
+            return nil
         }
     }
     

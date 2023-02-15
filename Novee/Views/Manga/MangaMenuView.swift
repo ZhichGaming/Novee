@@ -155,6 +155,9 @@ struct MangaColumnView: View {
                 await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
             }
         }
+        .onDisappear {
+            mangaVM.sources[selectedSource]!.mangaData = []
+        }
     }
 }
 
