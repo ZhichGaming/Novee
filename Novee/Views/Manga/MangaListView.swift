@@ -252,18 +252,20 @@ struct MangaListDetailsSheetView: View {
                 ScrollView {
                     ForEach(mangaKeysArray, id: \.self) { key in
                         if let manga = passedManga.manga[key] {
-                            Text(mangaVM.sources[key]?.label ?? "")
+                            Text(mangaVM.sources[key]?.label ?? key)
                                 .font(.title2.bold())
                                 .padding(.top)
                             
                             HStack {
                                 VStack {
-                                    CachedAsyncImage(url: manga.imageUrl) { image in
-                                        image
-                                            .resizable()
-                                            .scaledToFit()
-                                    } placeholder: {
-                                        ProgressView()
+                                    if let url = manga.imageUrl {
+                                        CachedAsyncImage(url: url) { image in
+                                            image
+                                                .resizable()
+                                                .scaledToFit()
+                                        } placeholder: {
+                                            ProgressView()
+                                        }
                                     }
                                     
                                     Text(manga.title)
@@ -306,7 +308,7 @@ struct MangaListDetailsSheetView: View {
                                     }
                                 }
                             }
-                            .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity, minHeight: 200)
                             .padding()
                             
                             Spacer()
