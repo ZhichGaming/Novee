@@ -48,3 +48,10 @@ struct MangaListElement: Hashable, Identifiable, Codable {
         case creationDate
     }
 }
+
+struct MangaWithSource: Hashable, Identifiable, Codable {
+    var id = UUID()
+    
+    var source: String
+    var manga: Manga
+}

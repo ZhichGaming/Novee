@@ -67,4 +67,28 @@ class MangaVM: ObservableObject {
             }
         }
     }
+    
+    func getMangaDetails(for manga: Manga, source: String, result: @escaping (Manga?) -> Void) async {
+        let finalUrl = manga.detailsUrl?.getFinalURL()
+        
+        DispatchQueue.main.async { [self] in
+            if sources[source]?.baseUrl.contains(finalUrl?.host ?? "") == true {
+                Task {
+                    result(await sources[source]!.getMangaDetails(manga: manga))
+                }
+                
+                return
+            }
+            
+            for source in sourcesArray {
+                if source.baseUrl.contains(finalUrl?.host ?? "") == true {
+                    Task {
+                        result(await sources[source.sourceId]!.getMangaDetails(manga: manga))
+                    }
+                    
+                    break
+                }
+            }
+        }
+    }
 }

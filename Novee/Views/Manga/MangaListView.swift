@@ -13,6 +13,7 @@ struct MangaListView: View {
     
     @State private var listQuery = ""
     @State private var showingSearchDetailsSheet = false
+    @State private var showingAddNewMangaSheet = false
     @State private var selectedSortingStyle = "Recently updated"
     @State private var mangaDetailsSheet: MangaListElement?
     
@@ -85,6 +86,12 @@ struct MangaListView: View {
                         showingSearchDetailsSheet = true
                     } label: {
                         Image(systemName: "ellipsis.circle")
+                    }
+                    
+                    Button {
+                        showingAddNewMangaSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle")
                     }
                 }
                 .padding()
@@ -185,6 +192,10 @@ struct MangaListView: View {
                 .sheet(item: $mangaDetailsSheet) { mangaListElement in
                     MangaListDetailsSheetView(passedManga: mangaListElement)
                         .frame(width: 700, height: 550)
+                }
+                .sheet(isPresented: $showingAddNewMangaSheet) {
+                    MangaListAddNewToListView()
+                        .frame(width: 500, height: 300)
                 }
             }
             .frame(width: geo.size.width)
@@ -511,6 +522,254 @@ struct MangaListDetailsSheetView: View {
             }
         }
         .padding()
+    }
+}
+
+struct MangaListAddNewToListView: View {
+    @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
+    
+    @Environment(\.dismiss) var dismiss
+    
+    @State var storyTitle: String = ""
+    @State var lastChapterTitle: String = ""
+    @State var selectedMangaStatus: MangaStatus = .reading
+    @State var selectedMangaRating: MangaRating = .none
+    
+    @State var mangaListNewImageUrl = ""
+    @State var mangaListNewAuthor = ""
+        
+    @State var mangaElements: [MangaWithSource] = []
+    @State var selectedMangaIndex: Set<Int> = Set()
+    @State var searchState: LoadingState? = nil
+    
+    @State var selectedTab = 0
+    
+    @State var showingAddToListAlert = false
+    
+    var body: some View {
+        VStack {
+            Text("Add new manga")
+                .font(.title3.bold())
+            
+            TabView(selection: $selectedTab) {
+                VStack {
+                    Text("The Title field is used for autofill in the next step. It can be left blank if you do not want to use autofill.")
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    TextField("Title", text: $storyTitle)
+                    TextField("Last chapter title", text: $lastChapterTitle)
+                    
+                    Group {
+                        Picker("Status", selection: $selectedMangaStatus) {
+                            ForEach(MangaStatus.allCases, id: \.rawValue) {
+                                Text($0.rawValue)
+                                    .tag($0)
+                            }
+                        }
+                        
+                        Picker("Rating", selection: $selectedMangaRating) {
+                            ForEach(MangaRating.allCases, id: \.rawValue) {
+                                Text($0.rawValue)
+                                    .tag($0)
+                            }
+                        }
+                    }
+                }
+                .padding()
+                .tabItem {
+                    Text("Manga list info")
+                }
+                .tag(0)
+                .transition(.slide)
+                
+                VStack(alignment: .leading) {
+                    NavigationView {
+                        List(0..<mangaElements.count, id: \.self, selection: $selectedMangaIndex) { index in
+                            let hasDuplicate = Array<String>(Set<String>(mangaElements.map { $0.source })).sorted() == mangaElements.map { $0.source }.sorted()
+                            
+                            NavigationLink {
+                                if index >= 0 && mangaElements.count > index {
+                                    MangaListMangaDetailsEditorView(
+                                        mangaElement: $mangaElements[index],
+                                        storyTitle: $storyTitle,
+                                        lastChapterTitle: $lastChapterTitle,
+                                        selectedMangaStatus: $selectedMangaStatus,
+                                        selectedMangaRating: $selectedMangaRating,
+                                        mangaListNewImageUrl: $mangaListNewImageUrl,
+                                        mangaListNewAuthor: $mangaListNewAuthor)
+                                }
+                            } label: {
+                                Text(mangaElements[index].source)
+                                    .foregroundColor(hasDuplicate ? .primary : .red)
+                            }
+                            .help(hasDuplicate ? "" : "There is another manga with the same source key.")
+                        }
+                        .listStyle(.bordered)
+                    }
+                    
+                    HStack {
+                        ControlGroup {
+                            Button {
+                                mangaElements.remove(at: selectedMangaIndex.first!)
+                            } label: {
+                                Image(systemName: "minus")
+                            }
+                            
+                            Menu {
+                                Button("Create manually") {
+                                    mangaElements.append(MangaWithSource(source: "manual", manga: Manga(title: storyTitle, authors: [])))
+                                }
+                                
+                                Menu("Search in source") {
+                                    ForEach(mangaVM.sourcesArray, id: \.sourceId) { source in
+                                        Button(source.label) {
+                                            searchAndGetManga(source: source)
+                                        }
+                                    }
+                                }
+                                .disabled(storyTitle.isEmpty)
+                            } label: {
+                                Image(systemName: "plus")
+                            }
+                        }
+                        .frame(width: 50)
+                        
+                        if let searchState = searchState {
+                            switch searchState {
+                            case .loading:
+                                ProgressView()
+                            case .success:
+                                Circle()
+                                    .fill(.green)
+                                    .frame(width: 5, height: 5)
+                                Text("Successfully fetched and added!")
+                            case .failed:
+                                Circle()
+                                    .fill(.red)
+                                    .frame(width: 5, height: 5)
+                                Text("Fetching failed!")
+                            case .notFound:
+                                EmptyView()
+                            }
+                        }
+                    }
+                }
+                .padding()
+                .tabItem {
+                    Text("Manga info")
+                }
+                .tag(1)
+                .transition(.slide)
+            }
+            .onChange(of: selectedTab) { _ in
+                if selectedTab == 1 && mangaElements.isEmpty && !storyTitle.isEmpty {
+                    mangaElements.append(MangaWithSource(source: "manual", manga: Manga(title: storyTitle)))
+                }
+            }
+            
+            HStack {
+                Spacer()
+                Button("Cancel", role: .cancel) {
+                    dismiss()
+                }
+                
+                Button(selectedTab == 1 ? "Add to list" : "Next") {
+                    if selectedTab == 1 {
+                        let mangas: [String: Manga] = mangaElements.reduce(into: [String: Manga]()) {
+                            $0[$1.source] = $1.manga
+                        }
+                        
+                        mangaListVM.addToList(
+                            mangas: mangas,
+                            lastChapter: lastChapterTitle,
+                            status: selectedMangaStatus,
+                            rating: selectedMangaRating,
+                            lastReadDate: Date.now
+                        )
+                        
+                        dismiss()
+                    } else {
+                        withAnimation {
+                            selectedTab = 1
+                        }
+                    }
+                }
+                .disabled(selectedTab == 1 ? storyTitle.isEmpty && mangaElements.isEmpty : false)
+            }
+        }
+        .padding()
+    }
+    
+    private func searchAndGetManga(source: MangaSource) {
+        Task { @MainActor in
+            searchState = .loading
+                        
+            if let initialManga = await source.getSearchManga(pageNumber: 1, searchQuery: storyTitle).first {
+                await mangaVM.getMangaDetails(for: initialManga, source: source.sourceId) { result in
+                    if let result = result {
+                        mangaElements.append(MangaWithSource(source: source.sourceId, manga: result))
+                        searchState = .success
+                        
+                        return
+                    } else {
+                        searchState = .failed
+                    }
+                }
+            } else {
+                searchState = .failed
+            }
+        }
+    }
+}
+
+struct MangaListMangaDetailsEditorView: View {
+    @Binding var mangaElement: MangaWithSource
+    
+    @Binding var storyTitle: String
+    @Binding var lastChapterTitle: String
+    @Binding var selectedMangaStatus: MangaStatus
+    @Binding var selectedMangaRating: MangaRating
+    
+    @Binding var mangaListNewImageUrl: String
+    @Binding var mangaListNewAuthor: String
+        
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading) {
+                TextField("Source", text: $mangaElement.source)
+                    .padding(.bottom, 20)
+                
+                Text("Manga details")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .font(.headline)
+                
+                TextField("Title", text: $mangaElement.manga.title)
+                TextField("Description", text: $mangaElement.manga.description ?? "")
+                TextField("Image URL", text: $mangaListNewImageUrl)
+                    .onChange(of: mangaListNewImageUrl) { _ in
+                        if let url = URL(string: mangaListNewImageUrl) {
+                            mangaElement.manga.imageUrl = url
+                        }
+                    }
+                
+                Text("Authors")
+                ScrollView {
+                    ForEach((mangaElement.manga.authors ?? []).indices, id: \.self) { authorIndex in
+                        let authorsBinding: Binding<[String]> = Binding(get: { mangaElement.manga.authors ?? [] }, set: { mangaElement.manga.authors = $0 })
+                        
+                        TextField("Author", text: authorsBinding[authorIndex])
+                    }
+                    
+                    TextField("Add new author", text: $mangaListNewAuthor)
+                        .onSubmit {
+                            mangaElement.manga.authors?.append(mangaListNewAuthor)
+                            mangaListNewAuthor = ""
+                        }
+                }
+            }
+            .padding()
+        }
     }
 }
 

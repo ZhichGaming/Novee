@@ -53,6 +53,10 @@ class MangaListVM: ObservableObject {
         list.append(MangaListElement(manga: [source: manga], lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
     }
     
+    func addToList(mangas: [String: Manga], lastChapter: String? = nil, status: MangaStatus, rating: MangaRating = .none, creationDate: Date = Date.now, lastReadDate: Date? = nil) {
+        list.append(MangaListElement(manga: mangas, lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
+    }
+    
     func updateMangaInListElement(id: UUID, source: String, manga: Manga) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index].manga[source] = manga
