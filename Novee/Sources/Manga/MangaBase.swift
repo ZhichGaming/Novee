@@ -1,5 +1,5 @@
 //
-//  Base.swift
+//  MangaBase.swift
 //  Novee
 //
 //  Created by Nick on 2022-12-13.
