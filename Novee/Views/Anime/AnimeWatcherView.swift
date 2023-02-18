@@ -95,6 +95,7 @@ struct AnimeWatcherView: View {
                 }
                 .onChange(of: pickerSelectedEpisodeId) { _ in
                     selectedEpisode = selectedAnime.episodes?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
+                    player = nil
                 }
             }
         }
