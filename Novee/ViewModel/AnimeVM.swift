@@ -23,6 +23,21 @@ class AnimeVM: ObservableObject {
     
     private let gogoanime = Gogoanime()
     
+    func changeEpisode(episode: Episode, anime: Anime, offset: Int = 1) -> Episode? {
+        if let episodeIndex = anime.episodes?.firstIndex(where: { $0.id == episode.id }) {
+            guard let episodes = anime.episodes else {
+                Log.shared.msg("Error: Episodes are empty!")
+                return nil
+            }
+            
+            if episodeIndex + offset >= 0 && episodeIndex + offset < episodes.count {
+                return episodes[episodeIndex + offset]
+            }
+        }
+        
+        return nil
+    }
+    
     func getAnimeDetails(for anime: Anime) async {
         DispatchQueue.main.async { [self] in
             Task {
