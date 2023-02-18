@@ -49,6 +49,11 @@ struct Episode: Hashable, Identifiable, Codable {
     var episodeId: String?
 }
 
+struct AnimeEpisodePair: Codable, Hashable {
+    var anime: Anime
+    var episode: Episode
+}
+
 struct StreamingUrl: Hashable, Identifiable, Codable {
     var id = UUID()
     

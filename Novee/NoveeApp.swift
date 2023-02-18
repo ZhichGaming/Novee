@@ -25,6 +25,16 @@ struct NoveeApp: App {
         }
         .windowStyle(.titleBar)
         
+        WindowGroup(for: AnimeEpisodePair.self) { $animeEpisode in
+            if let animeEpisode = animeEpisode {
+                AnimeWatcherView(selectedAnime: animeEpisode.anime, selectedEpisode: animeEpisode.episode)
+                    .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
+                    .environmentObject(AnimeVM.shared)
+                    .presentedWindowToolbarStyle(.unified)
+            }
+        }
+        .windowStyle(.titleBar)
+
         SwiftUI.Settings {
             SettingsView()
                 .environmentObject(SettingsVM.shared)

@@ -14,7 +14,6 @@ struct AnimeWatcherView: View {
     let selectedAnime: Anime
     @State var selectedEpisode: Episode
     
-    @Binding var window: NSWindow
     
     var body: some View {
         ZStack {

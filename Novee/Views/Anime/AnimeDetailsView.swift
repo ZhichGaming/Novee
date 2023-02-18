@@ -171,6 +171,8 @@ struct EpisodeList: View {
     @EnvironmentObject var animeVM: AnimeVM
     @EnvironmentObject var notification: SystemNotificationContext
     
+    @Environment(\.openWindow) var openWindow
+    
     @State var selectedAnimeIndex: Int
     @State var selected: UUID?
     
@@ -221,12 +223,12 @@ struct EpisodeList: View {
                             Spacer()
                         
                             Button("Watch first") {
-                                openWindow(title: episodes.first!.title, anime: selectedAnime, episode: episodes.first!)
+                                openWindow(value: AnimeEpisodePair(anime: selectedAnime, episode: episodes.first!))
                             }
                             .disabled(filteredEpisodes.isEmpty)
                             
                             Button("Watch last") {
-                                openWindow(title: episodes.last!.title, anime: selectedAnime, episode: episodes.last!)
+                                openWindow(value: AnimeEpisodePair(anime: selectedAnime, episode: episodes.last!))
                             }
                             .disabled(filteredEpisodes.isEmpty)
 
@@ -266,7 +268,7 @@ struct EpisodeList: View {
                     /// Make entire area tappable
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2) {
-                        openWindow(title: episode.title, anime: selectedAnime, episode: episode)
+                        openWindow(value: AnimeEpisodePair(anime: selectedAnime, episode: episode))
                     }
                 }
                 .listStyle(.bordered(alternatesRowBackgrounds: true))
@@ -275,24 +277,6 @@ struct EpisodeList: View {
             Text("No episodes have been found.")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-    
-    private func openWindow(title: String, anime: Anime, episode: Episode) {
-        window = NSWindow(
-            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false)
-        window.center()
-        window.isReleasedWhenClosed = false
-        window.title = title
-        window.makeKeyAndOrderFront(nil)
-        window.contentView = NSHostingView(
-            rootView: AnimeWatcherView(selectedAnime: anime, selectedEpisode: episode, window: $window)
-                .environmentObject(animeVM)
-                .environmentObject(notification)
-                .frame(minWidth: 400, maxWidth: .infinity, minHeight: 300, maxHeight: .infinity)
-        )
     }
 }
 
