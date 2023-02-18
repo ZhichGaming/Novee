@@ -14,32 +14,41 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                NavigationLink(tag: 1, selection: self.$selectedView, destination: { AnimeMenuView() }, label: {
+                Section("Anime") {
+                    NavigationLink(tag: 1, selection: self.$selectedView, destination: { AnimeMenuView() }) {
                         HStack {
                             Image(systemName: "tv")
                                 .frame(width: 15)
                             Text("Anime")
                         }
                     }
-                )
+                    
+                    NavigationLink(tag: 2, selection: self.$selectedView, destination: { AnimeListView() }) {
+                        HStack {
+                            Image(systemName: "list.bullet")
+                                .frame(width: 15)
+                            Text("Anime list")
+                        }
+                    }
+                }
                 
-                NavigationLink(tag: 2, selection: self.$selectedView, destination: { MangaMenuView() }, label: {
+                Section("Manga") {
+                    NavigationLink(tag: 3, selection: self.$selectedView, destination: { MangaMenuView() }) {
                         HStack {
                             Image(systemName: "book.closed")
                                 .frame(width: 15)
                             Text("Manga")
                         }
                     }
-                )
-                
-                NavigationLink(tag: 3, selection: self.$selectedView, destination: { MangaListView() }, label: {
+                    
+                    NavigationLink(tag: 4, selection: self.$selectedView, destination: { MangaListView() }) {
                         HStack {
                             Image(systemName: "list.bullet")
                                 .frame(width: 15)
-                            Text("List")
+                            Text("Manga list")
                         }
                     }
-                )
+                }
             }
             .listStyle(.sidebar)
             .onAppear {

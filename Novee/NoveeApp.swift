@@ -18,6 +18,7 @@ struct NoveeApp: App {
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
                 .environmentObject(SettingsVM.shared)
                 .environmentObject(AnimeVM.shared)
+                .environmentObject(AnimeListVM.shared)
                 .environmentObject(MangaVM.shared)
                 .environmentObject(MangaListVM.shared)
                 .environmentObject(notification)

@@ -69,6 +69,23 @@ extension MangaStatus {
     }
 }
 
+extension AnimeStatus {
+    func getStatusColor() -> Color {
+        switch self {
+        case .completed:
+            return Color.green
+        case .dropped:
+            return Color.red
+        case .watching:
+            return Color.orange
+        case .waiting:
+            return Color.yellow
+        case .toWatch:
+            return Color.purple
+        }
+    }
+}
+
 extension NSImage {
     func pngData() -> Data? {
         if let tiffRepresentation = self.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) {
@@ -98,7 +115,9 @@ extension String {
 
 extension URL {
     static let mangaListStorageUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("list", conformingTo: .folder)
+        .appendingPathComponent("mangalist", conformingTo: .json)
+    static let animeListStorageUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("animelist", conformingTo: .json)
 }
 
 extension Array {

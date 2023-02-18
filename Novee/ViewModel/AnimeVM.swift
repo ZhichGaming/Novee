@@ -48,6 +48,14 @@ class AnimeVM: ObservableObject {
         }
     }
     
+    func getAnimeDetails(for anime: Anime, source: String, result: @escaping (Anime?) -> Void) async {        
+        DispatchQueue.main.async { [self] in
+            Task {
+                result(await sources[source]!.getAnimeDetails(anime: anime))
+            }
+        }
+    }
+    
     func getStreamingUrl(for episode: Episode, anime: Anime, returnEpisode: @escaping (Episode?) -> Void) async {
         await sources[selectedSource]?.getStreamingUrl(for: episode, anime: anime) { newEpisode in
             returnEpisode(newEpisode)

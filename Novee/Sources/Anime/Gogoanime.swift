@@ -52,8 +52,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
     
     func getSearchAnime(pageNumber: Int, searchQuery: String) async -> [Anime] {
         do {
-            let regex = try NSRegularExpression(pattern: "[^a-zA-Z0-9-._~ ]", options: [])
-            let safeSearchQuery = regex.stringByReplacingMatches(in: searchQuery, options: [], range: NSRange(location: 0, length: searchQuery.utf16.count), withTemplate: "").replacingOccurrences(of: " ", with: "_")
+            let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
             
             guard let requestUrl = URL(string: api + "/search?keyw=\(safeSearchQuery)&page=\(pageNumber)") else {
                 Log.shared.msg("An error occured while formatting the URL")
