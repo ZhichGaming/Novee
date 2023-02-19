@@ -28,8 +28,9 @@ struct AnimeWatcherView: View {
             if let player = player {
                 VideoPlayer(player: player)
                     .onAppear {
-                        // Add a periodic time observer to track the playback time every second
-                        addPeriodicTimeObserver()
+                        if selectedAnime.episodes?.last?.id != selectedEpisode.id {
+                            addPeriodicTimeObserver()
+                        }
                     }
                     .onDisappear {
                         player.pause()
@@ -48,6 +49,12 @@ struct AnimeWatcherView: View {
                                 .keyboardShortcut(.cancelAction)
 
                                 Button("Next episode (return)") {
+                                    player.removeTimeObserver(timeObserverToken as Any)
+                                    
+                                    withAnimation {
+                                        showingNextEpisode = false
+                                    }
+                                    
                                     nextEpisode()
                                 }
                                 .keyboardShortcut(.defaultAction)
@@ -66,6 +73,13 @@ struct AnimeWatcherView: View {
                                         remainingTime -= 1
                                     } else {
                                         timer.invalidate()
+                                        
+                                        player.removeTimeObserver(timeObserverToken as Any)
+
+                                        withAnimation {
+                                            showingNextEpisode = false
+                                        }
+                                        
                                         nextEpisode()
                                     }
                                 }
@@ -122,12 +136,14 @@ struct AnimeWatcherView: View {
                 }, label: {
                     Image(systemName: "chevron.left")
                 })
+                .disabled(selectedAnime.episodes?.first?.id == selectedEpisode.id)
                 
                 Button(action: {
                     nextEpisode()
                 }, label: {
                     Image(systemName: "chevron.right")
                 })
+                .disabled(selectedAnime.episodes?.last?.id == selectedEpisode.id)
                 
                 Picker("Select episode", selection: $pickerSelectedEpisodeId) {
                     ForEach(selectedAnime.episodes ?? []) { episode in
