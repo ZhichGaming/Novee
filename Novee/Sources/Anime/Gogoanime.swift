@@ -18,7 +18,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
     
     func getAnime(pageNumber: Int) async -> [Anime] {
         do {
-            guard let requestUrl = URL(string: api + "/recent-release") else {
+            guard let requestUrl = URL(string: api + "/recent-release" + "?page=" + String(pageNumber)) else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
