@@ -18,16 +18,59 @@ struct AnimeWatcherView: View {
     @State var streamingUrl: URL? = nil
     
     @State var player: AVPlayer? = nil
+    
+    @State var showingNextEpisode = false
+    @State var timeObserverToken: Any?
+    @State var remainingTime = 5
 
     var body: some View {
         ZStack {
             if let player = player {
                 VideoPlayer(player: player)
                     .onAppear {
-                        player.play()
+                        // Add a periodic time observer to track the playback time every second
+                        addPeriodicTimeObserver()
                     }
                     .onDisappear {
                         player.pause()
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        if showingNextEpisode {
+                            HStack {
+                                Text("Go to next episode? (\(remainingTime)s)")
+                                Button("Cancel (esc)") {
+                                    player.removeTimeObserver(timeObserverToken as Any)
+                                    
+                                    withAnimation {
+                                        showingNextEpisode = false
+                                    }
+                                }
+                                .keyboardShortcut(.cancelAction)
+
+                                Button("Next episode (return)") {
+                                    nextEpisode()
+                                }
+                                .keyboardShortcut(.defaultAction)
+                            }
+                            .padding()
+                            .background {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(.regularMaterial)
+                            }
+                            .padding(50)
+                            .onAppear {
+                                remainingTime = 5
+                                
+                                Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+                                    if remainingTime > 0 {
+                                        remainingTime -= 1
+                                    } else {
+                                        timer.invalidate()
+                                        nextEpisode()
+                                    }
+                                }
+                            }
+                        }
                     }
             } else {
                 ProgressView()
@@ -71,15 +114,13 @@ struct AnimeWatcherView: View {
                 Spacer()
                 
                 Button(action: {
-                    selectedEpisode = animeVM.changeEpisode(episode: selectedEpisode, anime: selectedAnime, offset: -1) ?? selectedEpisode
-                    pickerSelectedEpisodeId = selectedEpisode.id
+                    previousEpisode()
                 }, label: {
                     Image(systemName: "chevron.left")
                 })
                 
                 Button(action: {
-                    selectedEpisode = animeVM.changeEpisode(episode: selectedEpisode, anime: selectedAnime, offset: 1) ?? selectedEpisode
-                    pickerSelectedEpisodeId = selectedEpisode.id
+                    nextEpisode()
                 }, label: {
                     Image(systemName: "chevron.right")
                 })
@@ -94,11 +135,39 @@ struct AnimeWatcherView: View {
                     pickerSelectedEpisodeId = selectedEpisode.id
                 }
                 .onChange(of: pickerSelectedEpisodeId) { _ in
-                    selectedEpisode = selectedAnime.episodes?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
-                    player = nil
+                    selectAndLoadEpisode()
                 }
             }
         }
         .navigationTitle(selectedEpisode.title)
+    }
+    
+    func addPeriodicTimeObserver() {
+        // Invoke callback every half second
+        let interval = CMTime(seconds: 0.5,
+                              preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        // Add time observer. Invoke closure on the main queue.
+        timeObserverToken = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
+            if let duration = player?.currentItem?.duration {
+                let remainingTime = duration - time
+
+                showingNextEpisode = remainingTime.seconds < 90
+            }
+        }
+    }
+    
+    func previousEpisode() {
+        selectedEpisode = animeVM.changeEpisode(episode: selectedEpisode, anime: selectedAnime, offset: -1) ?? selectedEpisode
+        pickerSelectedEpisodeId = selectedEpisode.id
+    }
+    
+    func nextEpisode() {
+        selectedEpisode = animeVM.changeEpisode(episode: selectedEpisode, anime: selectedAnime, offset: 1) ?? selectedEpisode
+        pickerSelectedEpisodeId = selectedEpisode.id
+    }
+    
+    func selectAndLoadEpisode() {
+        selectedEpisode = selectedAnime.episodes?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
+        player = nil
     }
 }
