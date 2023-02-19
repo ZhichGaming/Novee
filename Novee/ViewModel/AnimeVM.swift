@@ -12,10 +12,19 @@ class AnimeVM: ObservableObject {
     
     init() {
         sources[gogoanime.sourceId] = gogoanime
+        
+        if let resolution = UserDefaults.standard.string(forKey: "lastSelectedAnimeResolution") {
+            lastSelectedResolution = resolution
+        }
     }
 
     @Published var sources: [String: any AnimeSource] = [:]
     @Published var selectedSource = "gogoanime"
+    @Published var lastSelectedResolution = "720p" {
+        didSet {
+            UserDefaults.standard.set(lastSelectedResolution, forKey: "lastSelectedAnimeResolution")
+        }
+    }
     
     var sourcesArray: [AnimeSource] {
         Array(sources.values)

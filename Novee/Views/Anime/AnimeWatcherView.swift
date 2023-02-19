@@ -80,7 +80,7 @@ struct AnimeWatcherView: View {
                                 if let newEpisode = newEpisode {
                                     selectedEpisode = newEpisode
                                     
-                                    if let url = newEpisode.streamingUrls?.first?.url {
+                                    if let url = getStreamingUrl()?.url {
                                         player = AVPlayer(url: url)
                                         streamingUrl = url
                                     }
@@ -105,6 +105,10 @@ struct AnimeWatcherView: View {
                     if let streamingUrl = streamingUrl {
                         player.pause()
                         self.player = AVPlayer(url: streamingUrl)
+                        
+                        if let newSelectedQuality = selectedEpisode.streamingUrls?.first(where: { $0.url == streamingUrl })?.quality {
+                            animeVM.lastSelectedResolution = newSelectedQuality
+                        }
                     }
                 }
             }
@@ -169,5 +173,9 @@ struct AnimeWatcherView: View {
     func selectAndLoadEpisode() {
         selectedEpisode = selectedAnime.episodes?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
         player = nil
+    }
+    
+    func getStreamingUrl() -> StreamingUrl? {
+        return selectedEpisode.streamingUrls?.first { $0.quality == animeVM.lastSelectedResolution } ?? selectedEpisode.streamingUrls?.first
     }
 }
