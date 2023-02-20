@@ -31,6 +31,7 @@ struct NoveeApp: App {
                 AnimeWatcherView(selectedAnime: animeEpisode.anime, selectedEpisode: animeEpisode.episode)
                     .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
                     .environmentObject(AnimeVM.shared)
+                    .environmentObject(AnimeListVM.shared)
                     .presentedWindowToolbarStyle(.unified)
             }
         }
