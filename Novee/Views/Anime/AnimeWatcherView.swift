@@ -38,9 +38,11 @@ struct AnimeWatcherView: View {
                         if selectedAnime.episodes?.last?.id != selectedEpisode.id {
                             addPeriodicTimeObserver()
                         }
+                        
+                        self.player?.play()
                     }
                     .onDisappear {
-                        player.pause()
+                        self.player?.pause()
                     }
                     .overlay(alignment: .bottomTrailing) {
                         if showingNextEpisode {
