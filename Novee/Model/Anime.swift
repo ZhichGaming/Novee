@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreMedia
 
 struct Anime: Hashable, Identifiable, Codable {
     var id = UUID()
@@ -47,6 +48,9 @@ struct Episode: Hashable, Identifiable, Codable {
     
     /// Used for Gogoanime episode id. 
     var episodeId: String?
+    
+    /// The time the user left off for this episode, stored in seconds.
+    var resumeTime: Double?
 }
 
 struct AnimeEpisodePair: Codable, Hashable {

@@ -25,6 +25,7 @@ struct AnimeWatcherView: View {
     
     @State var showingNextEpisode = false
     @State var timeObserverToken: Any?
+    @State var statusTimeObserverToken: Any?
     @State var remainingTime = 5
     
     @State var showingCustomizedAddToListSheet = false
@@ -35,11 +36,14 @@ struct AnimeWatcherView: View {
             if let player = player {
                 VideoPlayer(player: player)
                     .onAppear {
+                        selectedEpisode.resumeTime = animeListVM.findChapterInList(anime: selectedAnime, episode: selectedEpisode)?.resumeTime
+                        
                         if selectedAnime.episodes?.last?.id != selectedEpisode.id {
                             addPeriodicTimeObserver()
                         }
                         
                         self.player?.play()
+                        showSeekToResumeTimePopup()
                     }
                     .onDisappear {
                         self.player?.pause()
@@ -196,6 +200,9 @@ struct AnimeWatcherView: View {
                 let remainingTime = duration - time
 
                 showingNextEpisode = remainingTime.seconds < 90
+                
+                // Update the time the user left off
+                animeListVM.updateResumeTime(anime: selectedAnime, episode: selectedEpisode, newTime: time.seconds)
             }
         }
     }
@@ -294,6 +301,39 @@ struct AnimeWatcherView: View {
             }
         } else {
             print("An error occured in the `showUpdateEpisodeNotification` function.")
+        }
+    }
+    
+    private func showSeekToResumeTimePopup() {
+        notification.present(configuration: .init(duration: 10)) {
+            VStack {
+                VStack(alignment: .leading) {
+                    Text("Resume playback from where you left off?")
+                        .font(.footnote.bold())
+                        .foregroundColor(.primary.opacity(0.6))
+                    Text("Swipe to dismiss")
+                        .font(.footnote.bold())
+                        .foregroundColor(.primary.opacity(0.4))
+                }
+                .frame(width: 225, alignment: .leading)
+
+                HStack {
+                    Button {
+                        seekToResumeTime()
+                        notification.dismiss()
+                    } label: {
+                        Text("Resume")
+                    }
+                }
+                .frame(width: 225, alignment: .trailing)
+            }
+            .frame(width: 300, height: 75)
+        }
+    }
+    
+    private func seekToResumeTime() {
+        if let resumeTime = selectedEpisode.resumeTime {
+            self.player?.seek(to: CMTime(seconds: resumeTime, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))
         }
     }
 }

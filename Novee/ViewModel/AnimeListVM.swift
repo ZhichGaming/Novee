@@ -123,6 +123,20 @@ class AnimeListVM: ObservableObject {
         return nil
     }
     
+    func findChapterInList(anime: Anime, episode: Episode) -> Episode? {
+        let animeListElement = findInList(anime: anime)
+        
+        return animeListElement?.anime[AnimeVM.shared.selectedSource]?.episodes?.first(where: {
+            if $0.episodeId != nil && episode.episodeId != nil {
+                return $0.episodeId == episode.episodeId
+            } else if $0.episodeUrl != nil && episode.episodeUrl != nil {
+                return $0.episodeUrl == episode.episodeUrl
+            } else {
+                return $0.title == episode.title
+            }
+        })
+    }
+    
     func changeStaleReadingStatus(id: UUID) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             let fiveDaysAgo = Calendar.current.date(byAdding: .day, value: -5, to: Date())!
@@ -147,5 +161,20 @@ class AnimeListVM: ObservableObject {
         } else {
             print("Error at changeStaleReadingStatus: Cannot find an element in the list with the id \(id)")
         }
+    }
+    
+    func updateResumeTime(anime: Anime, episode: Episode, newTime: Double) {
+        guard let animeIndex = list.firstIndex(where: { $0.id == findInList(anime: anime)?.id }) else { return }
+        guard let episodeIndex = list[animeIndex].anime[AnimeVM.shared.selectedSource]?.episodes?.firstIndex(where: {
+            if $0.episodeId != nil && episode.episodeId != nil {
+                return $0.episodeId == episode.episodeId
+            } else if $0.episodeUrl != nil && episode.episodeUrl != nil {
+                return $0.episodeUrl == episode.episodeUrl
+            } else {
+                return $0.title == episode.title
+            }
+        }) else { return }
+        
+        list[animeIndex].anime[AnimeVM.shared.selectedSource]?.episodes?[episodeIndex].resumeTime = newTime
     }
 }
