@@ -261,6 +261,7 @@ struct AnimeWatcherView: View {
                     } label: {
                         Text("Add")
                     }
+                    .keyboardShortcut(.defaultAction)
                 }
                 .frame(width: 225, alignment: .trailing)
             }
@@ -293,6 +294,7 @@ struct AnimeWatcherView: View {
                             } label: {
                                 Text("Undo")
                             }
+                            .keyboardShortcut(.defaultAction)
                         }
                         .frame(width: 225, alignment: .trailing)
                     }
@@ -324,6 +326,7 @@ struct AnimeWatcherView: View {
                     } label: {
                         Text("Resume")
                     }
+                    .keyboardShortcut(.defaultAction)
                 }
                 .frame(width: 225, alignment: .trailing)
             }
