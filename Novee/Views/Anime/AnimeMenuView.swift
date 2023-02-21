@@ -1,5 +1,5 @@
 //
-//  MangaMenuView.swift
+//  AnimeMenuView.swift
 //  Novee
 //
 //  Created by Nick on 2022-10-16.
@@ -8,9 +8,9 @@
 import SwiftUI
 import CachedAsyncImage
 
-struct MangaMenuView: View {
+struct AnimeMenuView: View {
     @EnvironmentObject var settingsVM: SettingsVM
-    @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var animeVM: AnimeVM
     
     @State private var searchQuery = ""
     @State private var pageNumber = 1
@@ -24,7 +24,7 @@ struct MangaMenuView: View {
                 Divider()
                 NavigationView {
                     VStack(spacing: 0) {
-                        MangaColumnView(selectedSource: $mangaVM.selectedSource)
+                        AnimeColumnView(selectedSource: $animeVM.selectedSource)
                         
                         Divider()
                         HStack {
@@ -53,9 +53,9 @@ struct MangaMenuView: View {
                             Task {
                                 textfieldPageNumber = pageNumber
                                 if searchQuery.isEmpty {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: pageNumber)
+                                    await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: pageNumber)
                                 } else {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: pageNumber, searchQuery: searchQuery)
+                                    await animeVM.sources[animeVM.selectedSource]!.getSearchAnime(pageNumber: pageNumber, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -63,13 +63,13 @@ struct MangaMenuView: View {
                             Task {
                                 /// Reset page number each time the user searches something else
                                 if searchQuery.isEmpty {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: 1)
+                                    await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: 1)
                                 } else {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: 1, searchQuery: searchQuery)
+                                    await animeVM.sources[animeVM.selectedSource]!.getSearchAnime(pageNumber: 1, searchQuery: searchQuery)
                                 }
                             }
                         }
-                        .onChange(of: mangaVM.selectedSource) { _ in pageNumber = 1; searchQuery = ""; }
+                        .onChange(of: animeVM.selectedSource) { _ in pageNumber = 1; searchQuery = ""; }
                     }
                 }
             }
@@ -80,7 +80,7 @@ struct MangaMenuView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        await mangaVM.sources[mangaVM.selectedSource]?.getManga(pageNumber: pageNumber)
+                        await animeVM.sources[animeVM.selectedSource]?.getAnime(pageNumber: pageNumber)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -88,8 +88,8 @@ struct MangaMenuView: View {
             }
             
             ToolbarItem(placement: .primaryAction) {
-                Picker("Source", selection: $mangaVM.selectedSource) {
-                    ForEach(mangaVM.sourcesArray, id: \.sourceId) { source in
+                Picker("Source", selection: $animeVM.selectedSource) {
+                    ForEach(animeVM.sourcesArray, id: \.sourceId) { source in
                         Text(source.label)
                     }
                 }
@@ -98,22 +98,22 @@ struct MangaMenuView: View {
     }
 }
 
-struct MangaColumnView: View {
-    @EnvironmentObject var mangaVM: MangaVM
+struct AnimeColumnView: View {
+    @EnvironmentObject var animeVM: AnimeVM
     
     @Binding var selectedSource: String
 
     var body: some View {
         VStack {
-            List(mangaVM.sources[selectedSource]!.mangaData) { manga in
+            List(animeVM.sources[selectedSource]!.animeData) { anime in
                 NavigationLink {
-                    MangaDetailsView(selectedMangaIndex: mangaVM.sources[mangaVM.selectedSource]!.mangaData.firstIndex(of: manga) ?? 0)
+                    AnimeDetailsView(selectedAnimeIndex: animeVM.sources[animeVM.selectedSource]!.animeData.firstIndex(of: anime) ?? 0)
                 } label: {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(manga.title)
+                            Text(anime.title ?? "No title")
                                 .font(.title2)
-                            Text(manga.detailsUrl?.host ?? "Unknown host")
+                            Text(anime.detailsUrl?.host ?? "Unknown host")
                                 .font(.caption)
                             // TODO: Latest chapter
 //                            Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
@@ -121,7 +121,7 @@ struct MangaColumnView: View {
                         }
 
                         Spacer()
-                        CachedAsyncImage(url: manga.imageUrl) { image in
+                        CachedAsyncImage(url: anime.imageUrl) { image in
                             image
                                 .resizable()
                                 .scaledToFit()
@@ -137,7 +137,7 @@ struct MangaColumnView: View {
 //            let _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
 //                showingReload = true
 //            }
-//            
+//
 //            if showingReload {
 //                Button("Reload") {
 //                    mangaVM.fetchManga()
@@ -147,22 +147,22 @@ struct MangaColumnView: View {
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             Task {
-                await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
+                await animeVM.sources[selectedSource]!.getAnime(pageNumber: 1)
             }
         }
-        .onChange(of: mangaVM.selectedSource) { _ in
+        .onChange(of: animeVM.selectedSource) { _ in
             Task {
-                await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
+                await animeVM.sources[selectedSource]!.getAnime(pageNumber: 1)
             }
         }
         .onDisappear {
-            mangaVM.sources[selectedSource]!.mangaData = []
+            animeVM.sources[selectedSource]!.animeData = []
         }
     }
 }
 
-struct MangaMenuView_Previews: PreviewProvider {
+struct AnimeMenuView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaMenuView()
+        AnimeMenuView()
     }
 }

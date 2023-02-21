@@ -6,40 +6,37 @@
 //
 
 import SwiftUI
+import SystemNotification
 
 @main
 struct NoveeApp: App {
-    @StateObject var mangaVM = MangaVM()
+    @StateObject var notification = SystemNotificationContext()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
-                .environmentObject(mangaVM)
                 .environmentObject(SettingsVM.shared)
+                .environmentObject(AnimeVM.shared)
+                .environmentObject(AnimeListVM.shared)
+                .environmentObject(MangaVM.shared)
+                .environmentObject(MangaListVM.shared)
+                .environmentObject(notification)
                 .presentedWindowToolbarStyle(.unified)
         }
         .windowStyle(.titleBar)
         
-        WindowGroup("Manga Reader") {
-            MangaReaderView()
-                .handlesExternalEvents(preferring: Set(arrayLiteral: "mangaReader"), allowing: Set(arrayLiteral: "*")) // activate existing window if exists
-                .frame(minWidth: 1000, maxWidth: .infinity, minHeight: 625, maxHeight: .infinity)
-                .environmentObject(mangaVM)
-                .environmentObject(SettingsVM.shared)
-                .presentedWindowToolbarStyle(.unified)
-        }
-        .commands {
-            CommandGroup(replacing: .newItem) {
-                Button("Refresh") {
-                    mangaVM.getPages(for: mangaVM.openedChapterId ?? UUID())
-                }
-                .keyboardShortcut("r")
-                .disabled(mangaVM.openedChapterId == nil)
+        WindowGroup(for: AnimeEpisodePair.self) { $animeEpisode in
+            if let animeEpisode = animeEpisode {
+                AnimeWatcherView(selectedAnime: animeEpisode.anime, selectedEpisode: animeEpisode.episode)
+                    .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
+                    .environmentObject(AnimeVM.shared)
+                    .environmentObject(AnimeListVM.shared)
+                    .presentedWindowToolbarStyle(.unified)
             }
         }
-        .handlesExternalEvents(matching: Set(arrayLiteral: "mangaReader")) // create new window if one doesn't exist
-        
+        .windowStyle(.titleBar)
+
         SwiftUI.Settings {
             SettingsView()
                 .environmentObject(SettingsVM.shared)

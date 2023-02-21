@@ -14,38 +14,41 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                NavigationLink(tag: 1, selection: self.$selectedView, destination: { HomeView() }, label: {
-                        HStack {
-                            Image(systemName: "house")
-                                .frame(width: 15)
-                            Text("Home")
-                        }
-                    }
-                )
-                NavigationLink(tag: 2, selection: self.$selectedView, destination: { AnimeMenuView() }, label: {
+                Section("Anime") {
+                    NavigationLink(tag: 1, selection: self.$selectedView, destination: { AnimeMenuView() }) {
                         HStack {
                             Image(systemName: "tv")
                                 .frame(width: 15)
                             Text("Anime")
                         }
                     }
-                )
-                NavigationLink(tag: 3, selection: self.$selectedView, destination: { MangaMenuView() }, label: {
+                    
+                    NavigationLink(tag: 2, selection: self.$selectedView, destination: { AnimeListView() }) {
+                        HStack {
+                            Image(systemName: "list.bullet")
+                                .frame(width: 15)
+                            Text("Anime list")
+                        }
+                    }
+                }
+                
+                Section("Manga") {
+                    NavigationLink(tag: 3, selection: self.$selectedView, destination: { MangaMenuView() }) {
                         HStack {
                             Image(systemName: "book.closed")
                                 .frame(width: 15)
                             Text("Manga")
                         }
                     }
-                )
-                NavigationLink(tag: 4, selection: self.$selectedView, destination: { NovelMenuView() }, label: {
+                    
+                    NavigationLink(tag: 4, selection: self.$selectedView, destination: { MangaListView() }) {
                         HStack {
-                            Image(systemName: "book")
+                            Image(systemName: "list.bullet")
                                 .frame(width: 15)
-                            Text("Novels")
+                            Text("Manga list")
                         }
                     }
-                )
+                }
             }
             .listStyle(.sidebar)
             .onAppear {
@@ -67,9 +70,6 @@ struct ContentView: View {
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static let chapters = MangadexChapterResponse(result: "ok", response: "", data: [MangadexChapter(id: UUID(uuidString: "29bfff23-c550-4a29-b65e-6f0a7b6c8574")!, type: "chapter", attributes: MangadexChapterAttributes(volume: "1", chapter: "1", title: nil, translatedLanguage: "en", externalUrl: nil, publishAt: Date.distantPast), relationships: [])])
-    static let mangaVM = [MangadexMangaData(id: UUID(uuidString: "1cb98005-7bf9-488b-9d44-784a961ae42d")!, type: "Manga", attributes: MangadexMangaAttributes(title: ["en": "Test manga"], isLocked: false, originalLanguage: "jp", status: "Ongoing", createdAt: Date.distantPast, updatedAt: Date.now), relationships: [MangadexRelationship(id: UUID(), type: "cover_art", attributes: MangadexRelationshipAttributes(fileName: "9ab7ae43-9448-4f85-86d8-c661c6d23bbf.jpg"))], chapters: chapters)]
-    
     static var previews: some View {
         ContentView()
     }

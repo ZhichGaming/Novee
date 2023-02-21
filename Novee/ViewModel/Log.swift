@@ -25,7 +25,7 @@ class Log: ObservableObject {
         DispatchQueue.main.async {
             self.log(msg)
             self.dialog(
-                question: "Success",
+                question: "Warning",
                 text: msg,
                 style: NSAlert.Style.informational)
         }
