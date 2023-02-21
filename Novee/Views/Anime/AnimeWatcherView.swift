@@ -127,14 +127,21 @@ struct AnimeWatcherView: View {
                             .tag(streamingUrl.url)
                     }
                 }
-                .onChange(of: streamingUrl) { _ in
-                    guard let player = player else { return }
+                .onChange(of: streamingUrl) { [streamingUrl] newUrl in
+                    guard let _ = player else { return }
                     
-                    if let streamingUrl = streamingUrl {
-                        player.pause()
-                        self.player = AVPlayer(url: streamingUrl)
+                    if let newUrl = newUrl {
+                        player?.pause()
+                                                
+                        selectedEpisode.resumeTime = animeListVM.getResumeTime(anime: selectedAnime, episode: selectedEpisode)
+                        self.player = AVPlayer(url: newUrl)
                         
-                        if let newSelectedQuality = selectedEpisode.streamingUrls?.first(where: { $0.url == streamingUrl })?.quality {
+                        if streamingUrl != nil {
+                            seekToResumeTime()
+                            player?.play()
+                        }
+                        
+                        if let newSelectedQuality = selectedEpisode.streamingUrls?.first(where: { $0.url == newUrl })?.quality {
                             animeVM.lastSelectedResolution = newSelectedQuality
                         }
                     }
@@ -176,6 +183,7 @@ struct AnimeWatcherView: View {
                 }
                 .onChange(of: pickerSelectedEpisodeId) { [pickerSelectedEpisodeId] newId in
                     selectAndLoadEpisode()
+                    streamingUrl = nil
                     
                     if pickerSelectedEpisodeId != newId {
                         showUpdateEpisodeNotification(newEpisode: selectedEpisode)

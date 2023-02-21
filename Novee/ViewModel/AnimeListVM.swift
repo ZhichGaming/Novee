@@ -177,4 +177,12 @@ class AnimeListVM: ObservableObject {
         
         list[animeIndex].anime[AnimeVM.shared.selectedSource]?.episodes?[episodeIndex].resumeTime = newTime
     }
+    
+    func getResumeTime(anime: Anime, episode: Episode) -> Double? {
+        guard let animeIndex = list.firstIndex(where: { $0.id == findInList(anime: anime)?.id }) else { return nil }
+        guard let episodeIndex = list[animeIndex].anime[AnimeVM.shared.selectedSource]?.episodes?.firstIndex(where: { $0.id == findChapterInList(anime: anime, episode: episode)?.id }) else { return nil }
+        
+        return list[animeIndex].anime[AnimeVM.shared.selectedSource]?.episodes?[episodeIndex].resumeTime
+    }
+    
 }
