@@ -128,10 +128,10 @@ struct AnimeWatcherView: View {
                     }
                 }
                 .onChange(of: streamingUrl) { [streamingUrl] newUrl in
-                    guard let _ = player else { return }
+                    if player == nil { return }
                     
                     if let newUrl = newUrl {
-                        player?.pause()
+                        self.player?.pause()
                                                 
                         selectedEpisode.resumeTime = animeListVM.getResumeTime(anime: selectedAnime, episode: selectedEpisode)
                         self.player = AVPlayer(url: newUrl)
@@ -225,7 +225,12 @@ struct AnimeWatcherView: View {
         pickerSelectedEpisodeId = selectedEpisode.id
     }
     
+    /**
+     Unloads previous episode and loads the next
+     */
     func selectAndLoadEpisode() {
+        player?.pause()
+
         selectedEpisode = selectedAnime.episodes?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
         player = nil
     }
