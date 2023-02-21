@@ -307,30 +307,32 @@ struct AnimeWatcherView: View {
     }
     
     private func showSeekToResumeTimePopup() {
-        notification.present(configuration: .init(duration: 10)) {
-            VStack {
-                VStack(alignment: .leading) {
-                    Text("Resume playback from where you left off?")
-                        .font(.footnote.bold())
-                        .foregroundColor(.primary.opacity(0.6))
-                    Text("Swipe to dismiss")
-                        .font(.footnote.bold())
-                        .foregroundColor(.primary.opacity(0.4))
-                }
-                .frame(width: 225, alignment: .leading)
-
-                HStack {
-                    Button {
-                        seekToResumeTime()
-                        notification.dismiss()
-                    } label: {
-                        Text("Resume")
+        if selectedEpisode.resumeTime != nil {
+            notification.present(configuration: .init(duration: 10)) {
+                VStack {
+                    VStack(alignment: .leading) {
+                        Text("Resume playback from where you left off?")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.6))
+                        Text("Swipe to dismiss")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.4))
                     }
-                    .keyboardShortcut(.defaultAction)
+                    .frame(width: 225, alignment: .leading)
+                    
+                    HStack {
+                        Button {
+                            seekToResumeTime()
+                            notification.dismiss()
+                        } label: {
+                            Text("Resume")
+                        }
+                        .keyboardShortcut(.defaultAction)
+                    }
+                    .frame(width: 225, alignment: .trailing)
                 }
-                .frame(width: 225, alignment: .trailing)
+                .frame(width: 300, height: 75)
             }
-            .frame(width: 300, height: 75)
         }
     }
     
