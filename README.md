@@ -28,3 +28,8 @@ Novee is an application written in Swift that lets you watch anime, read manga o
 
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
+
+## Attribution
+Novee uses these libraries: CachedAsyncImage, SwiftSoup and WrappingHStack. 
+
+<a href="https://www.flaticon.com/free-icons/back" title="back icons">Back icons created by Lyolya - Flaticon</a>
