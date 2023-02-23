@@ -13,7 +13,6 @@ struct AnimeMenuView: View {
     @EnvironmentObject var animeVM: AnimeVM
     
     @State private var searchQuery = ""
-    @State private var pageNumber = 1
     
     @State private var textfieldPageNumber = 1
     @State private var textfieldSearchQuery = ""
@@ -29,33 +28,33 @@ struct AnimeMenuView: View {
                         Divider()
                         HStack {
                             Button {
-                                pageNumber -= 1
+                                animeVM.pageNumber -= 1
                             } label: {
                                 Image(systemName: "chevron.backward")
                             }
-                            .disabled(pageNumber <= 1)
+                            .disabled(animeVM.pageNumber <= 1)
                             
                             TextField("", value: $textfieldPageNumber, format: .number)
                                 .frame(width: 50)
                                 .multilineTextAlignment(.center)
                                 .onSubmit {
-                                    pageNumber = textfieldPageNumber
+                                    animeVM.pageNumber = textfieldPageNumber
                                 }
                             
                             Button {
-                                pageNumber += 1
+                                animeVM.pageNumber += 1
                             } label: {
                                 Image(systemName: "chevron.forward")
                             }
                         }
                         .frame(maxWidth: .infinity, maxHeight: 30)
-                        .onChange(of: pageNumber) { _ in
+                        .onChange(of: animeVM.pageNumber) { _ in
                             Task {
-                                textfieldPageNumber = pageNumber
+                                textfieldPageNumber = animeVM.pageNumber
                                 if searchQuery.isEmpty {
-                                    await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: pageNumber)
+                                    await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: animeVM.pageNumber)
                                 } else {
-                                    await animeVM.sources[animeVM.selectedSource]!.getSearchAnime(pageNumber: pageNumber, searchQuery: searchQuery)
+                                    await animeVM.sources[animeVM.selectedSource]!.getSearchAnime(pageNumber: animeVM.pageNumber, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -69,7 +68,7 @@ struct AnimeMenuView: View {
                                 }
                             }
                         }
-                        .onChange(of: animeVM.selectedSource) { _ in pageNumber = 1; searchQuery = ""; }
+                        .onChange(of: animeVM.selectedSource) { _ in animeVM.pageNumber = 1; searchQuery = ""; }
                     }
                 }
             }
@@ -80,7 +79,7 @@ struct AnimeMenuView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        await animeVM.sources[animeVM.selectedSource]?.getAnime(pageNumber: pageNumber)
+                        await animeVM.sources[animeVM.selectedSource]?.getAnime(pageNumber: animeVM.pageNumber)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -94,6 +93,20 @@ struct AnimeMenuView: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            Task {
+                textfieldPageNumber = animeVM.pageNumber
+                await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: animeVM.pageNumber)
+            }
+        }
+        .onChange(of: animeVM.selectedSource) { _ in
+            Task {
+                await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: animeVM.pageNumber)
+            }
+        }
+        .onDisappear {
+            animeVM.sources[animeVM.selectedSource]!.animeData = []
         }
     }
 }
@@ -145,19 +158,6 @@ struct AnimeColumnView: View {
 //            }
         }
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            Task {
-                await animeVM.sources[selectedSource]!.getAnime(pageNumber: 1)
-            }
-        }
-        .onChange(of: animeVM.selectedSource) { _ in
-            Task {
-                await animeVM.sources[selectedSource]!.getAnime(pageNumber: 1)
-            }
-        }
-        .onDisappear {
-            animeVM.sources[selectedSource]!.animeData = []
-        }
     }
 }
 

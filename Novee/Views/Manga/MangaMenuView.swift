@@ -13,7 +13,6 @@ struct MangaMenuView: View {
     @EnvironmentObject var mangaVM: MangaVM
     
     @State private var searchQuery = ""
-    @State private var pageNumber = 1
     
     @State private var textfieldPageNumber = 1
     @State private var textfieldSearchQuery = ""
@@ -29,33 +28,33 @@ struct MangaMenuView: View {
                         Divider()
                         HStack {
                             Button {
-                                pageNumber -= 1
+                                mangaVM.pageNumber -= 1
                             } label: {
                                 Image(systemName: "chevron.backward")
                             }
-                            .disabled(pageNumber <= 1)
+                            .disabled(mangaVM.pageNumber <= 1)
                             
                             TextField("", value: $textfieldPageNumber, format: .number)
                                 .frame(width: 50)
                                 .multilineTextAlignment(.center)
                                 .onSubmit {
-                                    pageNumber = textfieldPageNumber
+                                    mangaVM.pageNumber = textfieldPageNumber
                                 }
                             
                             Button {
-                                pageNumber += 1
+                                mangaVM.pageNumber += 1
                             } label: {
                                 Image(systemName: "chevron.forward")
                             }
                         }
                         .frame(maxWidth: .infinity, maxHeight: 30)
-                        .onChange(of: pageNumber) { _ in
+                        .onChange(of: mangaVM.pageNumber) { _ in
                             Task {
-                                textfieldPageNumber = pageNumber
+                                textfieldPageNumber = mangaVM.pageNumber
                                 if searchQuery.isEmpty {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: pageNumber)
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: mangaVM.pageNumber)
                                 } else {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: pageNumber, searchQuery: searchQuery)
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: mangaVM.pageNumber, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -69,7 +68,7 @@ struct MangaMenuView: View {
                                 }
                             }
                         }
-                        .onChange(of: mangaVM.selectedSource) { _ in pageNumber = 1; searchQuery = ""; }
+                        .onChange(of: mangaVM.selectedSource) { _ in mangaVM.pageNumber = 1; searchQuery = ""; }
                     }
                 }
             }
@@ -80,7 +79,7 @@ struct MangaMenuView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        await mangaVM.sources[mangaVM.selectedSource]?.getManga(pageNumber: pageNumber)
+                        await mangaVM.sources[mangaVM.selectedSource]?.getManga(pageNumber: mangaVM.pageNumber)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -94,6 +93,20 @@ struct MangaMenuView: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            Task {
+                textfieldPageNumber = mangaVM.pageNumber
+                await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: mangaVM.pageNumber)
+            }
+        }
+        .onChange(of: mangaVM.selectedSource) { _ in
+            Task {
+                await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: mangaVM.pageNumber)
+            }
+        }
+        .onDisappear {
+            mangaVM.sources[mangaVM.selectedSource]!.mangaData = []
         }
     }
 }
@@ -145,19 +158,6 @@ struct MangaColumnView: View {
 //            }
         }
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            Task {
-                await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
-            }
-        }
-        .onChange(of: mangaVM.selectedSource) { _ in
-            Task {
-                await mangaVM.sources[selectedSource]!.getManga(pageNumber: 1)
-            }
-        }
-        .onDisappear {
-            mangaVM.sources[selectedSource]!.mangaData = []
-        }
     }
 }
 

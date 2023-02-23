@@ -20,6 +20,7 @@ class AnimeVM: ObservableObject {
 
     @Published var sources: [String: any AnimeSource] = [:]
     @Published var selectedSource = "gogoanime"
+    @Published var pageNumber = 1
     @Published var lastSelectedResolution = "720p" {
         didSet {
             UserDefaults.standard.set(lastSelectedResolution, forKey: "lastSelectedAnimeResolution")

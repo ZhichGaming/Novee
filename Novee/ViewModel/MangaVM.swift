@@ -19,6 +19,7 @@ class MangaVM: ObservableObject {
 
     @Published var sources: [String: any MangaSource] = [:]
     @Published var selectedSource = "mangakakalot"
+    @Published var pageNumber = 1
     
     var sourcesArray: [MangaSource] {
         Array(sources.values)
