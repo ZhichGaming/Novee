@@ -139,7 +139,8 @@ Distributed under the GNU General Public License v3.0 (GPLv3). See `LICENSE` for
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@ZhichGaming](https://twitter.com/@ZhichGaming) - nick.zhicheng@gmail.com
+Twitter: [@ZhichGaming](https://twitter.com/@ZhichGaming)
+Email: nick.zhicheng@gmail.com
 
 Project Link: [https://github.com/ZhichGaming/Novee](https://github.com/ZhichGaming/Novee)
 
