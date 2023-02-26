@@ -74,68 +74,55 @@ enum GogoanimeSubOrDub: String, Hashable, Codable {
 /// Struct for the data fetched by the recent release
 /// https://gogoanime.consumet.stream/recent-release
 struct GogoanimeRecentReleaseApi: Hashable, Codable {
-    var animeId: String
-    var episodeId: String
-    var animeTitle: String?
-    var episodeNum: String?
-    var subOrDub: GogoanimeSubOrDub?
-    var animeImg: String?
-    var episodeUrl: String?
+    var currentPage: String?
+    var hasNextPage: Bool?
+    var results: [Result]?
+    
+    struct Result: Hashable, Codable {
+        var id, episodeId: String?
+        var episodeNumber: Int?
+        var title: String?
+        var image: String?
+        var url: String?
 
-    enum CodingKeys: CodingKey {
-        case animeId
-        case episodeId
-        case animeTitle
-        case episodeNum
-        case subOrDub
-        case animeImg
-        case episodeUrl
+        enum CodingKeys: String, CodingKey {
+            case id
+            case episodeId = "EpisodeID"
+            case episodeNumber, title, image, url
+        }
     }
 }
 
 /// Struct for the data fetched by the search
 /// https://gogoanime.consumet.stream/search?keyw=naruto
 struct GogoanimeSearchApi: Hashable, Codable {
-    var animeId: String
-    var animeTitle: String?
-    var animeURL: String?
-    var animeImg: String?
-    var status: String?
-
-    enum CodingKeys: String, CodingKey {
-        case animeId
-        case animeTitle
-        case animeURL
-        case animeImg
-        case status
+    var currentPage: String?
+    var hasNextPage: Bool?
+    var results: [Result]?
+    
+    struct Result: Hashable, Codable {
+        var id, title: String?
+        var url: String?
+        var image: String?
+        var releaseDate: String?
     }
 }
 
 /// Struct for Gogoanime anime details
 /// https://gogoanime.consumet.stream/anime-details/naruto
 struct GogoanimeDetailsApi: Hashable, Codable {
-    var animeTitle: String
-    var type: String?
-    var releasedDate: String?
-    var status: String?
+    var id, title, url: String?
     var genres: [String]?
-    var otherNames, synopsis: String?
-    var animeImg: String?
-    var totalEpisodes: String?
-    var episodesList: [GogoanimeEpisodesList]?
-}
-
-/// Struct for a list of Gogoanime episodes.
-/// Is a substruct for `GogoanimeDetailsApi`
-struct GogoanimeEpisodesList: Hashable, Codable {
-    var episodeId: String
-    var episodeNum: String
-    var episodeUrl: String
-
-    enum CodingKeys: String, CodingKey {
-        case episodeId
-        case episodeNum
-        case episodeUrl
+    var totalEpisodes: Int?
+    var image: String?
+    var releaseDate, description, subOrDub, type: String?
+    var status, otherName: String?
+    var episodes: [GogoanimeEpisodesList]?
+    
+    struct GogoanimeEpisodesList: Hashable, Codable {
+        var id: String
+        var number: Int
+        var url: String
     }
 }
 

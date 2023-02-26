@@ -13,27 +13,27 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
     
-    // Documentation: https://github.com/riimuru/gogoanime-api#routes
-    let api = "https://gogoanime.consumet.stream"
+    // Documentation: https://docs.consumet.org/rest-api/Anime/gogoanime/get-recent-episodes
+    let api = "https://api.consumet.org/anime/gogoanime"
     
     func getAnime(pageNumber: Int) async -> [Anime] {
         do {
-            guard let requestUrl = URL(string: api + "/recent-release" + "?page=" + String(pageNumber)) else {
+            guard let requestUrl = URL(string: api + "/recent-episodes" + "?page=" + String(pageNumber)) else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
-            let animes = try JSONDecoder().decode([GogoanimeRecentReleaseApi].self, from: data)
+            let animes = try JSONDecoder().decode(GogoanimeRecentReleaseApi.self, from: data)
             
             var result: [Anime] = []
                         
-            for anime in animes {
+            for anime in animes.results ?? [] {
                 let converted = Anime(
-                    title: anime.animeTitle,
-                    detailsUrl: URL(string: api + "/anime-details/" + anime.animeId),
-                    imageUrl: URL(string: anime.animeImg ?? ""))
+                    title: anime.title,
+                    detailsUrl: URL(string: api + "/info/" + (anime.id ?? "")),
+                    imageUrl: URL(string: anime.image ?? ""))
                 
                 result.append(converted)
             }
@@ -54,22 +54,22 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         do {
             let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
             
-            guard let requestUrl = URL(string: api + "/search?keyw=\(safeSearchQuery)&page=\(pageNumber)") else {
+            guard let requestUrl = URL(string: api + "/\(safeSearchQuery)?page=\(pageNumber)") else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
-            let animes = try JSONDecoder().decode([GogoanimeSearchApi].self, from: data)
+            let animes = try JSONDecoder().decode(GogoanimeSearchApi.self, from: data)
             
             var result: [Anime] = []
                         
-            for anime in animes {
+            for anime in animes.results ?? [] {
                 let converted = Anime(
-                    title: anime.animeTitle,
-                    detailsUrl: URL(string: api + "/anime-details/" + anime.animeId),
-                    imageUrl: URL(string: anime.animeImg ?? ""))
+                    title: anime.title,
+                    detailsUrl: URL(string: api + "/" + (anime.id ?? "")),
+                    imageUrl: URL(string: anime.image ?? ""))
                 
                 result.append(converted)
             }
@@ -95,19 +95,22 @@ class Gogoanime: AnimeFetcher, AnimeSource {
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
+            let dataAsString = String(data: data, encoding: .utf8)
+            print(dataAsString!)
+            
             let newAnime = try JSONDecoder().decode(GogoanimeDetailsApi.self, from: data)
             
             let result: Anime? = Anime(
-                title: newAnime.animeTitle,
-                altTitles: newAnime.otherNames?.components(separatedBy: ", "),
-                description: newAnime.synopsis,
+                title: newAnime.title,
+                altTitles: newAnime.otherName != nil ? [newAnime.otherName!] : nil,
+                description: newAnime.description,
                 tags: newAnime.genres?.map { AnimeTag(name: $0) },
                 detailsUrl: anime.detailsUrl,
-                imageUrl: URL(string: newAnime.animeImg ?? ""),
-                episodes: newAnime.episodesList?.map { Episode(
-                    title: "Episode " + $0.episodeNum,
-                    episodeUrl: URL(string: $0.episodeUrl)!,
-                    episodeId: $0.episodeId)
+                imageUrl: URL(string: newAnime.image ?? ""),
+                episodes: newAnime.episodes?.map { Episode(
+                    title: "Episode \($0.number)",
+                    episodeUrl: URL(string: $0.url)!,
+                    episodeId: $0.id)
                 }.reversed())
             
             if let result = result {
