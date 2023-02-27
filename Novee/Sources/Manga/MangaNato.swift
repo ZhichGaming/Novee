@@ -116,7 +116,7 @@ class MangaNato: MangaFetcher, MangaSource {
     
     func fetchMangaDetails(manga: Manga) async -> Manga? {
         var htmlPage = ""
-        var result: Manga?
+        var result: Manga? = manga
         
         do {
             let (data, _) = try await URLSession.shared.data(from: manga.detailsUrl!)
@@ -135,9 +135,9 @@ class MangaNato: MangaFetcher, MangaSource {
                 try $0.text().contains("Genres")
             }?.nextElementSibling()?.children().array().filter { $0.hasClass("a-h") }
 
-            result = Manga(title: try infoElement
+            result?.title = try infoElement
                 .child(0)
-                .text())
+                .text()
             result?.altTitles = try infoElement
                 .select("table > tbody > tr:nth-child(1) > td.table-value > h2")
                 .text()
@@ -175,6 +175,7 @@ class MangaNato: MangaFetcher, MangaSource {
             }
 
             result?.chapters = chapters.reversed()
+            result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
         }
@@ -184,7 +185,6 @@ class MangaNato: MangaFetcher, MangaSource {
     
     func getMangaDetails(manga: Manga) async -> Manga? {
         if let result = await fetchMangaDetails(manga: manga) {
-            super.assignMangaDetails(manga: manga, result: result)
             return result
         } else {
             Log.shared.msg("An error occured while fetching manga details")

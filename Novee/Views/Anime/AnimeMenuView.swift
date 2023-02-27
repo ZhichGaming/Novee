@@ -120,7 +120,7 @@ struct AnimeColumnView: View {
         VStack {
             List(animeVM.sources[selectedSource]!.animeData) { anime in
                 NavigationLink {
-                    AnimeDetailsView(selectedAnimeIndex: animeVM.sources[animeVM.selectedSource]!.animeData.firstIndex(of: anime) ?? 0)
+                    AnimeDetailsView(selectedAnime: anime)
                 } label: {
                     HStack {
                         VStack(alignment: .leading) {

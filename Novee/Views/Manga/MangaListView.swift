@@ -77,128 +77,130 @@ struct MangaListView: View {
 
     var body: some View {
         GeometryReader { geo in
-            VStack(spacing: 0) {
-                HStack {
-                    TextField("Search for manga", text: $listQuery)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    Button {
-                        showingSearchDetailsSheet = true
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                    
-                    Button {
-                        showingAddNewMangaSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle")
-                    }
-                }
-                .padding()
-                .sheet(isPresented: $showingSearchDetailsSheet) {
-                    VStack {
-                        Text("Filter options")
-                            .font(.title2.bold())
-                            .padding(.top)
+            NavigationStack {
+                VStack(spacing: 0) {
+                    HStack {
+                        TextField("Search for manga", text: $listQuery)
+                            .textFieldStyle(.roundedBorder)
                         
-                        TabView {
-                            VStack {
-                                HStack {
-                                    Picker("Sorting style", selection: $selectedSortingStyle) {
-                                        ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
-                                            Text($0)
-                                        }
-                                    }
-                                    .pickerStyle(.radioGroup)
-                                }
-                                .padding(.horizontal)
-                                
-                            }
-                            .tabItem {
-                                Text("Grouping and sorting")
-                            }
-                            
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text("Showing status")
-                                        .font(.headline)
-                                    
-                                    Toggle("Waiting", isOn: $showingWaiting)
-                                    Toggle("Reading", isOn: $showingReading)
-                                    Toggle("Dropped", isOn: $showingDropped)
-                                    Toggle("Completed", isOn: $showingCompleted)
-                                    Toggle("To read", isOn: $showingToRead)
-                                }
-                                .padding(.trailing)
-                                
-                                VStack(alignment: .leading) {
-                                    Text("Showing rating")
-                                        .font(.headline)
-                                    
-                                    Toggle("None", isOn: $showingRatingNone)
-                                    Toggle("Horrible", isOn: $showingRatingHorrible)
-                                    Toggle("Bad", isOn: $showingRatingBad)
-                                    Toggle("Good", isOn: $showingRatingGood)
-                                    Toggle("Best", isOn: $showingRatingBest)
-                                }
-                                .padding(.leading)
-                            }
-                            .padding()
-                            .tabItem {
-                                Text("Filters")
-                            }
+                        Button {
+                            showingSearchDetailsSheet = true
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
                         }
-                        .padding()
                         
-                        HStack {
-                            Spacer()
-                            Button("Done") {
-                                showingSearchDetailsSheet = false
-                            }
-                        }
-                        .padding([.bottom, .horizontal])
-                    }
-                    .frame(width: 500, height: 350)
-                }
-                
-                HStack {
-                    Text("Title")
-                        .frame(width: geo.size.width * 0.3, alignment: .leading)
-                    Text("Last chapter")
-                        .frame(width: geo.size.width * 0.2, alignment: .leading)
-                    Text("Status")
-                        .frame(width: geo.size.width * 0.2, alignment: .leading)
-                    Text("Rating")
-                        .frame(width: geo.size.width * 0.2, alignment: .leading)
-                }
-                .font(.headline)
-                .padding()
-                .padding(.horizontal)
-                
-                Divider()
-                ScrollView {
-                    LazyVStack {
-                        ForEach(filteredList) { mangaListElement in
-                            Button {
-                                mangaDetailsSheet = mangaListElement
-                            } label: {
-                                MangaListRowView(manga: mangaListElement, geo: geo)
-                            }
-                            .buttonStyle(.plain)
+                        Button {
+                            showingAddNewMangaSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle")
                         }
                     }
                     .padding()
+                    .sheet(isPresented: $showingSearchDetailsSheet) {
+                        VStack {
+                            Text("Filter options")
+                                .font(.title2.bold())
+                                .padding(.top)
+                            
+                            TabView {
+                                VStack {
+                                    HStack {
+                                        Picker("Sorting style", selection: $selectedSortingStyle) {
+                                            ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
+                                                Text($0)
+                                            }
+                                        }
+                                        .pickerStyle(.radioGroup)
+                                    }
+                                    .padding(.horizontal)
+                                    
+                                }
+                                .tabItem {
+                                    Text("Grouping and sorting")
+                                }
+                                
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("Showing status")
+                                            .font(.headline)
+                                        
+                                        Toggle("Waiting", isOn: $showingWaiting)
+                                        Toggle("Reading", isOn: $showingReading)
+                                        Toggle("Dropped", isOn: $showingDropped)
+                                        Toggle("Completed", isOn: $showingCompleted)
+                                        Toggle("To read", isOn: $showingToRead)
+                                    }
+                                    .padding(.trailing)
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text("Showing rating")
+                                            .font(.headline)
+                                        
+                                        Toggle("None", isOn: $showingRatingNone)
+                                        Toggle("Horrible", isOn: $showingRatingHorrible)
+                                        Toggle("Bad", isOn: $showingRatingBad)
+                                        Toggle("Good", isOn: $showingRatingGood)
+                                        Toggle("Best", isOn: $showingRatingBest)
+                                    }
+                                    .padding(.leading)
+                                }
+                                .padding()
+                                .tabItem {
+                                    Text("Filters")
+                                }
+                            }
+                            .padding()
+                            
+                            HStack {
+                                Spacer()
+                                Button("Done") {
+                                    showingSearchDetailsSheet = false
+                                }
+                            }
+                            .padding([.bottom, .horizontal])
+                        }
+                        .frame(width: 500, height: 350)
+                    }
+                    
+                    HStack {
+                        Text("Title")
+                            .frame(width: geo.size.width * 0.3, alignment: .leading)
+                        Text("Last chapter")
+                            .frame(width: geo.size.width * 0.2, alignment: .leading)
+                        Text("Status")
+                            .frame(width: geo.size.width * 0.2, alignment: .leading)
+                        Text("Rating")
+                            .frame(width: geo.size.width * 0.2, alignment: .leading)
+                    }
+                    .font(.headline)
+                    .padding()
+                    .padding(.horizontal)
+                    
+                    Divider()
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(filteredList) { mangaListElement in
+                                NavigationLink(value: mangaListElement) {
+                                    MangaListRowView(manga: mangaListElement, geo: geo)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .navigationDestination(for: MangaListElement.self) { mangaListElement in
+                                MangaListDetailsSheetView(passedManga: mangaListElement)
+                            }
+                            .navigationDestination(for: Manga.self) { manga in
+                                MangaDetailsView(selectedManga: manga)
+                            }
+                        }
+                        .padding()
+                    }
+                    .sheet(isPresented: $showingAddNewMangaSheet) {
+                        MangaListAddNewToListView()
+                            .frame(width: 500, height: 300)
+                    }
                 }
-                .sheet(item: $mangaDetailsSheet) { mangaListElement in
-                    MangaListDetailsSheetView(passedManga: mangaListElement)
-                        .frame(width: 700, height: 550)
-                }
-                .sheet(isPresented: $showingAddNewMangaSheet) {
-                    MangaListAddNewToListView()
-                        .frame(width: 500, height: 300)
-                }
+                .frame(width: geo.size.width)
             }
-            .frame(width: geo.size.width)
         }
     }
 }
@@ -325,6 +327,9 @@ struct MangaListDetailsSheetView: View {
                             Spacer()
                             HStack {
                                 Spacer()
+                                
+                                NavigationLink("Open", value: manga)
+                                
                                 Button {
                                     if let currentIndex = mangaKeysArray.firstIndex(of: key) {
                                         withAnimation {
@@ -362,6 +367,7 @@ struct MangaListDetailsSheetView: View {
                                     Image(systemName: "trash")
                                 }
                             }
+                            .padding(.horizontal)
                             
                             Divider()
                                 .padding(.horizontal)

@@ -21,28 +21,6 @@ class MangaFetcher {
     let baseUrl: String
     
     @Published var mangaData: [Manga] = []
-
-    func assignMangaDetails(manga: Manga, result: Manga) {
-        DispatchQueue.main.sync {
-            MangaVM.shared.objectWillChange.send()
-            
-            var passedSourceMangas: [Manga] {
-                get { MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData }
-                set { MangaVM.shared.sources[MangaVM.shared.selectedSource]?.mangaData = newValue }
-            }
-            
-            let mangaIndex = passedSourceMangas.firstIndex(of: manga) ?? 0
-                        
-            passedSourceMangas[mangaIndex].title = result.title
-            passedSourceMangas[mangaIndex].altTitles = result.altTitles ?? passedSourceMangas[mangaIndex].altTitles
-            passedSourceMangas[mangaIndex].description = result.description ?? passedSourceMangas[mangaIndex].description
-            passedSourceMangas[mangaIndex].authors = result.authors ?? passedSourceMangas[mangaIndex].authors
-            passedSourceMangas[mangaIndex].tags = result.tags ?? passedSourceMangas[mangaIndex].tags
-            passedSourceMangas[mangaIndex].chapters = result.chapters ?? passedSourceMangas[mangaIndex].chapters
-            
-            passedSourceMangas[mangaIndex].detailsLoadingState = .success
-        }
-    }
     
     func refetchMangaPage(chapter: Chapter, pageIndex: Int, returnImage: @escaping (MangaImage) -> Void) async {
         guard let imageUrl = chapter.images?[pageIndex]?.url else {

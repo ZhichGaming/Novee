@@ -15,98 +15,94 @@ struct MangaDetailsView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var notification: SystemNotificationContext
     
-    @State var selectedMangaIndex: Int
+    @State var selectedManga: Manga
 
     @State private var descriptionSize: CGSize = .zero
     @State private var descriptionCollapsed = false
     @State private var isHoveringOverDescription = false
     
-    /// Manga of the index passed in
-    var selectedManga: Manga? {
-        if mangaVM.sources[mangaVM.selectedSource]!.mangaData.count > selectedMangaIndex {
-            return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
-        }
-        
-        return nil
-    }
-    
     var body: some View {
-        if let selectedManga = selectedManga {
-            switch selectedManga.detailsLoadingState {
-            case .success:
-                GeometryReader { geo in
+        switch selectedManga.detailsLoadingState {
+        case .success:
+            GeometryReader { geo in
+                VStack {
+                    MangaInfoView(geo: geo, selectedManga: selectedManga)
+                    Divider()
+                    
                     VStack {
-                        MangaInfoView(geo: geo, selectedManga: selectedManga)
-                        Divider()
-                        
-                        VStack {
-                            HStack {
-                                Text("Description")
-                                    .font(.headline)
+                        HStack {
+                            Text("Description")
+                                .font(.headline)
 
-                                Button {
-                                    withAnimation {
-                                        descriptionCollapsed.toggle()
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.right")
-                                        .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
+                            Button {
+                                withAnimation {
+                                    descriptionCollapsed.toggle()
                                 }
-                                .buttonStyle(.plain)
-                                
-                                Spacer()
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
                             }
+                            .buttonStyle(.plain)
                             
-                            if !descriptionCollapsed {
-                                ScrollView {
-                                    Text(LocalizedStringKey(selectedManga.description ?? "None"))
-                                        .background {
-                                            GeometryReader { textSize -> Color in
-                                                DispatchQueue.main.async {
-                                                    descriptionSize = textSize.size
-                                                }
-                                                return Color.clear
+                            Spacer()
+                        }
+                        
+                        if !descriptionCollapsed {
+                            ScrollView {
+                                Text(LocalizedStringKey(selectedManga.description ?? "None"))
+                                    .background {
+                                        GeometryReader { textSize -> Color in
+                                            DispatchQueue.main.async {
+                                                descriptionSize = textSize.size
                                             }
+                                            
+                                            return Color.clear
                                         }
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
-                                .transition(.opacity)
+                                    }
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
+                            .transition(.opacity)
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    ChapterList(selectedManga: $selectedManga)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .padding()
+            }
+            .onAppear {
+                if let mangaListId = mangaListVM.findInList(manga: selectedManga)?.id {
+                    mangaListVM.updateMangaInListElement(
+                        id: mangaListId,
+                        source: mangaVM.selectedSource,
+                        manga: selectedManga
+                    )
+                }
+            }
+        case .loading:
+            ProgressView()
+                .onAppear {
+                    Task {
+                        await mangaVM.getMangaDetails(for: selectedManga, source: mangaVM.selectedSource) { newManga in
+                            if let newManga = newManga {
+                                selectedManga = newManga
+                            } else {
+                                selectedManga.detailsLoadingState = .failed
                             }
                         }
-                        
-                        Divider()
-                        
-                        ChapterList(selectedMangaIndex: selectedMangaIndex)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    .padding()
-                }
-                .onAppear {
-                    if let mangaListId = mangaListVM.findInList(manga: selectedManga)?.id {
-                        mangaListVM.updateMangaInListElement(
-                            id: mangaListId,
-                            source: mangaVM.selectedSource,
-                            manga: selectedManga
-                        )
                     }
                 }
-            case .loading:
-                ProgressView()
-                    .onAppear {
-                        Task {
-                            await mangaVM.getMangaDetails(for: selectedManga)
-                        }
-                    }
-            case .failed:
-                Text("Fetching failed")
-                Button("Try again") {
-                    Task {
-                        await mangaVM.sources[mangaVM.selectedSource]!.getMangaDetails(manga: selectedManga)
-                    }
+        case .failed:
+            Text("Fetching failed")
+            Button("Try again") {
+                Task {
+                    await mangaVM.sources[mangaVM.selectedSource]!.getMangaDetails(manga: selectedManga)
                 }
-            case .notFound:
-                Text("A source for the selected manga has not been found.")
             }
+        case .notFound:
+            Text("A source for the selected manga has not been found.")
         }
     }
 }
@@ -179,7 +175,7 @@ struct ChapterList: View {
     @EnvironmentObject var mangaListVM: MangaListVM
     @EnvironmentObject var notification: SystemNotificationContext
     
-    @State var selectedMangaIndex: Int
+    @Binding var selectedManga: Manga
     @State var selected: UUID?
     
     @State private var ascendingOrder = true
@@ -188,18 +184,10 @@ struct ChapterList: View {
     
     @State var window: NSWindow = NSWindow()
     
-    var selectedManga: Manga? {
-        if mangaVM.sources[mangaVM.selectedSource]?.mangaData.count ?? 0 > selectedMangaIndex {
-            return mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex]
-        }
-        
-        return nil
-    }
-    
     var filteredChapters: [Chapter]? {
         var result: [Chapter]?
         
-        if let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
+        if let chapters = selectedManga.chapters {
             if ascendingOrder {
                 result = chapters
             } else {
@@ -215,7 +203,7 @@ struct ChapterList: View {
     }
 
     var body: some View {
-        if let selectedManga = selectedManga, let filteredChapters = filteredChapters {
+        if let filteredChapters = filteredChapters {
             VStack {
                 HStack {
                     Text("Chapters")
@@ -225,7 +213,7 @@ struct ChapterList: View {
                         TextField("Search for a chapter", text: $chapterQuery)
                             .textFieldStyle(.roundedBorder)
                     } else {
-                        if let chapters = mangaVM.sources[mangaVM.selectedSource]!.mangaData[selectedMangaIndex].chapters {
+                        if let chapters = selectedManga.chapters {
                             Spacer()
                         
                             Button("Read first") {
@@ -319,7 +307,22 @@ struct ChapterList: View {
 
 struct MangaDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaDetailsView(selectedMangaIndex: 0)
+        let exampleManga = Manga(
+            title: "Example Manga",
+            altTitles: ["Alt title 1", "Alt title 2"],
+            authors: ["Author 1", "Author 2"],
+            tags: [
+                MangaTag(name: "Tag 1", url: URL(string: "https://example.com/tag1")),
+                MangaTag(name: "Tag 2", url: URL(string: "https://example.com/tag2"))
+            ], detailsUrl: URL(string: "https://example.com"),
+            imageUrl: URL(string: "https://example.com/image.jpg"),
+            chapters: [
+                Chapter(title: "Chapter 1", chapterUrl: URL(string: "https://example.com/chapter1")!),
+                Chapter(title: "Chapter 2", chapterUrl: URL(string: "https://example.com/chapter2")!)
+            ]
+        )
+        
+        MangaDetailsView(selectedManga: exampleManga)
             .frame(width: 500, height: 625)
     }
 }

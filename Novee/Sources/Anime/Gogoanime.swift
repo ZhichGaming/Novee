@@ -100,7 +100,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
             
             let newAnime = try JSONDecoder().decode(GogoanimeDetailsApi.self, from: data)
             
-            let result: Anime? = Anime(
+            var result: Anime? = Anime(
                 title: newAnime.title,
                 altTitles: newAnime.otherName != nil ? [newAnime.otherName!] : nil,
                 description: newAnime.description,
@@ -112,13 +112,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                     episodeUrl: URL(string: $0.url)!,
                     episodeId: $0.id)
                 }.reversed())
-            
-            if let result = result {
-                super.assignAnimeDetails(anime: anime, result: result)
-            } else {
-                Log.shared.msg("New anime details is nil.")
-                return nil
-            }
+            result?.detailsLoadingState = .success
             
             return result
         } catch {

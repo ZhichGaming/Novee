@@ -10,6 +10,7 @@ import CachedAsyncImage
 
 struct AnimeListView: View {
     @EnvironmentObject var animeListVM: AnimeListVM
+    @EnvironmentObject var animeVM: AnimeVM
     
     @State private var listQuery = ""
     @State private var showingSearchDetailsSheet = false
@@ -28,6 +29,8 @@ struct AnimeListView: View {
     @State private var showingRatingBad = true
     @State private var showingRatingGood = true
     @State private var showingRatingBest = true
+    
+    @State private var navigationPath = NavigationPath()
     
     var filteredList: [AnimeListElement] {
         var result = animeListVM.list
@@ -77,128 +80,130 @@ struct AnimeListView: View {
 
     var body: some View {
         GeometryReader { geo in
-            VStack(spacing: 0) {
-                HStack {
-                    TextField("Search for anime", text: $listQuery)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    Button {
-                        showingSearchDetailsSheet = true
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                    
-                    Button {
-                        showingAddNewAnimeSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle")
-                    }
-                }
-                .padding()
-                .sheet(isPresented: $showingSearchDetailsSheet) {
-                    VStack {
-                        Text("Filter options")
-                            .font(.title2.bold())
-                            .padding(.top)
+            NavigationStack(path: $navigationPath) {
+                VStack(spacing: 0) {
+                    HStack {
+                        TextField("Search for anime", text: $listQuery)
+                            .textFieldStyle(.roundedBorder)
                         
-                        TabView {
-                            VStack {
-                                HStack {
-                                    Picker("Sorting style", selection: $selectedSortingStyle) {
-                                        ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
-                                            Text($0)
-                                        }
-                                    }
-                                    .pickerStyle(.radioGroup)
-                                }
-                                .padding(.horizontal)
-                                
-                            }
-                            .tabItem {
-                                Text("Grouping and sorting")
-                            }
-                            
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text("Showing status")
-                                        .font(.headline)
-                                    
-                                    Toggle("Waiting", isOn: $showingWaiting)
-                                    Toggle("Watching", isOn: $showingWatching)
-                                    Toggle("Dropped", isOn: $showingDropped)
-                                    Toggle("Completed", isOn: $showingCompleted)
-                                    Toggle("To watch", isOn: $showingToWatch)
-                                }
-                                .padding(.trailing)
-                                
-                                VStack(alignment: .leading) {
-                                    Text("Showing rating")
-                                        .font(.headline)
-                                    
-                                    Toggle("None", isOn: $showingRatingNone)
-                                    Toggle("Horrible", isOn: $showingRatingHorrible)
-                                    Toggle("Bad", isOn: $showingRatingBad)
-                                    Toggle("Good", isOn: $showingRatingGood)
-                                    Toggle("Best", isOn: $showingRatingBest)
-                                }
-                                .padding(.leading)
-                            }
-                            .padding()
-                            .tabItem {
-                                Text("Filters")
-                            }
+                        Button {
+                            showingSearchDetailsSheet = true
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
                         }
-                        .padding()
                         
-                        HStack {
-                            Spacer()
-                            Button("Done") {
-                                showingSearchDetailsSheet = false
-                            }
-                        }
-                        .padding([.bottom, .horizontal])
-                    }
-                    .frame(width: 500, height: 350)
-                }
-                
-                HStack {
-                    Text("Title")
-                        .frame(width: geo.size.width * 0.3, alignment: .leading)
-                    Text("Last episode")
-                        .frame(width: geo.size.width * 0.2, alignment: .leading)
-                    Text("Status")
-                        .frame(width: geo.size.width * 0.2, alignment: .leading)
-                    Text("Rating")
-                        .frame(width: geo.size.width * 0.2, alignment: .leading)
-                }
-                .font(.headline)
-                .padding()
-                .padding(.horizontal)
-                
-                Divider()
-                ScrollView {
-                    LazyVStack {
-                        ForEach(filteredList) { animeListElement in
-                            Button {
-                                animeDetailsSheet = animeListElement
-                            } label: {
-                                AnimeListRowView(anime: animeListElement, geo: geo)
-                            }
-                            .buttonStyle(.plain)
+                        Button {
+                            showingAddNewAnimeSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle")
                         }
                     }
                     .padding()
+                    .sheet(isPresented: $showingSearchDetailsSheet) {
+                        VStack {
+                            Text("Filter options")
+                                .font(.title2.bold())
+                                .padding(.top)
+                            
+                            TabView {
+                                VStack {
+                                    HStack {
+                                        Picker("Sorting style", selection: $selectedSortingStyle) {
+                                            ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
+                                                Text($0)
+                                            }
+                                        }
+                                        .pickerStyle(.radioGroup)
+                                    }
+                                    .padding(.horizontal)
+                                    
+                                }
+                                .tabItem {
+                                    Text("Grouping and sorting")
+                                }
+                                
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("Showing status")
+                                            .font(.headline)
+                                        
+                                        Toggle("Waiting", isOn: $showingWaiting)
+                                        Toggle("Watching", isOn: $showingWatching)
+                                        Toggle("Dropped", isOn: $showingDropped)
+                                        Toggle("Completed", isOn: $showingCompleted)
+                                        Toggle("To watch", isOn: $showingToWatch)
+                                    }
+                                    .padding(.trailing)
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text("Showing rating")
+                                            .font(.headline)
+                                        
+                                        Toggle("None", isOn: $showingRatingNone)
+                                        Toggle("Horrible", isOn: $showingRatingHorrible)
+                                        Toggle("Bad", isOn: $showingRatingBad)
+                                        Toggle("Good", isOn: $showingRatingGood)
+                                        Toggle("Best", isOn: $showingRatingBest)
+                                    }
+                                    .padding(.leading)
+                                }
+                                .padding()
+                                .tabItem {
+                                    Text("Filters")
+                                }
+                            }
+                            .padding()
+                            
+                            HStack {
+                                Spacer()
+                                Button("Done") {
+                                    showingSearchDetailsSheet = false
+                                }
+                            }
+                            .padding([.bottom, .horizontal])
+                        }
+                        .frame(width: 500, height: 350)
+                    }
+                    
+                    HStack {
+                        Text("Title")
+                            .frame(width: geo.size.width * 0.3, alignment: .leading)
+                        Text("Last episode")
+                            .frame(width: geo.size.width * 0.2, alignment: .leading)
+                        Text("Status")
+                            .frame(width: geo.size.width * 0.2, alignment: .leading)
+                        Text("Rating")
+                            .frame(width: geo.size.width * 0.2, alignment: .leading)
+                    }
+                    .font(.headline)
+                    .padding()
+                    .padding(.horizontal)
+                    
+                    Divider()
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(filteredList) { animeListElement in
+                                NavigationLink(value: animeListElement) {
+                                    AnimeListRowView(anime: animeListElement, geo: geo)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .navigationDestination(for: AnimeListElement.self) { animeListElement in
+                                AnimeListDetailsSheetView(passedAnime: animeListElement)
+                            }
+                            .navigationDestination(for: Anime.self) { anime in
+                                AnimeDetailsView(selectedAnime: anime)
+                            }
+                        }
+                        .padding()
+                    }
+                    .sheet(isPresented: $showingAddNewAnimeSheet) {
+                        AnimeListAddNewToListView()
+                            .frame(width: 500, height: 300)
+                    }
                 }
-                .sheet(item: $animeDetailsSheet) { animeListElement in
-                    AnimeListDetailsSheetView(passedAnime: animeListElement)
-                        .frame(width: 700, height: 550)
-                }
-                .sheet(isPresented: $showingAddNewAnimeSheet) {
-                    AnimeListAddNewToListView()
-                        .frame(width: 500, height: 300)
-                }
+                .frame(width: geo.size.width)
             }
-            .frame(width: geo.size.width)
         }
     }
 }
@@ -325,6 +330,9 @@ struct AnimeListDetailsSheetView: View {
                             Spacer()
                             HStack {
                                 Spacer()
+                                
+                                NavigationLink("Open", value: anime)
+                                
                                 Button {
                                     if let currentIndex = animeKeysArray.firstIndex(of: key) {
                                         withAnimation {
@@ -360,8 +368,10 @@ struct AnimeListDetailsSheetView: View {
                                     }
                                 } label: {
                                     Image(systemName: "trash")
+                                        .foregroundColor(.red)
                                 }
                             }
+                            .padding(.horizontal)
                             
                             Divider()
                                 .padding(.horizontal)

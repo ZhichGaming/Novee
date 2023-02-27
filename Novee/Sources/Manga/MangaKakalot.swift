@@ -116,7 +116,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
     
     func fetchMangaDetails(manga: Manga) async -> Manga? {
         var htmlPage = ""
-        var result: Manga?
+        var result: Manga? = manga
         
         do {
             let (data, _) = try await URLSession.shared.data(from: manga.detailsUrl!)
@@ -133,10 +133,10 @@ class MangaKakalot: MangaFetcher, MangaSource {
             let infoElement: Element = try document.getElementsByClass("manga-info-text")[0]
             let tags: [Element] = try document.select("body > div.container > div.main-wrapper > div.leftCol > div.manga-info-top > ul > li:nth-child(7)").array().filter { $0.hasClass("nofollow") }
             
-            result = Manga(title: try infoElement
+            result?.title = try infoElement
                 .child(0)
                 .child(0)
-                .text())
+                .text()
             if try !infoElement.getElementsByClass("story-alternative").isEmpty() {
                 result?.altTitles = try infoElement
                     .getElementsByClass("story-alternative")[0]
@@ -174,6 +174,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             }
 
             result?.chapters = chapters.reversed()
+            result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
         }
@@ -183,7 +184,6 @@ class MangaKakalot: MangaFetcher, MangaSource {
     
     func getMangaDetails(manga: Manga) async -> Manga? {
         if let result = await fetchMangaDetails(manga: manga) {
-            super.assignMangaDetails(manga: manga, result: result)
             return result
         } else {
             Log.shared.msg("An error occured while fetching manga details")

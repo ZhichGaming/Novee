@@ -120,7 +120,7 @@ struct MangaColumnView: View {
         VStack {
             List(mangaVM.sources[selectedSource]!.mangaData) { manga in
                 NavigationLink {
-                    MangaDetailsView(selectedMangaIndex: mangaVM.sources[mangaVM.selectedSource]!.mangaData.firstIndex(of: manga) ?? 0)
+                    MangaDetailsView(selectedManga: manga)
                 } label: {
                     HStack {
                         VStack(alignment: .leading) {

@@ -20,28 +20,6 @@ class AnimeFetcher {
     let baseUrl: String
     
     @Published var animeData: [Anime] = []
-
-    func assignAnimeDetails(anime: Anime, result: Anime) {
-        DispatchQueue.main.sync {
-            AnimeVM.shared.objectWillChange.send()
-            
-            var passedSourceAnimes: [Anime] {
-                get { AnimeVM.shared.sources[AnimeVM.shared.selectedSource]!.animeData }
-                set { AnimeVM.shared.sources[AnimeVM.shared.selectedSource]?.animeData = newValue }
-            }
-            
-            let animeIndex = passedSourceAnimes.firstIndex(of: anime) ?? 0
-                        
-            passedSourceAnimes[animeIndex].title = result.title
-            passedSourceAnimes[animeIndex].altTitles = result.altTitles ?? passedSourceAnimes[animeIndex].altTitles
-            passedSourceAnimes[animeIndex].description = result.description ?? passedSourceAnimes[animeIndex].description
-            passedSourceAnimes[animeIndex].authors = result.authors ?? passedSourceAnimes[animeIndex].authors
-            passedSourceAnimes[animeIndex].tags = result.tags ?? passedSourceAnimes[animeIndex].tags
-            passedSourceAnimes[animeIndex].episodes = result.episodes ?? passedSourceAnimes[animeIndex].episodes
-            
-            passedSourceAnimes[animeIndex].detailsLoadingState = .success
-        }
-    }
 }
 
 protocol AnimeSource {

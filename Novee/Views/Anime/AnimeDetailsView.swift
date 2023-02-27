@@ -14,90 +14,85 @@ struct AnimeDetailsView: View {
     @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var notification: SystemNotificationContext
     
-    @State var selectedAnimeIndex: Int
+    @State var selectedAnime: Anime
 
     @State private var descriptionSize: CGSize = .zero
     @State private var descriptionCollapsed = false
     @State private var isHoveringOverDescription = false
     
-    /// Anime of the index passed in
-    var selectedAnime: Anime? {
-        if animeVM.sources[animeVM.selectedSource]!.animeData.count > selectedAnimeIndex {
-            return animeVM.sources[animeVM.selectedSource]!.animeData[selectedAnimeIndex]
-        }
-        
-        return nil
-    }
-    
     var body: some View {
-        if let selectedAnime = selectedAnime {
-            switch selectedAnime.detailsLoadingState {
-            case .success:
-                GeometryReader { geo in
+        switch selectedAnime.detailsLoadingState {
+        case .success:
+            GeometryReader { geo in
+                VStack {
+                    AnimeInfoView(geo: geo, selectedAnime: selectedAnime)
+                    Divider()
+                    
                     VStack {
-                        AnimeInfoView(geo: geo, selectedAnime: selectedAnime)
-                        Divider()
-                        
-                        VStack {
-                            HStack {
-                                Text("Description")
-                                    .font(.headline)
+                        HStack {
+                            Text("Description")
+                                .font(.headline)
 
-                                Button {
-                                    withAnimation {
-                                        descriptionCollapsed.toggle()
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.right")
-                                        .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
+                            Button {
+                                withAnimation {
+                                    descriptionCollapsed.toggle()
                                 }
-                                .buttonStyle(.plain)
-                                
-                                Spacer()
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
                             }
+                            .buttonStyle(.plain)
                             
-                            if !descriptionCollapsed {
-                                ScrollView {
-                                    Text(LocalizedStringKey(selectedAnime.description ?? "None"))
-                                        .background {
-                                            GeometryReader { textSize -> Color in
-                                                DispatchQueue.main.async {
-                                                    descriptionSize = textSize.size
-                                                }
-                                                
-                                                return Color.clear
+                            Spacer()
+                        }
+                        
+                        if !descriptionCollapsed {
+                            ScrollView {
+                                Text(LocalizedStringKey(selectedAnime.description ?? "None"))
+                                    .background {
+                                        GeometryReader { textSize -> Color in
+                                            DispatchQueue.main.async {
+                                                descriptionSize = textSize.size
                                             }
+                                            
+                                            return Color.clear
                                         }
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
-                                .transition(.opacity)
+                                    }
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
+                            .transition(.opacity)
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    EpisodeList(selectedAnime: $selectedAnime)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .padding()
+            }
+        case .loading:
+            ProgressView()
+                .onAppear {
+                    Task {
+                        await animeVM.getAnimeDetails(for: selectedAnime, source: animeVM.selectedSource) { newAnime in
+                            if let newAnime = newAnime {
+                                selectedAnime = newAnime
+                            } else {
+                                selectedAnime.detailsLoadingState = .failed
                             }
                         }
-                        
-                        Divider()
-                        
-                        EpisodeList(selectedAnimeIndex: selectedAnimeIndex)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    .padding()
-                }
-            case .loading:
-                ProgressView()
-                    .onAppear {
-                        Task {
-                            await animeVM.getAnimeDetails(for: selectedAnime)
-                        }
-                    }
-            case .failed:
-                Text("Fetching failed")
-                Button("Try again") {
-                    Task {
-                        await animeVM.sources[animeVM.selectedSource]!.getAnimeDetails(anime: selectedAnime)
                     }
                 }
-            case .notFound:
-                Text("A source for the selected anime has not been found.")
+        case .failed:
+            Text("Fetching failed")
+            Button("Try again") {
+                Task {
+                    await animeVM.sources[animeVM.selectedSource]!.getAnimeDetails(anime: selectedAnime)
+                }
             }
+        case .notFound:
+            Text("A source for the selected anime has not been found.")
         }
     }
 }
@@ -173,7 +168,7 @@ struct EpisodeList: View {
     
     @Environment(\.openWindow) var openWindow
     
-    @State var selectedAnimeIndex: Int
+    @Binding var selectedAnime: Anime
     @State var selected: UUID?
     
     @State private var ascendingOrder = true
@@ -182,18 +177,10 @@ struct EpisodeList: View {
     
     @State var window: NSWindow = NSWindow()
     
-    var selectedAnime: Anime? {
-        if animeVM.sources[animeVM.selectedSource]?.animeData.count ?? 0 > selectedAnimeIndex {
-            return animeVM.sources[animeVM.selectedSource]!.animeData[selectedAnimeIndex]
-        }
-        
-        return nil
-    }
-    
     var filteredEpisodes: [Episode]? {
         var result: [Episode]?
         
-        if let episodes = animeVM.sources[animeVM.selectedSource]!.animeData[selectedAnimeIndex].episodes {
+        if let episodes = selectedAnime.episodes {
             if ascendingOrder {
                 result = episodes
             } else {
@@ -209,7 +196,7 @@ struct EpisodeList: View {
     }
 
     var body: some View {
-        if let selectedAnime = selectedAnime, let filteredEpisodes = filteredEpisodes {
+        if let filteredEpisodes = filteredEpisodes {
             VStack {
                 HStack {
                     Text("Episodes")
@@ -219,7 +206,7 @@ struct EpisodeList: View {
                         TextField("Search for a episode", text: $episodeQuery)
                             .textFieldStyle(.roundedBorder)
                     } else {
-                        if let episodes = animeVM.sources[animeVM.selectedSource]!.animeData[selectedAnimeIndex].episodes {
+                        if let episodes = selectedAnime.episodes {
                             Spacer()
                         
                             Button("Watch first") {
@@ -282,7 +269,21 @@ struct EpisodeList: View {
 
 struct AnimeDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        AnimeDetailsView(selectedAnimeIndex: 0)
+        let exampleAnime = Anime(
+            title: "Example Anime",
+            altTitles: ["Example", "Example 2"],
+            authors: ["Example Author"],
+            tags: [AnimeTag(name: "Example Tag", url: URL(string: "https://example.com")!)],
+            detailsUrl: URL(string: "https://example.com"),
+            imageUrl: URL(string: "https://example.com")!,
+            episodes: [
+                Episode(title: "Example Episode"),
+                Episode(title: "Example Episode 2"),
+                Episode(title: "Example Episode 3")
+            ]
+        )
+
+        AnimeDetailsView(selectedAnime: exampleAnime)
             .frame(width: 500, height: 625)
     }
 }
