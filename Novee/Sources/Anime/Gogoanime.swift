@@ -68,7 +68,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
             for anime in animes.results ?? [] {
                 let converted = Anime(
                     title: anime.title,
-                    detailsUrl: URL(string: api + "/" + (anime.id ?? "")),
+                    detailsUrl: URL(string: api + "/info/" + (anime.id ?? "")),
                     imageUrl: URL(string: anime.image ?? ""))
                 
                 result.append(converted)
