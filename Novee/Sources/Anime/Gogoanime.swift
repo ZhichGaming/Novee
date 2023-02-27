@@ -95,9 +95,6 @@ class Gogoanime: AnimeFetcher, AnimeSource {
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
-            let dataAsString = String(data: data, encoding: .utf8)
-            print(dataAsString!)
-            
             let newAnime = try JSONDecoder().decode(GogoanimeDetailsApi.self, from: data)
             
             var result: Anime? = Anime(
