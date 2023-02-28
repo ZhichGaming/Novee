@@ -100,7 +100,7 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
-1. Clone the project using the command git clone https://github.com/ZhichGaming/Novee.git. Alternatively, you can use Xcode to clone by clicking Source Control > Clone on the menu bar.
+1. Clone the project using the command `git clone https://github.com/ZhichGaming/Novee.git`. Alternatively, you can use Xcode to clone by clicking Source Control > Clone on the menu bar.
 2. Open the project through Xcode by clicking File > Open on the menu bar. Navigate to the folder you cloned the project and click open.
 3. Get a codesigning profile if you haven't already by pressing `Xcode` in the menu bar and then clicking `Settings`. Press the `Accounts` tab and click the `+` button at the bottom left. Select `Apple ID`. 
 4. Click the topmost element in the project navigator. In the tab that opens, click the `Signing & Capabilities` tab and enable `Automatically manage signing`. Then select your signing profile you just created. 
