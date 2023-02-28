@@ -37,6 +37,7 @@
 		9B8A126029096712006C1922 /* MangaReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8A125F29096712006C1922 /* MangaReaderView.swift */; };
 		9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CB28FD8E8F008738D5 /* Log.swift */; };
 		9B8B70CE28FD8EDF008738D5 /* MangaVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */; };
+		9BA1C50329ADA2D6006DB424 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BA1C50229ADA2D6006DB424 /* AVKit.framework */; };
 		9BA53E8F2901E6CD00C6BDDF /* MangaDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */; };
 		9BC208042912C91D00A1845E /* MangaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC208032912C91D00A1845E /* MangaSettingsView.swift */; };
 		9BCC5C3C2965364200FDC318 /* MangaListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BCC5C3B2965364200FDC318 /* MangaListView.swift */; };
@@ -76,6 +77,7 @@
 		9B8A125F29096712006C1922 /* MangaReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaReaderView.swift; sourceTree = "<group>"; };
 		9B8B70CB28FD8E8F008738D5 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		9B8B70CD28FD8EDF008738D5 /* MangaVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaVM.swift; sourceTree = "<group>"; };
+		9BA1C50229ADA2D6006DB424 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		9BA53E8E2901E6CD00C6BDDF /* MangaDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaDetailsView.swift; sourceTree = "<group>"; };
 		9BAED6F0290AD23F00AF0CF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BC208032912C91D00A1845E /* MangaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaSettingsView.swift; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BA1C50329ADA2D6006DB424 /* AVKit.framework in Frameworks */,
 				9B1BFB2B29708E8C003DEAC8 /* SystemNotification in Frameworks */,
 				9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */,
 				9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */,
@@ -105,6 +108,7 @@
 			children = (
 				9B04480B28FB3DA300FD7891 /* Novee */,
 				9B04480A28FB3DA300FD7891 /* Products */,
+				9BA1C50129ADA2D6006DB424 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -236,6 +240,14 @@
 				9BCC5C3B2965364200FDC318 /* MangaListView.swift */,
 			);
 			path = Manga;
+			sourceTree = "<group>";
+		};
+		9BA1C50129ADA2D6006DB424 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9BA1C50229ADA2D6006DB424 /* AVKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		9BC208022912C90A00A1845E /* Settings */ = {
