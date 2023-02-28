@@ -38,7 +38,7 @@
   <p align="center">
     Novee is an application written in Swift that lets you watch anime, read manga or read novels. You will be able to keep track of the series you watch through a list, as well as being able to download them for watching offline.
     <br />
-    <a href="https://github.com/ZhichGaming/Novee"><strong>Explore the docs »</strong></a>
+    <a href="https://discord.gg/3BdpsdPN7r"><strong>Join the discord »</strong></a>
     <br />
     <br />
     <a href="https://github.com/ZhichGaming/Novee">View Demo</a>
@@ -172,6 +172,6 @@ Project Link: [https://github.com/ZhichGaming/Novee](https://github.com/ZhichGam
 [issues-shield]: https://img.shields.io/github/issues/ZhichGaming/Novee.svg?style=for-the-badge
 [issues-url]: https://github.com/ZhichGaming/Novee/issues
 [license-shield]: https://img.shields.io/github/license/ZhichGaming/Novee.svg?style=for-the-badge
-[license-url]: https://github.com/ZhichGaming/Novee/blob/master/LICENSE.txt
+[license-url]: https://github.com/ZhichGaming/Novee/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [product-screenshot]: images/anime-menu.png
