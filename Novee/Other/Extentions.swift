@@ -113,11 +113,18 @@ extension String {
     }
 }
 
+extension String {
+    var sanitizedFileName: String {
+        return components(separatedBy: .init(charactersIn: "/:?%*|\"<>")).joined()
+    }
+}
+
 extension URL {
-    static let mangaListStorageUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("mangalist", conformingTo: .json)
-    static let animeListStorageUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("animelist", conformingTo: .json)
+    static let applicationSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    static let mangaListStorageUrl = applicationSupportDirectory.appendingPathComponent("mangalist", conformingTo: .json)
+    static let animeListStorageUrl = applicationSupportDirectory.appendingPathComponent("animelist", conformingTo: .json)
+    static let mangaStorageUrl = applicationSupportDirectory.appendingPathComponent("manga", conformingTo: .folder)
+    static let animeStorageUrl = applicationSupportDirectory.appendingPathComponent("anime", conformingTo: .folder)
 }
 
 extension Array {

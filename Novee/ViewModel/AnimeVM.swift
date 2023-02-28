@@ -27,6 +27,8 @@ class AnimeVM: ObservableObject {
         }
     }
     
+    @Published var episodeDownloadProgress: EpisodeDownloadProgress? = nil
+    
     var sourcesArray: [AnimeSource] {
         Array(sources.values)
     }
@@ -71,4 +73,71 @@ class AnimeVM: ObservableObject {
             returnEpisode(newEpisode)
         }
     }
+    
+    func downloadEpisode(for url: StreamingUrl, anime: Anime) async {
+        do {
+            if !FileManager().fileExists(atPath: URL.animeStorageUrl.path) {
+                try FileManager().createDirectory(at: .animeStorageUrl, withIntermediateDirectories: false)
+            }
+            
+            if let url = url.url {
+                Task { @MainActor in
+                    episodeDownloadProgress = EpisodeDownloadProgress()
+                    
+                    episodeDownloadProgress?.dataTask = URLSession.shared.downloadTask(with: url) { location, response, error in
+                        if let location = location {
+                            do {
+                                let safeAnimeTitle = anime.title?.sanitizedFileName ?? "Unknown"
+                                let destinationParentFolder = URL.animeStorageUrl.appendingPathComponent(safeAnimeTitle, conformingTo: .folder)
+                                let destination = destinationParentFolder.appendingPathComponent(url.lastPathComponent)
+                                let encodedAnimeData = try JSONEncoder().encode(anime)
+                                
+                                if !FileManager().fileExists(atPath: destinationParentFolder.path) {
+                                    try FileManager().createDirectory(at: destinationParentFolder, withIntermediateDirectories: false)
+                                }
+                                
+                                if FileManager().fileExists(atPath: destination.path) {
+                                    try FileManager().removeItem(at: destination)
+                                }
+                                
+                                if FileManager().fileExists(atPath: destinationParentFolder.appendingPathComponent("info", conformingTo: .json).path) {
+                                    try FileManager().removeItem(at: destinationParentFolder.appendingPathComponent("info", conformingTo: .json))
+                                }
+                                
+                                FileManager().createFile(atPath: destinationParentFolder.appendingPathComponent("info", conformingTo: .json).path, contents: encodedAnimeData)
+                                try FileManager().moveItem(at: location, to: destination)
+                            } catch {
+                                Log.shared.error(error)
+                            }
+                        }
+                    }
+                    
+                    episodeDownloadProgress?.observation = episodeDownloadProgress?.dataTask?.progress.observe(\.fractionCompleted) { observationProgress, _ in
+                        DispatchQueue.main.async {
+                            self.episodeDownloadProgress?.progress = observationProgress.fractionCompleted
+                        }
+                    }
+                    
+                    episodeDownloadProgress?.dataTask?.resume()
+                }
+            }
+        } catch {
+            Log.shared.error(error)
+        }
+    }
+    
+    func resetEpisodeDownloadProgress() {
+        episodeDownloadProgress?.dataTask?.cancel()
+        episodeDownloadProgress?.observation?.invalidate()
+        
+        episodeDownloadProgress = nil
+    }
+}
+
+struct EpisodeDownloadProgress: Hashable {
+    var progress: Double = 0
+    let total: Double = 1
+
+    var dataTask: URLSessionDownloadTask?
+    var observation: NSKeyValueObservation?
 }

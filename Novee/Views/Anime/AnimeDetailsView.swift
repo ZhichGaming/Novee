@@ -175,6 +175,10 @@ struct EpisodeList: View {
     @State private var showingSearch = false
     @State private var episodeQuery = ""
     
+    @State private var streamingUrls: [StreamingUrl] = []
+    @State private var selectedQuality = ""
+    @State private var presentedDownloadEpisodeSheet: Episode? = nil
+    
     @State var window: NSWindow = NSWindow()
     
     var filteredEpisodes: [Episode]? {
@@ -249,6 +253,12 @@ struct EpisodeList: View {
                                 .font(.headline)
                             
                             Spacer()
+                            
+                            Button {
+                                presentedDownloadEpisodeSheet = episode
+                            } label: {
+                                Image(systemName: "arrow.down.square")
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -259,6 +269,62 @@ struct EpisodeList: View {
                     }
                 }
                 .listStyle(.bordered(alternatesRowBackgrounds: true))
+                .sheet(item: $presentedDownloadEpisodeSheet) { episode in
+                    VStack {
+                        Picker("Select quality", selection: $selectedQuality) {
+                            ForEach(streamingUrls) { url in
+                                Text(url.quality ?? "Unknown")
+                                    .tag(url.quality ?? "")
+                            }
+                        }
+                        .disabled(streamingUrls.isEmpty)
+                        .frame(width: 300)
+                        
+                        HStack {
+                            if animeVM.episodeDownloadProgress != nil {
+                                ProgressView(value: animeVM.episodeDownloadProgress!.progress, total: animeVM.episodeDownloadProgress!.total) {
+                                    EmptyView()
+//                                    if animeVM.episodeDownloadProgress?.progress != 1 {
+//                                        Text("Downloading anime...")
+//                                    } else {
+//                                        Text("Download finished!")
+//                                    }
+                                }
+                                .progressViewStyle(LinearProgressViewStyle())
+                            }
+                            
+                            Spacer()
+                            
+                            Button("Cancel") {
+                                presentedDownloadEpisodeSheet = nil
+                                animeVM.resetEpisodeDownloadProgress()
+                            }
+                            
+                            Button("Download") {
+                                animeVM.resetEpisodeDownloadProgress()
+                                
+                                Task {
+                                    if let streamingUrl = streamingUrls.first(where: { $0.quality == selectedQuality }) {
+                                        await animeVM.downloadEpisode(for: streamingUrl, anime: selectedAnime)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .onAppear {
+                        Task {
+                            streamingUrls = []
+                            selectedQuality = "Loading..."
+                            
+                            await animeVM.getStreamingUrl(for: episode, anime: selectedAnime) { newEpisode in
+                                streamingUrls = newEpisode?.streamingUrls ?? []
+                                
+                                selectedQuality = streamingUrls.first { $0.quality == animeVM.lastSelectedResolution }?.quality ?? streamingUrls.first?.quality ?? ""
+                            }
+                        }
+                    }
+                }
             }
         } else {
             Text("No episodes have been found.")
