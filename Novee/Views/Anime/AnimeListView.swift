@@ -244,7 +244,7 @@ struct AnimeListDetailsSheetView: View {
     @EnvironmentObject var animeVM: AnimeVM
     @EnvironmentObject var animeListVM: AnimeListVM
     
-    let passedAnime: AnimeListElement
+    @State var passedAnime: AnimeListElement
 
     @Environment(\.dismiss) var dismiss
     
@@ -256,6 +256,8 @@ struct AnimeListDetailsSheetView: View {
     @State private var selectedAnimeStatus: String = ""
     
     @State private var showingDeleteAlert = false
+    @State private var showingDeleteSourceAlert = false
+    @State private var deleteSourceAlertSource: String? = nil
     @State private var showingLastEpisodeSelection = false
     @State private var selectedLastReadDate: Date = Date.now
 
@@ -356,19 +358,30 @@ struct AnimeListDetailsSheetView: View {
                                 .disabled(animeKeysArray.firstIndex(of: key) ?? animeKeysArray.count >= animeKeysArray.count - 1)
 
                                 Button {
-                                    if let currentIndex = animeKeysArray.firstIndex(of: key) {
-                                        withAnimation {
-                                            animeKeysArray.remove(at: currentIndex)
-                                            return () // This is to remove the warning of withAnimation being unused.
-                                        }
-                                        
-                                        if let listElementIndex = animeListVM.list.firstIndex(where: { $0.id == passedAnime.id }) {
-                                            animeListVM.list[listElementIndex].anime.removeValue(forKey: key)
-                                        }
-                                    }
+                                    showingDeleteSourceAlert = true
+                                    deleteSourceAlertSource = key
                                 } label: {
                                     Image(systemName: "trash")
                                         .foregroundColor(.red)
+                                }
+                                .alert(
+                                    "Warning",
+                                    isPresented: $showingDeleteSourceAlert,
+                                    presenting: deleteSourceAlertSource
+                                ) { source in
+                                    Button("Cancel", role: .cancel) { }
+                                    Button("Delete", role: .destructive) {
+                                        withAnimation {
+                                            animeListVM.removeSourceFromList(id: passedAnime.id, source: source)
+                                            passedAnime.anime.removeValue(forKey: source)
+                                            
+                                            if !animeListVM.list.contains(where: { $0.id == passedAnime.id }) {
+                                                dismiss()
+                                            }
+                                        }
+                                    }
+                                } message: { _ in
+                                    Text("Are you sure you want to delete this element from your list? This action is irreversible.")
                                 }
                             }
                             .padding(.horizontal)

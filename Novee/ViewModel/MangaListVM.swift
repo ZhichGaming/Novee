@@ -57,6 +57,26 @@ class MangaListVM: ObservableObject {
         list.append(MangaListElement(manga: mangas, lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
     }
     
+    func removeFromList(id: UUID) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list.remove(at: index)
+        } else {
+            Log.shared.msg("Could not remove from list.")
+        }
+    }
+    
+    func removeSourceFromList(id: UUID, source: String) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].manga.removeValue(forKey: source)
+            
+            if list[index].manga.isEmpty {
+                removeFromList(id: id)
+            }
+        } else {
+            Log.shared.msg("Could not remove source from list.")
+        }
+    }
+    
     func updateMangaInListElement(id: UUID, source: String, manga: Manga) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index].manga[source] = manga

@@ -57,6 +57,26 @@ class AnimeListVM: ObservableObject {
         list.append(AnimeListElement(anime: animes, lastEpisode: lastEpisode, status: status, rating: rating, lastWatchDate: lastWatchDate, creationDate: creationDate))
     }
     
+    func removeFromList(id: UUID) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list.remove(at: index)
+        } else {
+            Log.shared.msg("Could not remove from list.")
+        }
+    }
+    
+    func removeSourceFromList(id: UUID, source: String) {
+        if let index = list.firstIndex(where: { $0.id == id }) {
+            list[index].anime.removeValue(forKey: source)
+            
+            if list[index].anime.isEmpty {
+                removeFromList(id: id)
+            }
+        } else {
+            Log.shared.msg("Could not remove source from list.")
+        }
+    }
+    
     func updateAnimeInListElement(id: UUID, source: String, anime: Anime) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index].anime[source] = anime

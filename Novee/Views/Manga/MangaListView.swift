@@ -241,7 +241,7 @@ struct MangaListDetailsSheetView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @EnvironmentObject var mangaListVM: MangaListVM
     
-    let passedManga: MangaListElement
+    @State var passedManga: MangaListElement
 
     @Environment(\.dismiss) var dismiss
     
@@ -253,6 +253,8 @@ struct MangaListDetailsSheetView: View {
     @State private var selectedMangaStatus: String = ""
     
     @State private var showingDeleteAlert = false
+    @State private var showingDeleteSourceAlert = false
+    @State private var deleteSourceAlertSource: String? = nil
     @State private var showingLastChapterSelection = false
     @State private var selectedLastReadDate: Date = Date.now
 
@@ -353,18 +355,30 @@ struct MangaListDetailsSheetView: View {
                                 .disabled(mangaKeysArray.firstIndex(of: key) ?? mangaKeysArray.count >= mangaKeysArray.count - 1)
 
                                 Button {
-                                    if let currentIndex = mangaKeysArray.firstIndex(of: key) {
-                                        withAnimation {
-                                            mangaKeysArray.remove(at: currentIndex)
-                                            return () // This is to remove the warning of withAnimation being unused.
-                                        }
-                                        
-                                        if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
-                                            mangaListVM.list[listElementIndex].manga.removeValue(forKey: key)
-                                        }
-                                    }
+                                    showingDeleteSourceAlert = true
+                                    deleteSourceAlertSource = key
                                 } label: {
                                     Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                }
+                                .alert(
+                                    "Warning",
+                                    isPresented: $showingDeleteSourceAlert,
+                                    presenting: deleteSourceAlertSource
+                                ) { source in
+                                    Button("Cancel", role: .cancel) { }
+                                    Button("Delete", role: .destructive) {
+                                        withAnimation {
+                                            mangaListVM.removeSourceFromList(id: passedManga.id, source: source)
+                                            passedManga.manga.removeValue(forKey: source)
+                                            
+                                            if !mangaListVM.list.contains(where: { $0.id == passedManga.id }) {
+                                                dismiss()
+                                            }
+                                        }
+                                    }
+                                } message: { _ in
+                                    Text("Are you sure you want to delete this element from your list? This action is irreversible.")
                                 }
                             }
                             .padding(.horizontal)
