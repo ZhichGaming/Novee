@@ -15,6 +15,7 @@ class MangaVM: ObservableObject {
         sources[mangakakalot.sourceId] = mangakakalot
         sources[manganato.sourceId] = manganato
         sources[chapmanganato.sourceId] = chapmanganato
+        sources[asurascans.sourceId] = asurascans
     }
 
     @Published var sources: [String: any MangaSource] = [:]
@@ -28,6 +29,7 @@ class MangaVM: ObservableObject {
     private let mangakakalot = MangaKakalot()
     private let manganato = MangaNato()
     private let chapmanganato = ChapMangaNato()
+    private let asurascans = AsuraScans()
     
     func changeChapter(chapter: Chapter, manga: Manga, offset: Int = 1) -> Chapter? {
         if let chapterIndex: Int = manga.chapters?.firstIndex(where: { $0.id == chapter.id }) {
