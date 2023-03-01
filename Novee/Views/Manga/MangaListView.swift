@@ -226,6 +226,7 @@ struct MangaListRowView: View {
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
             Text(manga.rating.rawValue)
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
+                .foregroundColor(manga.rating == .best ? .purple : .primary)
         }
         .frame(maxWidth: .infinity)
         .padding()

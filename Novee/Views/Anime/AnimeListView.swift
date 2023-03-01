@@ -229,6 +229,7 @@ struct AnimeListRowView: View {
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
             Text(anime.rating.rawValue)
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
+                .foregroundColor(anime.rating == .best ? .purple : .primary)
         }
         .frame(maxWidth: .infinity)
         .padding()
