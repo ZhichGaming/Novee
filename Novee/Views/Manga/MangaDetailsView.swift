@@ -181,6 +181,7 @@ struct ChapterList: View {
     @State private var ascendingOrder = true
     @State private var showingSearch = false
     @State private var chapterQuery = ""
+    @State private var presentedDownloadChapterSheet: Chapter? = nil
     
     @State var window: NSWindow = NSWindow()
     
@@ -264,6 +265,12 @@ struct ChapterList: View {
                                 .font(.headline)
                             
                             Spacer()
+                            
+                            Button {
+                                presentedDownloadChapterSheet = chapter
+                            } label: {
+                                Image(systemName: "arrow.down.square")
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -278,6 +285,44 @@ struct ChapterList: View {
                     }
                 }
                 .listStyle(.bordered(alternatesRowBackgrounds: true))
+                .sheet(item: $presentedDownloadChapterSheet) { chapter in
+                    VStack {
+                        Text("Download: \(chapter.title)")
+                            .font(.title3.bold())
+                        
+                        HStack {
+                            if mangaVM.chapterDownloadProgress != nil {
+                                ProgressView(value: Double(mangaVM.chapterDownloadProgress!.progress), total: Double(mangaVM.chapterDownloadProgress!.total)) {
+                                    if mangaVM.chapterDownloadProgress!.total == 0 {
+                                        Text("Fetching chapter count")
+                                    } else if mangaVM.chapterDownloadProgress!.total == mangaVM.chapterDownloadProgress!.progress {
+                                        Text("Chapter downloaded!")
+                                    } else {
+                                        Text("Downloading chapter")
+                                    }
+                                }
+                                .progressViewStyle(LinearProgressViewStyle())
+                            }
+                            
+                            Spacer()
+                            
+                            Button("Dismiss") {
+                                presentedDownloadChapterSheet = nil
+                            }
+                            
+                            Button("Download") {
+                                Task {
+                                    await mangaVM.downloadChapter(manga: selectedManga, chapter: chapter)
+                                }
+                            }
+                        }
+                    }
+                    .frame(width: 300)
+                    .padding()
+                    .onDisappear {
+                        mangaVM.chapterDownloadProgress = nil
+                    }
+                }
             }
         } else {
             Text("No chapters have been found.")

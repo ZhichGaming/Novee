@@ -22,6 +22,8 @@ class MangaVM: ObservableObject {
     @Published var selectedSource = "mangakakalot"
     @Published var pageNumber = 1
     
+    @Published var chapterDownloadProgress: ChapterDownloadProgress? = nil
+
     var sourcesArray: [MangaSource] {
         Array(sources.values)
     }
@@ -94,4 +96,59 @@ class MangaVM: ObservableObject {
             }
         }
     }
+    
+    func downloadChapter(manga: Manga, chapter: Chapter) async {
+        do {
+            if !FileManager().fileExists(atPath: URL.mangaStorageUrl.path) {
+                try FileManager().createDirectory(at: .mangaStorageUrl, withIntermediateDirectories: false)
+            }
+            
+            Task { @MainActor in
+                var images: [Int: NSImage?] = [:] {
+                    didSet {
+                        Task { @MainActor in
+                            chapterDownloadProgress = ChapterDownloadProgress(progress: images.map { $0.value }.filter { $0 != nil }.count, total: images.count)
+                        }
+                    }
+                }
+                
+                do {
+                    let safeMangaTitle = manga.title.sanitizedFileName
+                    let currentMangaFolder = URL.mangaStorageUrl.appendingPathComponent(safeMangaTitle, conformingTo: .folder)
+                    let currentChapterFolder = currentMangaFolder.appendingPathComponent(chapter.title.sanitizedFileName)
+                    let encodedMangaData = try JSONEncoder().encode(manga)
+                    
+                    if FileManager().fileExists(atPath: currentChapterFolder.path) {
+                        try FileManager().removeItem(at: currentChapterFolder)
+                    }
+                    
+                    if FileManager().fileExists(atPath: currentMangaFolder.appendingPathComponent("info", conformingTo: .json).path) {
+                        try FileManager().removeItem(at: currentMangaFolder.appendingPathComponent("info", conformingTo: .json))
+                    }
+                    
+                    try FileManager().createDirectory(at: currentChapterFolder, withIntermediateDirectories: true)
+                    FileManager().createFile(atPath: currentMangaFolder.appendingPathComponent("info", conformingTo: .json).path, contents: encodedMangaData)
+                
+                    await sources[selectedSource]?.getMangaPages(manga: manga, chapter: chapter) { index, image in
+                        images[index] = image.image
+                        
+                        if let image = image.image {
+                            let destination = currentChapterFolder.appendingPathComponent("Page \(index + 1)", conformingTo: .png)
+                            
+                            FileManager().createFile(atPath: destination.path, contents: image.pngData())
+                        }
+                    }
+                } catch {
+                    Log.shared.error(error)
+                }
+            }
+        } catch {
+            Log.shared.error(error)
+        }
+    }
+}
+
+struct ChapterDownloadProgress {
+    var progress: Int = 0
+    var total: Int = 0
 }
