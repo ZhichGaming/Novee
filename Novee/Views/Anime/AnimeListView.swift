@@ -216,8 +216,10 @@ struct AnimeListRowView: View {
         HStack {
             Text(anime.anime.first?.value.title ?? "No title")
                 .frame(width: geo.size.width * 0.3, alignment: .leading)
+                .lineLimit(2)
             Text(anime.lastEpisode ?? "No last episode")
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
+                .lineLimit(2)
             Text(anime.status.rawValue)
                 .foregroundColor(.white)
                 .padding(3)

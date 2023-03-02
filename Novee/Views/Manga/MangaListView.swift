@@ -213,8 +213,10 @@ struct MangaListRowView: View {
         HStack {
             Text(manga.manga.first?.value.title ?? "No title")
                 .frame(width: geo.size.width * 0.3, alignment: .leading)
+                .lineLimit(2)
             Text(manga.lastChapter ?? "No last chapter")
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
+                .lineLimit(2)
             Text(manga.status.rawValue)
                 .foregroundColor(.white)
                 .padding(3)
