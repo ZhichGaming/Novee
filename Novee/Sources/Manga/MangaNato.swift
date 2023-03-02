@@ -52,6 +52,7 @@ class MangaNato: MangaFetcher, MangaSource {
                 result.description = try manga.child(1).child(3).text()
                 result.detailsUrl = try URL(string: manga.child(1).child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
+                result.chapters = [try Chapter(title: manga.child(1).child(1).text(), chapterUrl: URL(string: manga.child(1).child(1).attr("href"))!)]
 
                 super.mangaData.append(result)
                 finalResult.append(result)
@@ -102,6 +103,9 @@ class MangaNato: MangaFetcher, MangaSource {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
+                result.chapters = try manga.child(1).getElementsByClass("item-chapter").map {
+                    try Chapter(title: $0.text(), chapterUrl: URL(string: $0.attr("href"))!)
+                }
 
                 super.mangaData.append(result)
                 finalResult.append(result)

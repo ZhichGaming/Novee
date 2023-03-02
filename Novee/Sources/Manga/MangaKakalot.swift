@@ -52,6 +52,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 result.description = try manga.children().last()?.text()
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
+                result.chapters = [try Chapter(title: manga.child(2).text(), chapterUrl: URL(string: manga.child(2).attr("href"))!)]
                 
                 super.mangaData.append(result)
                 finalResult.append(result)
@@ -102,6 +103,9 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
+                result.chapters = try manga.getElementsByClass("story_chapter").map {
+                    try Chapter(title: $0.child(0).text(), chapterUrl: URL(string: $0.child(0).attr("href"))!)
+                }.reversed()
                 
                 super.mangaData.append(result)
                 finalResult.append(result)

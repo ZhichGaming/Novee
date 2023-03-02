@@ -122,7 +122,10 @@ struct MangaColumnView: View {
                 NavigationLink {
                     MangaDetailsView(selectedManga: manga)
                 } label: {
-                    MangaColumnElementView(manga: manga)
+                    MediaColumnElementView(
+                        imageUrl: manga.imageUrl,
+                        title: manga.title,
+                        installmentTitles: manga.chapters?.map { $0.title })
                 }
             }
 //        } else if mangaVM.mangadexResponse == nil {
@@ -137,37 +140,6 @@ struct MangaColumnView: View {
 //            }
         }
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct MangaColumnElementView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-        
-    let manga: Manga
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(manga.title)
-                    .font(.title2)
-                Text(manga.detailsUrl?.host ?? "Unknown host")
-                    .font(.caption)
-                // TODO: Latest chapter
-//                Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
-//                    .font(.footnote)
-            }
-
-            Spacer()
-            CachedAsyncImage(url: manga.imageUrl) { image in
-                image
-                    .resizable()
-                    .scaledToFit()
-            } placeholder: {
-                ProgressView()
-            }
-        }
-        .frame(height: 100)
-        .contentShape(Rectangle())
     }
 }
 

@@ -122,28 +122,10 @@ struct AnimeColumnView: View {
                 NavigationLink {
                     AnimeDetailsView(selectedAnime: anime)
                 } label: {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(anime.title ?? "No title")
-                                .font(.title2)
-                            Text(anime.detailsUrl?.host ?? "Unknown host")
-                                .font(.caption)
-                            // TODO: Latest chapter
-//                            Text("Latest chapter: \(manga.attributes.lastChapter ?? "Unknown")")
-//                                .font(.footnote)
-                        }
-
-                        Spacer()
-                        CachedAsyncImage(url: anime.imageUrl) { image in
-                            image
-                                .resizable()
-                                .scaledToFit()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                    }
-                    .frame(height: 100)
-                    .contentShape(Rectangle())
+                    MediaColumnElementView(
+                        imageUrl: anime.imageUrl,
+                        title: anime.title,
+                        installmentTitles: anime.episodes?.map { $0.title })
                 }
             }
 //        } else if mangaVM.mangadexResponse == nil {

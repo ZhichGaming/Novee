@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import CachedAsyncImage
 
 struct ContentView: View {
     @State private var selectedView: Int? = -1
@@ -74,6 +75,48 @@ struct ContentView: View {
     
     private func toggleSidebar() {
         NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
+    }
+}
+
+struct MediaColumnElementView: View {        
+    let imageUrl: URL?
+    let title: String?
+    
+    var installmentTitles: [String]?
+    
+    var body: some View {
+        HStack {
+            CachedAsyncImage(url: imageUrl) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .cornerRadius(5)
+                    .frame(width: 75)
+                    .clipped()
+                    .shadow(radius: 2, x: 2, y: 2)
+            } placeholder: {
+                ProgressView()
+                    .frame(width: 75)
+            }
+                        
+            VStack(alignment: .leading) {
+                Text(title ?? "No title")
+                    .font(.title3)
+                    .lineLimit(2)
+                    .padding(.vertical, 2)
+                
+                if let lastInstallments = installmentTitles?.suffix(3) {
+                    ForEach(lastInstallments, id: \.self) { installment in
+                        Text(installment)
+                            .font(.footnote)
+                            .lineLimit(1)
+                    }
+                }
+            }
+        }
+        .frame(height: 100)
+        .contentShape(Rectangle())
+        .padding(.vertical, 2)
     }
 }
 

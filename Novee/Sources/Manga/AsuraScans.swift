@@ -50,9 +50,11 @@ class AsuraScans: MangaFetcher, MangaSource {
                 var result = Manga(title: try manga.child(0).child(1).child(0).attr("title"))
                 result.detailsUrl = try URL(string: manga.child(0).child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).child(0).child(0).attr("src"))
-//                result.chapters = try manga.child(0).child(1).child(1).children().array().map {
-//                    return Chapter(title: try $0.child(0).text(), chapterUrl: URL(string: try $0.child(0).attr("href"))!)
-//                }
+                result.chapters = try manga.child(0).child(1).child(1).children().array().map {
+                    let chapterElement = $0.children().array().first { $0.nodeName() == "a" }!
+                    
+                    return Chapter(title: try chapterElement.text(), chapterUrl: URL(string: try chapterElement.attr("href"))!)
+                }
                 
                 super.mangaData.append(result)
                 finalResult.append(result)
