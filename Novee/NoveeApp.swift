@@ -21,6 +21,7 @@ struct NoveeApp: App {
                 .environmentObject(AnimeListVM.shared)
                 .environmentObject(MangaVM.shared)
                 .environmentObject(MangaListVM.shared)
+                .environmentObject(MangaLibraryVM.shared)
                 .environmentObject(notification)
                 .presentedWindowToolbarStyle(.unified)
         }

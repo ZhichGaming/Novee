@@ -88,23 +88,30 @@ class AnimeVM: ObservableObject {
                         if let location = location {
                             do {
                                 let safeAnimeTitle = anime.title?.sanitizedFileName ?? "Unknown"
-                                let destinationParentFolder = URL.animeStorageUrl.appendingPathComponent(safeAnimeTitle, conformingTo: .folder)
-                                let destination = destinationParentFolder.appendingPathComponent(url.lastPathComponent)
-                                let encodedAnimeData = try JSONEncoder().encode(anime)
+                                let currentAnimeFolder = URL.animeStorageUrl.appendingPathComponent(safeAnimeTitle, conformingTo: .folder)
+                                let destination = currentAnimeFolder.appendingPathComponent(url.lastPathComponent)
                                 
-                                if !FileManager().fileExists(atPath: destinationParentFolder.path) {
-                                    try FileManager().createDirectory(at: destinationParentFolder, withIntermediateDirectories: false)
+                                if !FileManager().fileExists(atPath: currentAnimeFolder.path) {
+                                    try FileManager().createDirectory(at: currentAnimeFolder, withIntermediateDirectories: false)
                                 }
                                 
                                 if FileManager().fileExists(atPath: destination.path) {
                                     try FileManager().removeItem(at: destination)
                                 }
                                 
-                                if FileManager().fileExists(atPath: destinationParentFolder.appendingPathComponent("info", conformingTo: .json).path) {
-                                    try FileManager().removeItem(at: destinationParentFolder.appendingPathComponent("info", conformingTo: .json))
+                                if let thumbnailUrl = anime.imageUrl {
+                                    URLSession.shared.dataTask(with: thumbnailUrl) { data, response, error in
+                                        if let data = data {
+                                            if FileManager().fileExists(atPath: currentAnimeFolder.appendingPathComponent("thumbnail", conformingTo: .png).path) {
+                                                try? FileManager().removeItem(at: currentAnimeFolder.appendingPathComponent("thumbnail", conformingTo: .png))
+                                            }
+                                            
+                                            FileManager().createFile(atPath: currentAnimeFolder.appendingPathComponent("thumbnail", conformingTo: .png).path, contents: data)
+                                        }
+                                    }
+                                    .resume()
                                 }
                                 
-                                FileManager().createFile(atPath: destinationParentFolder.appendingPathComponent("info", conformingTo: .json).path, contents: encodedAnimeData)
                                 try FileManager().moveItem(at: location, to: destination)
                             } catch {
                                 Log.shared.error(error)

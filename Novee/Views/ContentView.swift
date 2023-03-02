@@ -48,6 +48,14 @@ struct ContentView: View {
                             Text("Manga list")
                         }
                     }
+                    
+                    NavigationLink(tag: 5, selection: self.$selectedView, destination: { MangaLocalLibraryView() }) {
+                        HStack {
+                            Image(systemName: "books.vertical")
+                                .frame(width: 15)
+                            Text("Library")
+                        }
+                    }
                 }
             }
             .listStyle(.sidebar)

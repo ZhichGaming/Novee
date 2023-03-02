@@ -116,24 +116,31 @@ class MangaVM: ObservableObject {
                     let safeMangaTitle = manga.title.sanitizedFileName
                     let currentMangaFolder = URL.mangaStorageUrl.appendingPathComponent(safeMangaTitle, conformingTo: .folder)
                     let currentChapterFolder = currentMangaFolder.appendingPathComponent(chapter.title.sanitizedFileName)
-                    let encodedMangaData = try JSONEncoder().encode(manga)
                     
                     if FileManager().fileExists(atPath: currentChapterFolder.path) {
                         try FileManager().removeItem(at: currentChapterFolder)
                     }
                     
-                    if FileManager().fileExists(atPath: currentMangaFolder.appendingPathComponent("info", conformingTo: .json).path) {
-                        try FileManager().removeItem(at: currentMangaFolder.appendingPathComponent("info", conformingTo: .json))
+                    if let thumbnailUrl = manga.imageUrl {
+                        URLSession.shared.dataTask(with: thumbnailUrl) { data, response, error in
+                            if let data = data {
+                                if FileManager().fileExists(atPath: currentMangaFolder.appendingPathComponent("thumbnail", conformingTo: .png).path) {
+                                    try? FileManager().removeItem(at: currentMangaFolder.appendingPathComponent("thumbnail", conformingTo: .png))
+                                }
+                                
+                                FileManager().createFile(atPath: currentMangaFolder.appendingPathComponent("thumbnail", conformingTo: .png).path, contents: data)
+                            }
+                        }
+                        .resume()
                     }
-                    
+                        
                     try FileManager().createDirectory(at: currentChapterFolder, withIntermediateDirectories: true)
-                    FileManager().createFile(atPath: currentMangaFolder.appendingPathComponent("info", conformingTo: .json).path, contents: encodedMangaData)
                 
                     await sources[selectedSource]?.getMangaPages(manga: manga, chapter: chapter) { index, image in
                         images[index] = image.image
                         
                         if let image = image.image {
-                            let destination = currentChapterFolder.appendingPathComponent("Page \(index + 1)", conformingTo: .png)
+                            let destination = currentChapterFolder.appendingPathComponent("\(index + 1)", conformingTo: .png)
                             
                             FileManager().createFile(atPath: destination.path, contents: image.pngData())
                         }

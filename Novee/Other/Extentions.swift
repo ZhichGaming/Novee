@@ -119,6 +119,12 @@ extension String {
     }
 }
 
+extension [String] {
+    func filteredDS_Store() -> [String] {
+        return self.filter { $0 != ".DS_Store" }
+    }
+}
+
 extension URL {
     static let applicationSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     static let mangaListStorageUrl = applicationSupportDirectory.appendingPathComponent("mangalist", conformingTo: .json)
