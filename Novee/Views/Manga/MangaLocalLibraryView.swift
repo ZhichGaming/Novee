@@ -22,29 +22,7 @@ struct MangaLocalLibraryView: View {
                 LazyVGrid(columns: gridLayout, alignment: .center) {
                     ForEach(mangaLibraryVM.mangaData) { manga in
                         NavigationLink(value: manga) {
-                            VStack(alignment: .center) {
-                                Group {
-                                    if let image = manga.image {
-                                        Image(nsImage: image)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .cornerRadius(5)
-                                            .clipped()
-                                            .shadow(radius: 2, x: 2, y: 2)
-                                    } else {
-                                        ProgressView()
-                                    }
-                                }
-                                .frame(width: 150, height: 200)
-                                .onAppear {
-                                    
-                                }
-
-                                Text(manga.title ?? "No title")
-                                    .font(.headline)
-                                    .lineLimit(2)
-                                    .multilineTextAlignment(.center)
-                            }
+                            GridItemView(image: manga.image, title: manga.title)
                         }
                     }
                 }
@@ -81,6 +59,37 @@ struct MangaLocalLibraryView: View {
             rootView: MangaLocalLibraryReaderView(selectedManga: manga, selectedChapter: chapter, window: $window)
                 .environmentObject(mangaLibraryVM)
         )
+    }
+}
+
+struct GridItemView: View {
+    let image: NSImage?
+    let title: String?
+    
+    var body: some View {
+        VStack(alignment: .center) {
+            Group {
+                if let image = image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .cornerRadius(5)
+                        .clipped()
+                        .shadow(radius: 2, x: 2, y: 2)
+                } else {
+                    ProgressView()
+                }
+            }
+            .frame(width: 150, height: 200)
+            .onAppear {
+                
+            }
+
+            Text(title ?? "No title")
+                .font(.headline)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+        }
     }
 }
 
