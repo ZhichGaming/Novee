@@ -180,22 +180,20 @@ struct AnimeListView: View {
                     .padding(.horizontal)
                     
                     Divider()
-                    ScrollView {
-                        LazyVStack {
-                            ForEach(filteredList) { animeListElement in
-                                NavigationLink(value: animeListElement) {
-                                    AnimeListRowView(anime: animeListElement, geo: geo)
-                                }
-                                .buttonStyle(.plain)
+                    
+                    VStack {
+                        List(filteredList) { animeListElement in
+                            NavigationLink(value: animeListElement) {
+                                AnimeListRowView(anime: animeListElement, geo: geo)
                             }
-                            .navigationDestination(for: AnimeListElement.self) { animeListElement in
-                                AnimeListDetailsSheetView(passedAnime: animeListElement)
-                            }
-                            .navigationDestination(for: Anime.self) { anime in
-                                AnimeDetailsView(selectedAnime: anime)
-                            }
+                            .buttonStyle(.plain)
                         }
-                        .padding()
+                        .navigationDestination(for: AnimeListElement.self) { animeListElement in
+                            AnimeListDetailsSheetView(passedAnime: animeListElement)
+                        }
+                        .navigationDestination(for: Anime.self) { anime in
+                            AnimeDetailsView(selectedAnime: anime)
+                        }
                     }
                     .sheet(isPresented: $showingAddNewAnimeSheet) {
                         AnimeListAddNewToListView()
@@ -239,6 +237,7 @@ struct AnimeListRowView: View {
             RoundedRectangle(cornerRadius: 5)
                 .foregroundColor(Color(nsColor: NSColor.textBackgroundColor))
                 .shadow(radius: 2)
+                .padding(.horizontal, 5)
         }
     }
 }
