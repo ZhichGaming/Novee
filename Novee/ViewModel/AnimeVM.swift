@@ -68,6 +68,33 @@ class AnimeVM: ObservableObject {
         }
     }
     
+    func getAllUpdatedAnimeDetails(for oldSources: [String: Anime]) async -> [String: Anime] {
+        var result = [String: Anime]()
+        let semaphore = DispatchGroup()
+
+        for oldSource in oldSources {
+            if let _ = sources[oldSource.key] {
+                semaphore.enter()
+                
+                await getAnimeDetails(for: oldSource.value, source: oldSource.key) { newAnime in
+                    if let newAnime = newAnime {
+                        result[oldSource.key] = newAnime
+                    } else {
+                        result[oldSource.key] = oldSource.value
+                    }
+                    
+                    semaphore.leave()
+                }
+            }
+        }
+        
+        DispatchQueue.global().sync {
+            semaphore.wait()
+        }
+        
+        return result
+    }
+    
     func getStreamingUrl(for episode: Episode, anime: Anime, returnEpisode: @escaping (Episode?) -> Void) async {
         await sources[selectedSource]?.getStreamingUrl(for: episode, anime: anime) { newEpisode in
             returnEpisode(newEpisode)

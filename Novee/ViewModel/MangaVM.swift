@@ -97,6 +97,33 @@ class MangaVM: ObservableObject {
         }
     }
     
+    func getAllUpdatedMangaDetails(for oldSources: [String: Manga]) async -> [String: Manga] {
+        var result = [String: Manga]()
+        let semaphore = DispatchGroup()
+
+        for oldSource in oldSources {
+            if let _ = sources[oldSource.key] {
+                semaphore.enter()
+                
+                await getMangaDetails(for: oldSource.value, source: oldSource.key) { newManga in
+                    if let newManga = newManga {
+                        result[oldSource.key] = newManga
+                    } else {
+                        result[oldSource.key] = oldSource.value
+                    }
+                    
+                    semaphore.leave()
+                }
+            }
+        }
+        
+        DispatchQueue.global().sync {
+            semaphore.wait()
+        }
+        
+        return result
+    }
+    
     func downloadChapter(manga: Manga, chapter: Chapter) async {
         do {
             if !FileManager().fileExists(atPath: URL.mangaStorageUrl.path) {

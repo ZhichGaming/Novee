@@ -395,6 +395,11 @@ struct AnimeListDetailsSheetView: View {
                     }
                     .onAppear {
                         animeKeysArray = Array(passedAnime.anime.keys)
+                        
+                        Task { @MainActor in
+                            passedAnime.anime = await animeVM.getAllUpdatedAnimeDetails(for: passedAnime.anime)
+                        }
+                        
                     }
                 }
                 .tabItem {

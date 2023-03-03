@@ -392,6 +392,10 @@ struct MangaListDetailsSheetView: View {
                     }
                     .onAppear {
                         mangaKeysArray = Array(passedManga.manga.keys)
+                                                
+                        Task { @MainActor in
+                            passedManga.manga = await mangaVM.getAllUpdatedMangaDetails(for: passedManga.manga)
+                        }
                     }
                 }
                 .tabItem {
