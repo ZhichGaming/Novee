@@ -31,7 +31,7 @@ struct MangaReaderView: View {
     var body: some View {
         GeometryReader { geometry in
             ScrollView(.vertical) {
-                ChangeChaptersView(manga: manga, chapter: $chapter)
+                changeChaptersView
                 
                 if let images = chapter.images {
                     VStack(spacing: 0) {
@@ -71,7 +71,7 @@ struct MangaReaderView: View {
                         .frame(maxWidth: .infinity)
                 }
                 
-                ChangeChaptersView(manga: manga, chapter: $chapter)
+                changeChaptersView
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: chapter) { [chapter] newChapter in
@@ -196,6 +196,35 @@ struct MangaReaderView: View {
         }
     }
     
+    var changeChaptersView: some View {
+        HStack {
+            Button {
+                if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: -1) {
+                    chapter = newChapter
+                }
+            } label: {
+                HStack {
+                    Text("Previous chapter")
+                    Image(systemName: "arrow.left")
+                }
+            }
+            .disabled(chapter.id == manga.chapters?.first?.id)
+            
+            Button {
+                if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: 1) {
+                    chapter = newChapter
+                }
+            } label: {
+                HStack {
+                    Text("Next chapter")
+                    Image(systemName: "arrow.right")
+                }
+            }
+            .disabled(chapter.id == manga.chapters?.last?.id)
+        }
+        .padding()
+    }
+    
     private func showAddMangaNotification() {
         notification.present(configuration: .init(duration: 15)) {
             VStack {
@@ -284,40 +313,6 @@ struct MangaReaderView: View {
                 chapter.images?[index] = nsImage
             }
         }
-    }
-}
-
-struct ChangeChaptersView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-
-    let manga: Manga
-    @Binding var chapter: Chapter
-    
-    var body: some View {
-        HStack {
-            Button {
-                if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: -1) {
-                    chapter = newChapter
-                }
-            } label: {
-                HStack {
-                    Text("Previous chapter")
-                    Image(systemName: "arrow.left")
-                }
-            }
-            
-            Button {
-                if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: 1) {
-                    chapter = newChapter
-                }
-            } label: {
-                HStack {
-                    Text("Next chapter")
-                    Image(systemName: "arrow.right")
-                }
-            }
-        }
-        .padding()
     }
 }
 
