@@ -340,7 +340,7 @@ struct MangaReaderAddToListView: View {
     @Environment(\.dismiss) var dismiss
 
     let manga: Manga
-    let chapter: Chapter
+    var chapter: Chapter? = nil
     
     @State private var selectedMangaStatus: MangaStatus = .reading
     @State private var selectedMangaRating: MangaRating = .none
@@ -419,7 +419,7 @@ struct MangaReaderAddToListView: View {
                             mangaListVM.addToList(
                                 source: mangaVM.selectedSource,
                                 manga: manga,
-                                lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                                lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
                                 status: selectedMangaStatus,
                                 rating: selectedMangaRating,
                                 lastReadDate: Date.now
@@ -429,7 +429,7 @@ struct MangaReaderAddToListView: View {
                                 id: selectedMangaListElement!.id,
                                 newValue: MangaListElement(
                                     manga: [mangaVM.selectedSource: manga],
-                                    lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                                    lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
                                     status: selectedMangaStatus,
                                     rating: selectedMangaRating,
                                     lastReadDate: Date.now,

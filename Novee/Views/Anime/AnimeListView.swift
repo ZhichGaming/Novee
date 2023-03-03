@@ -253,16 +253,8 @@ struct AnimeListDetailsSheetView: View {
     
     @State private var animeKeysArray: [String] = []
     
-    @State private var selectedSource: String = ""
-    @State private var selectedLastEpisode: String = ""
-    @State private var selectedAnimeRating: String = ""
-    @State private var selectedAnimeStatus: String = ""
-    
-    @State private var showingDeleteAlert = false
     @State private var showingDeleteSourceAlert = false
     @State private var deleteSourceAlertSource: String? = nil
-    @State private var showingLastEpisodeSelection = false
-    @State private var selectedLastReadDate: Date = Date.now
 
     var body: some View {
         VStack {
@@ -406,142 +398,11 @@ struct AnimeListDetailsSheetView: View {
                     Text("Anime details")
                 }
                 
-                VStack(alignment: .leading) {
-                    VStack(alignment: .leading) {
-                        Text("Anime status/rating")
-                            .font(.headline)
-                        
-                        Picker("Anime status", selection: $selectedAnimeStatus) {
-                            ForEach(AnimeStatus.allCases, id: \.rawValue) { status in
-                                Text(status.rawValue)
-                                    .tag(status.rawValue)
-                            }
-                        }
-                        .onChange(of: selectedAnimeStatus) { newStatus in
-                            animeListVM.updateStatus(
-                                id: passedAnime.id,
-                                to: AnimeStatus(rawValue: newStatus) ?? passedAnime.status
-                            )
-                        }
-                        
-                        Picker("Anime rating", selection: $selectedAnimeRating) {
-                            ForEach(AnimeRating.allCases, id: \.rawValue) { rating in
-                                Text(rating.rawValue)
-                                    .tag(rating.rawValue)
-                            }
-                        }
-                        .onChange(of: selectedAnimeRating) { newRating in
-                            animeListVM.updateRating(
-                                id: passedAnime.id,
-                                to: AnimeRating(rawValue: newRating) ?? passedAnime.rating
-                            )
-                        }
+                AnimeListListDetailsView(passedAnime: passedAnime, dismissOnDelete: true)
+                    .padding()
+                    .tabItem {
+                        Text("List details")
                     }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Last watched episode")
-                            .font(.headline)
-                        
-                        Picker("Episode source", selection: $selectedSource) {
-                            ForEach(Array(passedAnime.anime.keys), id: \.self) { key in
-                                Text(animeVM.sources[key]?.label ?? key)
-                                    .tag(key)
-                            }
-                        }
-                        
-                        Picker("Last episode", selection: $selectedLastEpisode) {
-                            ForEach(passedAnime.anime[selectedSource]?.episodes ?? [], id: \.id) { episode in
-                                Text(episode.title)
-                                    .tag(episode.title)
-                            }
-                        }
-                        .disabled(!passedAnime.anime.keys.contains(selectedSource))
-                        .onChange(of: selectedLastEpisode) { newEpisode in
-                            animeListVM.updateLastEpisode(
-                                id: passedAnime.id,
-                                to: newEpisode
-                            )
-                        }
-                        
-                        HStack {
-                            Text("Current last episode:")
-                            Text(passedAnime.lastEpisode ?? "None")
-                        }
-                    }
-                    .padding(.vertical)
-
-                    VStack(alignment: .leading) {
-                        Text("Dates")
-                            .font(.headline)
-                        
-                        HStack {
-                            if showingLastEpisodeSelection {
-                                DatePicker(
-                                    "Last watched date:",
-                                    selection: $selectedLastReadDate,
-                                    displayedComponents: .date
-                                )
-                                .onChange(of: selectedLastReadDate) { newDate in
-                                    animeListVM.updateLastReadDate(id: passedAnime.id, to: newDate)
-                                }
-                            }
-                            
-                            Button(showingLastEpisodeSelection ? "Remove last watched date" : "Add last watched date") {
-                                showingLastEpisodeSelection.toggle()
-                            }
-                            .onAppear {
-                                showingLastEpisodeSelection = passedAnime.lastWatchDate != nil
-                                selectedLastReadDate = passedAnime.lastWatchDate ?? selectedLastReadDate
-                            }
-                            .onChange(of: showingLastEpisodeSelection) { showingLastEpisode in
-                                if !showingLastEpisode {
-                                    animeListVM.updateLastReadDate(id: passedAnime.id, to: nil)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 3)
-
-                        HStack {
-                            Text("Creation date:")
-                            Text(passedAnime.creationDate.formatted(date: .abbreviated, time: .omitted))
-                                .font(.body)
-                        }
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Destructive")
-                            .font(.headline)
-                            .padding(.top)
-                        
-                        HStack {
-                            Button("Remove from list", role: .destructive) {
-                                showingDeleteAlert = true
-                            }
-                            .foregroundColor(.red)
-                            .alert("Warning", isPresented: $showingDeleteAlert) {
-                                Button("Cancel", role: .cancel) { }
-                                Button("Delete", role: .destructive) {
-                                    if let listElementIndex = animeListVM.list.firstIndex(where: { $0.id == passedAnime.id }) {
-                                        animeListVM.list.remove(at: listElementIndex)
-                                        dismiss()
-                                    }
-                                }
-                            } message: {
-                                Text("Are you sure you want to delete this element from your list? This action is irreversible.")
-                            }
-                        }
-                    }
-                    
-                    Spacer()
-                }
-                .padding()
-                .tabItem {
-                    Text("List details")
-                }
-                .onAppear {
-                    selectedAnimeRating = passedAnime.rating.rawValue
-                    selectedAnimeStatus = passedAnime.status.rawValue
-                }
             }
             
             HStack {
@@ -553,6 +414,165 @@ struct AnimeListDetailsSheetView: View {
             }
         }
         .padding()
+    }
+}
+
+struct AnimeListListDetailsView: View {
+    @EnvironmentObject var animeVM: AnimeVM
+    @EnvironmentObject var animeListVM: AnimeListVM
+    
+    @Environment(\.dismiss) var dismiss
+    
+    let passedAnime: AnimeListElement
+    
+    let dismissOnDelete: Bool
+    
+    @State private var selectedSource: String = ""
+    @State private var selectedLastEpisode: String = ""
+    @State private var selectedAnimeRating: String = ""
+    @State private var selectedAnimeStatus: String = ""
+    
+    @State private var showingDeleteAlert = false
+    
+    @State private var showingLastEpisodeSelection = false
+    @State private var selectedLastReadDate: Date = Date.now
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            VStack(alignment: .leading) {
+                Text("Anime status/rating")
+                    .font(.headline)
+                
+                Picker("Anime status", selection: $selectedAnimeStatus) {
+                    ForEach(AnimeStatus.allCases, id: \.rawValue) { status in
+                        Text(status.rawValue)
+                            .tag(status.rawValue)
+                    }
+                }
+                .onChange(of: selectedAnimeStatus) { newStatus in
+                    animeListVM.updateStatus(
+                        id: passedAnime.id,
+                        to: AnimeStatus(rawValue: newStatus) ?? passedAnime.status
+                    )
+                }
+                
+                Picker("Anime rating", selection: $selectedAnimeRating) {
+                    ForEach(AnimeRating.allCases, id: \.rawValue) { rating in
+                        Text(rating.rawValue)
+                            .tag(rating.rawValue)
+                    }
+                }
+                .onChange(of: selectedAnimeRating) { newRating in
+                    animeListVM.updateRating(
+                        id: passedAnime.id,
+                        to: AnimeRating(rawValue: newRating) ?? passedAnime.rating
+                    )
+                }
+            }
+            
+            VStack(alignment: .leading) {
+                Text("Last watched episode")
+                    .font(.headline)
+                
+                Picker("Episode source", selection: $selectedSource) {
+                    ForEach(Array(passedAnime.anime.keys), id: \.self) { key in
+                        Text(animeVM.sources[key]?.label ?? key)
+                            .tag(key)
+                    }
+                }
+                
+                Picker("Last episode", selection: $selectedLastEpisode) {
+                    ForEach(passedAnime.anime[selectedSource]?.episodes ?? [], id: \.id) { episode in
+                        Text(episode.title)
+                            .tag(episode.title)
+                    }
+                }
+                .disabled(!passedAnime.anime.keys.contains(selectedSource))
+                .onChange(of: selectedLastEpisode) { newEpisode in
+                    animeListVM.updateLastEpisode(
+                        id: passedAnime.id,
+                        to: newEpisode
+                    )
+                }
+                
+                HStack {
+                    Text("Current last episode:")
+                    Text(passedAnime.lastEpisode ?? "None")
+                }
+            }
+            .padding(.vertical)
+
+            VStack(alignment: .leading) {
+                Text("Dates")
+                    .font(.headline)
+                
+                HStack {
+                    if showingLastEpisodeSelection {
+                        DatePicker(
+                            "Last watched date:",
+                            selection: $selectedLastReadDate,
+                            displayedComponents: .date
+                        )
+                        .onChange(of: selectedLastReadDate) { newDate in
+                            animeListVM.updateLastReadDate(id: passedAnime.id, to: newDate)
+                        }
+                    }
+                    
+                    Button(showingLastEpisodeSelection ? "Remove last watched date" : "Add last watched date") {
+                        showingLastEpisodeSelection.toggle()
+                    }
+                    .onAppear {
+                        showingLastEpisodeSelection = passedAnime.lastWatchDate != nil
+                        selectedLastReadDate = passedAnime.lastWatchDate ?? selectedLastReadDate
+                    }
+                    .onChange(of: showingLastEpisodeSelection) { showingLastEpisode in
+                        if !showingLastEpisode {
+                            animeListVM.updateLastReadDate(id: passedAnime.id, to: nil)
+                        }
+                    }
+                }
+                .padding(.vertical, 3)
+
+                HStack {
+                    Text("Creation date:")
+                    Text(passedAnime.creationDate.formatted(date: .abbreviated, time: .omitted))
+                        .font(.body)
+                }
+            }
+            
+            VStack(alignment: .leading) {
+                Text("Destructive")
+                    .font(.headline)
+                    .padding(.top)
+                
+                HStack {
+                    Button("Remove from list", role: .destructive) {
+                        showingDeleteAlert = true
+                    }
+                    .foregroundColor(.red)
+                    .alert("Warning", isPresented: $showingDeleteAlert) {
+                        Button("Cancel", role: .cancel) { }
+                        Button("Delete", role: .destructive) {
+                            if let listElementIndex = animeListVM.list.firstIndex(where: { $0.id == passedAnime.id }) {
+                                animeListVM.list.remove(at: listElementIndex)
+                                
+                                if dismissOnDelete {
+                                    dismiss()
+                                }
+                            }
+                        }
+                    } message: {
+                        Text("Are you sure you want to delete this element from your list? This action is irreversible.")
+                    }
+                }
+            }
+            
+            Spacer()
+        }
+        .onAppear {
+            selectedAnimeRating = passedAnime.rating.rawValue
+            selectedAnimeStatus = passedAnime.status.rawValue
+        }
     }
 }
 

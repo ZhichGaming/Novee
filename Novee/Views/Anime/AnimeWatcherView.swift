@@ -363,7 +363,7 @@ struct AnimeWatcherAddToListView: View {
     @Environment(\.dismiss) var dismiss
 
     let anime: Anime
-    let episode: Episode
+    var episode: Episode? = nil
     
     @State private var selectedAnimeStatus: AnimeStatus = .watching
     @State private var selectedAnimeRating: AnimeRating = .none
@@ -442,7 +442,7 @@ struct AnimeWatcherAddToListView: View {
                             animeListVM.addToList(
                                 source: animeVM.selectedSource,
                                 anime: anime,
-                                lastEpisode: anime.episodes?.first { $0.id == selectedLastEpisode }?.title ?? episode.title,
+                                lastEpisode: anime.episodes?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
                                 status: selectedAnimeStatus,
                                 rating: selectedAnimeRating,
                                 lastWatchDate: Date.now
@@ -452,7 +452,7 @@ struct AnimeWatcherAddToListView: View {
                                 id: selectedAnimeListElement!.id,
                                 newValue: AnimeListElement(
                                     anime: [animeVM.selectedSource: anime],
-                                    lastEpisode: anime.episodes?.first { $0.id == selectedLastEpisode }?.title ?? episode.title,
+                                    lastEpisode: anime.episodes?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
                                     status: selectedAnimeStatus,
                                     rating: selectedAnimeRating,
                                     lastWatchDate: Date.now,

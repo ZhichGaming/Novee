@@ -20,57 +20,86 @@ struct AnimeDetailsView: View {
     @State private var descriptionSize: CGSize = .zero
     @State private var descriptionCollapsed = false
     @State private var isHoveringOverDescription = false
+    @State private var isShowingAddToListSheet = false
     
     var body: some View {
         switch selectedAnime.detailsLoadingState {
         case .success:
             GeometryReader { geo in
-                VStack {
-                    AnimeInfoView(geo: geo, selectedAnime: selectedAnime)
-                    Divider()
-                    
+                TabView {
                     VStack {
-                        HStack {
-                            Text("Description")
-                                .font(.headline)
-
-                            Button {
-                                withAnimation {
-                                    descriptionCollapsed.toggle()
+                        AnimeInfoView(geo: geo, selectedAnime: selectedAnime)
+                        Divider()
+                        
+                        VStack {
+                            HStack {
+                                Text("Description")
+                                    .font(.headline)
+                                
+                                Button {
+                                    withAnimation {
+                                        descriptionCollapsed.toggle()
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.right")
+                                        .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
                                 }
-                            } label: {
-                                Image(systemName: "chevron.right")
-                                    .rotationEffect(Angle(degrees: descriptionCollapsed ? 0 : 90))
+                                .buttonStyle(.plain)
+                                
+                                Spacer()
                             }
-                            .buttonStyle(.plain)
                             
-                            Spacer()
+                            if !descriptionCollapsed {
+                                ScrollView {
+                                    Text(LocalizedStringKey(selectedAnime.description ?? "None"))
+                                        .background {
+                                            GeometryReader { textSize -> Color in
+                                                DispatchQueue.main.async {
+                                                    descriptionSize = textSize.size
+                                                }
+                                                
+                                                return Color.clear
+                                            }
+                                        }
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
+                                .transition(.opacity)
+                            }
                         }
                         
-                        if !descriptionCollapsed {
-                            ScrollView {
-                                Text(LocalizedStringKey(selectedAnime.description ?? "None"))
-                                    .background {
-                                        GeometryReader { textSize -> Color in
-                                            DispatchQueue.main.async {
-                                                descriptionSize = textSize.size
-                                            }
-                                            
-                                            return Color.clear
-                                        }
-                                    }
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: descriptionSize.height > 200 ? 200 : descriptionSize.height, alignment: .leading)
-                            .transition(.opacity)
-                        }
+                        Divider()
+                        
+                        EpisodeList(selectedAnime: $selectedAnime)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .padding()
+                    .tabItem {
+                        Text("Anime details")
                     }
                     
-                    Divider()
-                    
-                    EpisodeList(selectedAnime: $selectedAnime)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    Group {
+                        if let animeListElement = animeListVM.findInList(anime: selectedAnime) {
+                            AnimeListListDetailsView(
+                                passedAnime: animeListElement,
+                                dismissOnDelete: false
+                            )
+                        } else {
+                            VStack {
+                                Text("This manga was not found in your list.")
+                                Button("Add") {
+                                    isShowingAddToListSheet = true
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .tabItem {
+                        Text("List details")
+                    }
                 }
-                .padding()
+            }
+            .sheet(isPresented: $isShowingAddToListSheet) {
+                AnimeWatcherAddToListView(anime: selectedAnime)
             }
         case .loading:
             ProgressView()

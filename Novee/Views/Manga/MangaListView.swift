@@ -250,16 +250,8 @@ struct MangaListDetailsSheetView: View {
     
     @State private var mangaKeysArray: [String] = []
     
-    @State private var selectedSource: String = ""
-    @State private var selectedLastChapter: String = ""
-    @State private var selectedMangaRating: String = ""
-    @State private var selectedMangaStatus: String = ""
-    
-    @State private var showingDeleteAlert = false
     @State private var showingDeleteSourceAlert = false
     @State private var deleteSourceAlertSource: String? = nil
-    @State private var showingLastChapterSelection = false
-    @State private var selectedLastReadDate: Date = Date.now
 
     var body: some View {
         VStack {
@@ -402,142 +394,11 @@ struct MangaListDetailsSheetView: View {
                     Text("Manga details")
                 }
                 
-                VStack(alignment: .leading) {
-                    VStack(alignment: .leading) {
-                        Text("Manga status/rating")
-                            .font(.headline)
-                        
-                        Picker("Manga status", selection: $selectedMangaStatus) {
-                            ForEach(MangaStatus.allCases, id: \.rawValue) { status in
-                                Text(status.rawValue)
-                                    .tag(status.rawValue)
-                            }
-                        }
-                        .onChange(of: selectedMangaStatus) { newStatus in
-                            mangaListVM.updateStatus(
-                                id: passedManga.id,
-                                to: MangaStatus(rawValue: newStatus) ?? passedManga.status
-                            )
-                        }
-                        
-                        Picker("Manga rating", selection: $selectedMangaRating) {
-                            ForEach(MangaRating.allCases, id: \.rawValue) { rating in
-                                Text(rating.rawValue)
-                                    .tag(rating.rawValue)
-                            }
-                        }
-                        .onChange(of: selectedMangaRating) { newRating in
-                            mangaListVM.updateRating(
-                                id: passedManga.id,
-                                to: MangaRating(rawValue: newRating) ?? passedManga.rating
-                            )
-                        }
+                MangaListListDetailsView(passedManga: passedManga, dismissOnDelete: true)
+                    .padding()
+                    .tabItem {
+                        Text("List details")
                     }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Last read chapter")
-                            .font(.headline)
-                        
-                        Picker("Chapter source", selection: $selectedSource) {
-                            ForEach(Array(passedManga.manga.keys), id: \.self) { key in
-                                Text(mangaVM.sources[key]?.label ?? key)
-                                    .tag(key)
-                            }
-                        }
-                        
-                        Picker("Last chapter", selection: $selectedLastChapter) {
-                            ForEach(passedManga.manga[selectedSource]?.chapters ?? [], id: \.id) { chapter in
-                                Text(chapter.title)
-                                    .tag(chapter.title)
-                            }
-                        }
-                        .disabled(!passedManga.manga.keys.contains(selectedSource))
-                        .onChange(of: selectedLastChapter) { newChapter in
-                            mangaListVM.updateLastChapter(
-                                id: passedManga.id,
-                                to: newChapter
-                            )
-                        }
-                        
-                        HStack {
-                            Text("Current last chapter:")
-                            Text(passedManga.lastChapter ?? "None")
-                        }
-                    }
-                    .padding(.vertical)
-
-                    VStack(alignment: .leading) {
-                        Text("Dates")
-                            .font(.headline)
-                        
-                        HStack {
-                            if showingLastChapterSelection {
-                                DatePicker(
-                                    "Last read date:",
-                                    selection: $selectedLastReadDate,
-                                    displayedComponents: .date
-                                )
-                                .onChange(of: selectedLastReadDate) { newDate in
-                                    mangaListVM.updateLastReadDate(id: passedManga.id, to: newDate)
-                                }
-                            }
-                            
-                            Button(showingLastChapterSelection ? "Remove last read date" : "Add last read date") {
-                                showingLastChapterSelection.toggle()
-                            }
-                            .onAppear {
-                                showingLastChapterSelection = passedManga.lastReadDate != nil
-                                selectedLastReadDate = passedManga.lastReadDate ?? selectedLastReadDate
-                            }
-                            .onChange(of: showingLastChapterSelection) { showingLastChapter in
-                                if !showingLastChapter {
-                                    mangaListVM.updateLastReadDate(id: passedManga.id, to: nil)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 3)
-
-                        HStack {
-                            Text("Creation date:")
-                            Text(passedManga.creationDate.formatted(date: .abbreviated, time: .omitted))
-                                .font(.body)
-                        }
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Destructive")
-                            .font(.headline)
-                            .padding(.top)
-                        
-                        HStack {
-                            Button("Remove from list", role: .destructive) {
-                                showingDeleteAlert = true
-                            }
-                            .foregroundColor(.red)
-                            .alert("Warning", isPresented: $showingDeleteAlert) {
-                                Button("Cancel", role: .cancel) { }
-                                Button("Delete", role: .destructive) {
-                                    if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
-                                        mangaListVM.list.remove(at: listElementIndex)
-                                        dismiss()
-                                    }
-                                }
-                            } message: {
-                                Text("Are you sure you want to delete this element from your list? This action is irreversible.")
-                            }
-                        }
-                    }
-                    
-                    Spacer()
-                }
-                .padding()
-                .tabItem {
-                    Text("List details")
-                }
-                .onAppear {
-                    selectedMangaRating = passedManga.rating.rawValue
-                    selectedMangaStatus = passedManga.status.rawValue
-                }
             }
             
             HStack {
@@ -549,6 +410,165 @@ struct MangaListDetailsSheetView: View {
             }
         }
         .padding()
+    }
+}
+
+struct MangaListListDetailsView: View {
+    @EnvironmentObject var mangaVM: MangaVM
+    @EnvironmentObject var mangaListVM: MangaListVM
+    
+    @Environment(\.dismiss) var dismiss
+    
+    let passedManga: MangaListElement
+    
+    let dismissOnDelete: Bool
+    
+    @State private var selectedSource: String = ""
+    @State private var selectedLastChapter: String = ""
+    @State private var selectedMangaRating: String = ""
+    @State private var selectedMangaStatus: String = ""
+    
+    @State private var showingDeleteAlert = false
+    
+    @State private var showingLastChapterSelection = false
+    @State private var selectedLastReadDate: Date = Date.now
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            VStack(alignment: .leading) {
+                Text("Manga status/rating")
+                    .font(.headline)
+                
+                Picker("Manga status", selection: $selectedMangaStatus) {
+                    ForEach(MangaStatus.allCases, id: \.rawValue) { status in
+                        Text(status.rawValue)
+                            .tag(status.rawValue)
+                    }
+                }
+                .onChange(of: selectedMangaStatus) { newStatus in
+                    mangaListVM.updateStatus(
+                        id: passedManga.id,
+                        to: MangaStatus(rawValue: newStatus) ?? passedManga.status
+                    )
+                }
+                
+                Picker("Manga rating", selection: $selectedMangaRating) {
+                    ForEach(MangaRating.allCases, id: \.rawValue) { rating in
+                        Text(rating.rawValue)
+                            .tag(rating.rawValue)
+                    }
+                }
+                .onChange(of: selectedMangaRating) { newRating in
+                    mangaListVM.updateRating(
+                        id: passedManga.id,
+                        to: MangaRating(rawValue: newRating) ?? passedManga.rating
+                    )
+                }
+            }
+            
+            VStack(alignment: .leading) {
+                Text("Last read chapter")
+                    .font(.headline)
+                
+                Picker("Chapter source", selection: $selectedSource) {
+                    ForEach(Array(passedManga.manga.keys), id: \.self) { key in
+                        Text(mangaVM.sources[key]?.label ?? key)
+                            .tag(key)
+                    }
+                }
+                
+                Picker("Last chapter", selection: $selectedLastChapter) {
+                    ForEach(passedManga.manga[selectedSource]?.chapters ?? [], id: \.id) { chapter in
+                        Text(chapter.title)
+                            .tag(chapter.title)
+                    }
+                }
+                .disabled(!passedManga.manga.keys.contains(selectedSource))
+                .onChange(of: selectedLastChapter) { newChapter in
+                    mangaListVM.updateLastChapter(
+                        id: passedManga.id,
+                        to: newChapter
+                    )
+                }
+                
+                HStack {
+                    Text("Current last chapter:")
+                    Text(passedManga.lastChapter ?? "None")
+                }
+            }
+            .padding(.vertical)
+
+            VStack(alignment: .leading) {
+                Text("Dates")
+                    .font(.headline)
+                
+                HStack {
+                    if showingLastChapterSelection {
+                        DatePicker(
+                            "Last read date:",
+                            selection: $selectedLastReadDate,
+                            displayedComponents: .date
+                        )
+                        .onChange(of: selectedLastReadDate) { newDate in
+                            mangaListVM.updateLastReadDate(id: passedManga.id, to: newDate)
+                        }
+                    }
+                    
+                    Button(showingLastChapterSelection ? "Remove last read date" : "Add last read date") {
+                        showingLastChapterSelection.toggle()
+                    }
+                    .onAppear {
+                        showingLastChapterSelection = passedManga.lastReadDate != nil
+                        selectedLastReadDate = passedManga.lastReadDate ?? selectedLastReadDate
+                    }
+                    .onChange(of: showingLastChapterSelection) { showingLastChapter in
+                        if !showingLastChapter {
+                            mangaListVM.updateLastReadDate(id: passedManga.id, to: nil)
+                        }
+                    }
+                }
+                .padding(.vertical, 3)
+
+                HStack {
+                    Text("Creation date:")
+                    Text(passedManga.creationDate.formatted(date: .abbreviated, time: .omitted))
+                        .font(.body)
+                }
+            }
+            
+            VStack(alignment: .leading) {
+                Text("Destructive")
+                    .font(.headline)
+                    .padding(.top)
+                
+                HStack {
+                    Button("Remove from list", role: .destructive) {
+                        showingDeleteAlert = true
+                    }
+                    .foregroundColor(.red)
+                    .alert("Warning", isPresented: $showingDeleteAlert) {
+                        Button("Cancel", role: .cancel) { }
+                        Button("Delete", role: .destructive) {
+                            if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
+                                mangaListVM.list.remove(at: listElementIndex)
+                                
+                                if dismissOnDelete {
+                                    dismiss()
+                                }
+                            }
+                        }
+                    } message: {
+                        Text("Are you sure you want to delete this element from your list? This action is irreversible.")
+                    }
+                }
+            }
+            
+            Spacer()
+        }
+        .onAppear {
+            selectedMangaRating = passedManga.rating.rawValue
+            selectedMangaStatus = passedManga.status.rawValue
+        }
     }
 }
 
