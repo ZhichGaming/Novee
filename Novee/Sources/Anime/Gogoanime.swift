@@ -108,7 +108,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                     title: "Episode \($0.number)",
                     episodeUrl: URL(string: $0.url)!,
                     episodeId: $0.id)
-                }.reversed())
+                })
             result?.detailsLoadingState = .success
             
             return result
