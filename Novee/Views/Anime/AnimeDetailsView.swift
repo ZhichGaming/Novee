@@ -11,6 +11,7 @@ import CachedAsyncImage
 
 struct AnimeDetailsView: View {
     @EnvironmentObject var animeVM: AnimeVM
+    @EnvironmentObject var animeListVM: AnimeListVM
     @EnvironmentObject var settingsVM: SettingsVM
     @EnvironmentObject var notification: SystemNotificationContext
     
@@ -78,6 +79,14 @@ struct AnimeDetailsView: View {
                         await animeVM.getAnimeDetails(for: selectedAnime, source: animeVM.selectedSource) { newAnime in
                             if let newAnime = newAnime {
                                 selectedAnime = newAnime
+                                
+                                if let animeListElement = animeListVM.findInList(anime: selectedAnime) {
+                                    animeListVM.updateAnimeInListElement(
+                                        id: animeListElement.id,
+                                        source: animeVM.selectedSource,
+                                        anime: selectedAnime
+                                    )
+                                }
                             } else {
                                 selectedAnime.detailsLoadingState = .failed
                             }

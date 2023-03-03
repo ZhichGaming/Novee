@@ -88,6 +88,14 @@ struct MangaDetailsView: View {
                         await mangaVM.getMangaDetails(for: selectedManga, source: mangaVM.selectedSource) { newManga in
                             if let newManga = newManga {
                                 selectedManga = newManga
+                                
+                                if let mangaListId = mangaListVM.findInList(manga: selectedManga)?.id {
+                                    mangaListVM.updateMangaInListElement(
+                                        id: mangaListId,
+                                        source: mangaVM.selectedSource,
+                                        manga: selectedManga
+                                    )
+                                }
                             } else {
                                 selectedManga.detailsLoadingState = .failed
                             }
