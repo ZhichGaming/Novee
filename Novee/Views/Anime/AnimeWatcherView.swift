@@ -373,6 +373,9 @@ struct AnimeWatcherAddToListView: View {
     
     @State private var createNewEntry = false
     
+    @State private var selectedListItem = UUID()
+    @State private var showingFindManuallyPopup = false
+    
     var body: some View {
         HStack {
             VStack {
@@ -382,7 +385,31 @@ struct AnimeWatcherAddToListView: View {
                 }
                                         
                 Button("Find manually") {
-                    
+                    showingFindManuallyPopup = true
+                }
+                .popover(isPresented: $showingFindManuallyPopup) {
+                    VStack {
+                        List(animeListVM.list.sorted { $0.anime.first?.value.title ?? "" < $1.anime.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
+                            Text(item.anime.first?.value.title ?? "No title")
+                                .tag(item.id)
+                        }
+                        .listStyle(.bordered(alternatesRowBackgrounds: true))
+                        
+                        Text("Type in the list to search.")
+                        
+                        HStack {
+                            Spacer()
+                            
+                            Button("Cancel") { showingFindManuallyPopup = false }
+                            Button("Select") {
+                                selectedAnimeListElement = animeListVM.list.first(where: { $0.id == selectedListItem })
+                                showingFindManuallyPopup = false
+                            }
+                            .disabled(!animeListVM.list.contains { $0.id == selectedListItem })
+                        }
+                    }
+                    .frame(width: 400, height: 300)
+                    .padding()
                 }
                 
                 Spacer()

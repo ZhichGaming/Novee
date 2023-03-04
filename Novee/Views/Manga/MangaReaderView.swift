@@ -350,6 +350,9 @@ struct MangaReaderAddToListView: View {
     
     @State private var createNewEntry = false
     
+    @State private var selectedListItem = UUID()
+    @State private var showingFindManuallyPopup = false
+    
     var body: some View {
         HStack {
             VStack {
@@ -359,7 +362,31 @@ struct MangaReaderAddToListView: View {
                 }
                                         
                 Button("Find manually") {
-                    
+                    showingFindManuallyPopup = true
+                }
+                .popover(isPresented: $showingFindManuallyPopup) {
+                    VStack {
+                        List(mangaListVM.list.sorted { $0.manga.first?.value.title ?? "" < $1.manga.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
+                            Text(item.manga.first?.value.title ?? "No title")
+                                .tag(item.id)
+                        }
+                        .listStyle(.bordered(alternatesRowBackgrounds: true))
+                        
+                        Text("Type in the list to search.")
+                        
+                        HStack {
+                            Spacer()
+                            
+                            Button("Cancel") { showingFindManuallyPopup = false }
+                            Button("Select") {
+                                selectedMangaListElement = mangaListVM.list.first(where: { $0.id == selectedListItem })
+                                showingFindManuallyPopup = false
+                            }
+                            .disabled(!mangaListVM.list.contains { $0.id == selectedListItem })
+                        }
+                    }
+                    .frame(width: 400, height: 300)
+                    .padding()
                 }
                 
                 Spacer()
