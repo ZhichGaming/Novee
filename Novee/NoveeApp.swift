@@ -26,6 +26,10 @@ struct NoveeApp: App {
                 .presentedWindowToolbarStyle(.unified)
         }
         .windowStyle(.titleBar)
+        .commands {
+            SidebarCommands()
+            ToolbarCommands()
+        }
         
         WindowGroup(for: AnimeEpisodePair.self) { $animeEpisode in
             if let animeEpisode = animeEpisode {
