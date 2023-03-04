@@ -29,6 +29,13 @@ struct NoveeApp: App {
         .commands {
             SidebarCommands()
             ToolbarCommands()
+            
+            CommandGroup(after: .sidebar) {
+                Button("Toggle Full Screen") {
+                    toggleFullScreen()
+                }
+                .keyboardShortcut("f", modifiers: [.control, .command])
+            }
         }
         
         WindowGroup(for: AnimeEpisodePair.self) { $animeEpisode in
@@ -46,5 +53,9 @@ struct NoveeApp: App {
             SettingsView()
                 .environmentObject(SettingsVM.shared)
         }
+    }
+    
+    private func toggleFullScreen() {
+        NSApp.keyWindow?.toggleFullScreen(nil)
     }
 }
