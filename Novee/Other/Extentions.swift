@@ -146,9 +146,10 @@ extension Array {
 extension Element {
     func untilNext(_ nodeName: String) throws -> Elements {
         var currentElement = self
-        var result: [Element] = [currentElement ]
+        var result: [Element] = [currentElement]
         
-        while try currentElement.nextElementSibling()?.nodeName() != nodeName {
+        while try currentElement.nextElementSibling()?.nodeName() != nodeName
+                && currentElement.nextElementSibling() != nil {
             result.append(try currentElement.nextElementSibling()!)
             currentElement = try currentElement.nextElementSibling()!
         }
