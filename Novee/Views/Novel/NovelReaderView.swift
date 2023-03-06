@@ -251,35 +251,33 @@ struct NovelReaderView: View {
     
     private func showUpdateChapterNotification(newChapter: NovelChapter) {
         if let index = novelListVM.list.firstIndex(where: { $0.id == novelListVM.findInList(novel: novel)?.id }) {
-            if newChapter.title > novelListVM.list[index].lastChapter ?? "" {
-                oldChapterTitle = novelListVM.list[index].lastChapter ?? ""
-                novelListVM.list[index].lastChapter = newChapter.title
+            oldChapterTitle = novelListVM.list[index].lastChapter ?? ""
+            novelListVM.list[index].lastChapter = newChapter.title
 
-                notification.present {
-                    VStack {
-                        VStack(alignment: .leading) {
-                            Text("Last read chapter updated!")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.6))
-                            Text("Swipe to dismiss")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.4))
-                        }
-                        .frame(width: 225, alignment: .leading)
-
-                        HStack {
-                            Button {
-                                novelListVM.list[index].lastChapter = oldChapterTitle
-                                notification.dismiss()
-                            } label: {
-                                Text("Undo")
-                            }
-                            .keyboardShortcut(.defaultAction)
-                        }
-                        .frame(width: 225, alignment: .trailing)
+            notification.present {
+                VStack {
+                    VStack(alignment: .leading) {
+                        Text("Last read chapter updated!")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.6))
+                        Text("Swipe to dismiss")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.4))
                     }
-                    .frame(width: 300, height: 75)
+                    .frame(width: 225, alignment: .leading)
+
+                    HStack {
+                        Button {
+                            novelListVM.list[index].lastChapter = oldChapterTitle
+                            notification.dismiss()
+                        } label: {
+                            Text("Undo")
+                        }
+                        .keyboardShortcut(.defaultAction)
+                    }
+                    .frame(width: 225, alignment: .trailing)
                 }
+                .frame(width: 300, height: 75)
             }
         } else {
             print("Index in NovelReaderView onChange of chapter is nil!")

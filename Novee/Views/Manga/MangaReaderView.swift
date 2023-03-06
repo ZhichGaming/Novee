@@ -270,35 +270,33 @@ struct MangaReaderView: View {
     
     private func showUpdateChapterNotification(newChapter: Chapter) {
         if let index = mangaListVM.list.firstIndex(where: { $0.id == mangaListVM.findInList(manga: manga)?.id }) {
-            if newChapter.title > mangaListVM.list[index].lastChapter ?? "" {
-                oldChapterTitle = mangaListVM.list[index].lastChapter ?? ""
-                mangaListVM.list[index].lastChapter = newChapter.title
-                
-                notification.present {
-                    VStack {
-                        VStack(alignment: .leading) {
-                            Text("Last read chapter updated!")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.6))
-                            Text("Swipe to dismiss")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.4))
-                        }
-                        .frame(width: 225, alignment: .leading)
-
-                        HStack {
-                            Button {
-                                mangaListVM.list[index].lastChapter = oldChapterTitle
-                                notification.dismiss()
-                            } label: {
-                                Text("Undo")
-                            }
-                            .keyboardShortcut(.defaultAction)
-                        }
-                        .frame(width: 225, alignment: .trailing)
+            oldChapterTitle = mangaListVM.list[index].lastChapter ?? ""
+            mangaListVM.list[index].lastChapter = newChapter.title
+            
+            notification.present {
+                VStack {
+                    VStack(alignment: .leading) {
+                        Text("Last read chapter updated!")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.6))
+                        Text("Swipe to dismiss")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.4))
                     }
-                    .frame(width: 300, height: 75)
+                    .frame(width: 225, alignment: .leading)
+
+                    HStack {
+                        Button {
+                            mangaListVM.list[index].lastChapter = oldChapterTitle
+                            notification.dismiss()
+                        } label: {
+                            Text("Undo")
+                        }
+                        .keyboardShortcut(.defaultAction)
+                    }
+                    .frame(width: 225, alignment: .trailing)
                 }
+                .frame(width: 300, height: 75)
             }
         } else {
             print("Index in MangaReaderView onChange of chapter is nil!")

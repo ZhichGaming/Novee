@@ -284,35 +284,33 @@ struct AnimeWatcherView: View {
     
     private func showUpdateEpisodeNotification(newEpisode: Episode) {
         if let index = animeListVM.list.firstIndex(where: { $0.id == animeListVM.findInList(anime: selectedAnime)?.id }) {
-            if newEpisode.title > animeListVM.list[index].lastEpisode ?? "" {
-                oldEpisodeTitle = animeListVM.list[index].lastEpisode ?? ""
-                animeListVM.list[index].lastEpisode = newEpisode.title
-                
-                notification.present {
-                    VStack {
-                        VStack(alignment: .leading) {
-                            Text("Last read episode updated!")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.6))
-                            Text("Swipe to dismiss")
-                                .font(.footnote.bold())
-                                .foregroundColor(.primary.opacity(0.4))
-                        }
-                        .frame(width: 225, alignment: .leading)
-
-                        HStack {
-                            Button {
-                                animeListVM.list[index].lastEpisode = oldEpisodeTitle
-                                notification.dismiss()
-                            } label: {
-                                Text("Undo")
-                            }
-                            .keyboardShortcut(.defaultAction)
-                        }
-                        .frame(width: 225, alignment: .trailing)
+            oldEpisodeTitle = animeListVM.list[index].lastEpisode ?? ""
+            animeListVM.list[index].lastEpisode = newEpisode.title
+            
+            notification.present {
+                VStack {
+                    VStack(alignment: .leading) {
+                        Text("Last read episode updated!")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.6))
+                        Text("Swipe to dismiss")
+                            .font(.footnote.bold())
+                            .foregroundColor(.primary.opacity(0.4))
                     }
-                    .frame(width: 300, height: 75)
+                    .frame(width: 225, alignment: .leading)
+
+                    HStack {
+                        Button {
+                            animeListVM.list[index].lastEpisode = oldEpisodeTitle
+                            notification.dismiss()
+                        } label: {
+                            Text("Undo")
+                        }
+                        .keyboardShortcut(.defaultAction)
+                    }
+                    .frame(width: 225, alignment: .trailing)
                 }
+                .frame(width: 300, height: 75)
             }
         } else {
             print("An error occured in the `showUpdateEpisodeNotification` function.")
