@@ -49,7 +49,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(0).attr("title"))
-                result.description = try manga.children().last()?.text()
+                result.description = try manga.children().last()?.getSeparatedText()
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 result.chapters = [try Chapter(title: manga.child(2).text(), chapterUrl: URL(string: manga.child(2).attr("href"))!)]
@@ -150,7 +150,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                     .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             }
             result?.description = try document
-                .select("#noidungm")
+                .getElementById("noidungm")?
                 .text()
             result?.authors = try infoElement
                 .child(1)

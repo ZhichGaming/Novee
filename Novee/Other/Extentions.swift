@@ -156,4 +156,30 @@ extension Element {
         
         return Elements(result)
     }
+    
+    func getSeparatedText(lineBreakAmount: Int = 2) throws -> String {
+        var result = ""
+        
+        for line in self.children().array() {
+            if try !line.text().isEmpty {
+                result += "\(try line.text())\(String(repeating: "\n", count: lineBreakAmount))"
+            }
+        }
+        
+        return result
+    }
+}
+
+extension Elements {
+    func getSeparatedText(lineBreakAmount: Int = 2) throws -> String {
+        var result = ""
+        
+        for line in self.array() {
+            if try !line.text().isEmpty {
+                result += "\(try line.getSeparatedText())\(String(repeating: "\n", count: lineBreakAmount))"
+            }
+        }
+        
+        return result
+    }
 }
