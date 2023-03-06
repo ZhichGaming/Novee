@@ -1,21 +1,21 @@
 //
-//  MangaListView.swift
+//  NovelListView.swift
 //  Novee
 //
-//  Created by Nick on 2023-01-03.
+//  Created by Nick on 2023-03-05.
 //
 
 import SwiftUI
 import CachedAsyncImage
 
-struct MangaListView: View {
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelListView: View {
+    @EnvironmentObject var novelListVM: NovelListVM
     
     @State private var listQuery = ""
     @State private var showingSearchDetailsSheet = false
-    @State private var showingAddNewMangaSheet = false
+    @State private var showingAddNewNovelSheet = false
     @State private var selectedSortingStyle = "Recently updated"
-    @State private var mangaDetailsSheet: MangaListElement?
+    @State private var novelDetailsSheet: NovelListElement?
     
     @State private var showingWaiting = true
     @State private var showingReading = true
@@ -29,8 +29,8 @@ struct MangaListView: View {
     @State private var showingRatingGood = true
     @State private var showingRatingBest = true
     
-    var filteredList: [MangaListElement] {
-        var result = mangaListVM.list
+    var filteredList: [NovelListElement] {
+        var result = novelListVM.list
         
         if !showingWaiting { result.removeAll { $0.status == .waiting } }
         if !showingReading { result.removeAll { $0.status == .reading } }
@@ -52,17 +52,17 @@ struct MangaListView: View {
             result.sort { $0.creationDate.compare($1.creationDate) == .orderedDescending }
         } else {
             result.sort {
-                return $0.manga.first?.value.title ?? "" < $1.manga.first?.value.title ?? ""
+                return $0.novel.first?.value.title ?? "" < $1.novel.first?.value.title ?? ""
             }
         }
         
         if !listQuery.isEmpty {
-            result.removeAll { manga in
-                let mangaInstances = manga.manga.map { [$0.value.title] + ($0.value.altTitles ?? []) }
+            result.removeAll { novel in
+                let novelInstances = novel.novel.map { [$0.value.title] + ($0.value.altTitles ?? []) }
                 
-                for titles in mangaInstances {
+                for titles in novelInstances {
                     for title in titles {
-                        if title.uppercased().contains(listQuery.uppercased()) {
+                        if title?.uppercased().contains(listQuery.uppercased()) ?? false {
                             return false
                         }
                     }
@@ -80,7 +80,7 @@ struct MangaListView: View {
             NavigationStack {
                 VStack(spacing: 0) {
                     HStack {
-                        TextField("Search for manga", text: $listQuery)
+                        TextField("Search for novel", text: $listQuery)
                             .textFieldStyle(.roundedBorder)
                         
                         Button {
@@ -90,7 +90,7 @@ struct MangaListView: View {
                         }
                         
                         Button {
-                            showingAddNewMangaSheet = true
+                            showingAddNewNovelSheet = true
                         } label: {
                             Image(systemName: "plus.circle")
                         }
@@ -179,21 +179,21 @@ struct MangaListView: View {
                     Divider()
                     
                     VStack {
-                        List(filteredList) { mangaListElement in
-                            NavigationLink(value: mangaListElement) {
-                                MangaListRowView(manga: mangaListElement, geo: geo)
+                        List(filteredList) { novelListElement in
+                            NavigationLink(value: novelListElement) {
+                                NovelListRowView(novel: novelListElement, geo: geo)
                             }
                             .buttonStyle(.plain)
                         }
-                        .navigationDestination(for: MangaListElement.self) { mangaListElement in
-                            MangaListDetailsSheetView(passedManga: mangaListElement)
+                        .navigationDestination(for: NovelListElement.self) { novelListElement in
+                            NovelListDetailsSheetView(passedNovel: novelListElement)
                         }
-                        .navigationDestination(for: Manga.self) { manga in
-                            MangaDetailsView(selectedManga: manga)
+                        .navigationDestination(for: Novel.self) { novel in
+                            NovelDetailsView(selectedNovel: novel)
                         }
                     }
-                    .sheet(isPresented: $showingAddNewMangaSheet) {
-                        MangaListAddNewToListView()
+                    .sheet(isPresented: $showingAddNewNovelSheet) {
+                        NovelListAddNewToListView()
                             .frame(width: 500, height: 300)
                     }
                 }
@@ -203,30 +203,30 @@ struct MangaListView: View {
     }
 }
 
-struct MangaListRowView: View {
-    var manga: MangaListElement
+struct NovelListRowView: View {
+    var novel: NovelListElement
     let geo: GeometryProxy
     
     var body: some View {
         HStack {
-            Text(manga.manga.first?.value.title ?? "No title")
+            Text(novel.novel.first?.value.title ?? "No title")
                 .frame(width: geo.size.width * 0.3, alignment: .leading)
                 .lineLimit(2)
-            Text(manga.lastChapter ?? "No last chapter")
+            Text(novel.lastChapter ?? "No last chapter")
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
                 .lineLimit(2)
-            Text(manga.status.rawValue)
+            Text(novel.status.rawValue)
                 .foregroundColor(.white)
                 .padding(3)
                 .padding(.horizontal, 3)
                 .background {
                     RoundedRectangle(cornerRadius: 5)
-                        .foregroundColor(manga.status.getStatusColor())
+                        .foregroundColor(novel.status.getStatusColor())
                 }
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
-            Text(manga.rating.rawValue)
+            Text(novel.rating.rawValue)
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
-                .foregroundColor(manga.rating == .best ? .purple : .primary)
+                .foregroundColor(novel.rating == .best ? .purple : .primary)
         }
         .frame(maxWidth: .infinity)
         .padding()
@@ -239,35 +239,35 @@ struct MangaListRowView: View {
     }
 }
 
-struct MangaListDetailsSheetView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelListDetailsSheetView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
     
-    @State var passedManga: MangaListElement
+    @State var passedNovel: NovelListElement
 
     @Environment(\.dismiss) var dismiss
     
-    @State private var mangaKeysArray: [String] = []
+    @State private var novelKeysArray: [String] = []
     
     @State private var showingDeleteSourceAlert = false
     @State private var deleteSourceAlertSource: String? = nil
 
     var body: some View {
         VStack {
-            Text(passedManga.manga.first?.value.title ?? "None")
+            Text(passedNovel.novel.first?.value.title ?? "None")
                 .font(.title2.bold())
             
             TabView {
                 ScrollView {
-                    ForEach(mangaKeysArray, id: \.self) { key in
-                        if let manga = passedManga.manga[key] {
-                            Text(mangaVM.sources[key]?.label ?? key)
+                    ForEach(novelKeysArray, id: \.self) { key in
+                        if let novel = passedNovel.novel[key] {
+                            Text(novelVM.sources[key]?.label ?? key)
                                 .font(.title2.bold())
                                 .padding(.top)
                             
                             HStack {
                                 VStack {
-                                    if let url = manga.imageUrl {
+                                    if let url = novel.imageUrl {
                                         CachedAsyncImage(url: url) { image in
                                             image
                                                 .resizable()
@@ -277,42 +277,42 @@ struct MangaListDetailsSheetView: View {
                                         }
                                     }
                                     
-                                    Text(manga.title)
+                                    Text(novel.title ?? "No title")
                                         .font(.headline)
                                 }
                                 .frame(width: 200)
                                 .padding(.trailing)
                                 
                                 List {
-                                    if let description = manga.description {
+                                    if let description = novel.description {
                                         Text("Description")
                                             .font(.headline)
                                         Text(description)
                                         Spacer()
                                     }
                                     
-                                    if let tags = manga.tags {
+                                    if let tags = novel.tags {
                                         Text("Tags")
                                             .font(.headline)
                                         Text(tags.map { $0.name }.joined(separator: ", "))
                                         Spacer()
                                     }
                                     
-                                    if let altTitles = manga.altTitles?.joined(separator: ", ") {
+                                    if let altTitles = novel.altTitles?.joined(separator: ", ") {
                                         Text("Alternative titles")
                                             .font(.headline)
                                         Text(altTitles)
                                         Spacer()
                                     }
                                     
-                                    if let authors = manga.authors?.joined(separator: ", ") {
+                                    if let authors = novel.authors?.joined(separator: ", ") {
                                         Text("Authors")
                                             .font(.headline)
                                         Text(authors)
                                         Spacer()
                                     }
                                     
-                                    if let detailsUrl = manga.detailsUrl {
+                                    if let detailsUrl = novel.detailsUrl {
                                         Link("URL source", destination: detailsUrl)
                                     }
                                 }
@@ -324,29 +324,29 @@ struct MangaListDetailsSheetView: View {
                             HStack {
                                 Spacer()
                                 
-                                NavigationLink("Open", value: manga)
+                                NavigationLink("Open", value: novel)
                                 
                                 Button {
-                                    if let currentIndex = mangaKeysArray.firstIndex(of: key) {
+                                    if let currentIndex = novelKeysArray.firstIndex(of: key) {
                                         withAnimation {
-                                            mangaKeysArray.rearrange(fromIndex: currentIndex, toIndex: currentIndex - 1)
+                                            novelKeysArray.rearrange(fromIndex: currentIndex, toIndex: currentIndex - 1)
                                         }
                                     }
                                 } label: {
                                     Image(systemName: "arrow.up")
                                 }
-                                .disabled((mangaKeysArray.firstIndex(of: key) ?? 0) - 1 < 0)
+                                .disabled((novelKeysArray.firstIndex(of: key) ?? 0) - 1 < 0)
                                 
                                 Button {
-                                    if let currentIndex = mangaKeysArray.firstIndex(of: key) {
+                                    if let currentIndex = novelKeysArray.firstIndex(of: key) {
                                         withAnimation {
-                                            mangaKeysArray.rearrange(fromIndex: currentIndex, toIndex: currentIndex + 1)
+                                            novelKeysArray.rearrange(fromIndex: currentIndex, toIndex: currentIndex + 1)
                                         }
                                     }
                                 } label: {
                                     Image(systemName: "arrow.down")
                                 }
-                                .disabled(mangaKeysArray.firstIndex(of: key) ?? mangaKeysArray.count >= mangaKeysArray.count - 1)
+                                .disabled(novelKeysArray.firstIndex(of: key) ?? novelKeysArray.count >= novelKeysArray.count - 1)
 
                                 Button {
                                     showingDeleteSourceAlert = true
@@ -363,10 +363,10 @@ struct MangaListDetailsSheetView: View {
                                     Button("Cancel", role: .cancel) { }
                                     Button("Delete", role: .destructive) {
                                         withAnimation {
-                                            mangaListVM.removeSourceFromList(id: passedManga.id, source: source)
-                                            passedManga.manga.removeValue(forKey: source)
+                                            novelListVM.removeSourceFromList(id: passedNovel.id, source: source)
+                                            passedNovel.novel.removeValue(forKey: source)
                                             
-                                            if !mangaListVM.list.contains(where: { $0.id == passedManga.id }) {
+                                            if !novelListVM.list.contains(where: { $0.id == passedNovel.id }) {
                                                 dismiss()
                                             }
                                         }
@@ -382,18 +382,18 @@ struct MangaListDetailsSheetView: View {
                         }
                     }
                     .onAppear {
-                        mangaKeysArray = Array(passedManga.manga.keys)
+                        novelKeysArray = Array(passedNovel.novel.keys)
                                                 
                         Task { @MainActor in
-                            passedManga.manga = await mangaVM.getAllUpdatedMangaDetails(for: passedManga.manga)
+                            passedNovel.novel = await novelVM.getAllUpdatedNovelDetails(for: passedNovel.novel)
                         }
                     }
                 }
                 .tabItem {
-                    Text("Manga details")
+                    Text("Novel details")
                 }
                 
-                MangaListListDetailsView(passedManga: passedManga, dismissOnDelete: true)
+                NovelListListDetailsView(passedNovel: passedNovel, dismissOnDelete: true)
                     .padding()
                     .tabItem {
                         Text("List details")
@@ -412,20 +412,20 @@ struct MangaListDetailsSheetView: View {
     }
 }
 
-struct MangaListListDetailsView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelListListDetailsView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
     
     @Environment(\.dismiss) var dismiss
     
-    let passedManga: MangaListElement
+    let passedNovel: NovelListElement
     
     let dismissOnDelete: Bool
     
     @State private var selectedSource: String = ""
     @State private var selectedLastChapter: String = ""
-    @State private var selectedMangaRating: String = ""
-    @State private var selectedMangaStatus: String = ""
+    @State private var selectedNovelRating: String = ""
+    @State private var selectedNovelStatus: String = ""
     
     @State private var showingDeleteAlert = false
     
@@ -435,32 +435,32 @@ struct MangaListListDetailsView: View {
     var body: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading) {
-                Text("Manga status/rating")
+                Text("Novel status/rating")
                     .font(.headline)
                 
-                Picker("Manga status", selection: $selectedMangaStatus) {
+                Picker("Novel status", selection: $selectedNovelStatus) {
                     ForEach(BookStatus.allCases, id: \.rawValue) { status in
                         Text(status.rawValue)
                             .tag(status.rawValue)
                     }
                 }
-                .onChange(of: selectedMangaStatus) { newStatus in
-                    mangaListVM.updateStatus(
-                        id: passedManga.id,
-                        to: BookStatus(rawValue: newStatus) ?? passedManga.status
+                .onChange(of: selectedNovelStatus) { newStatus in
+                    novelListVM.updateStatus(
+                        id: passedNovel.id,
+                        to: BookStatus(rawValue: newStatus) ?? passedNovel.status
                     )
                 }
                 
-                Picker("Manga rating", selection: $selectedMangaRating) {
+                Picker("Novel rating", selection: $selectedNovelRating) {
                     ForEach(BookRating.allCases, id: \.rawValue) { rating in
                         Text(rating.rawValue)
                             .tag(rating.rawValue)
                     }
                 }
-                .onChange(of: selectedMangaRating) { newRating in
-                    mangaListVM.updateRating(
-                        id: passedManga.id,
-                        to: BookRating(rawValue: newRating) ?? passedManga.rating
+                .onChange(of: selectedNovelRating) { newRating in
+                    novelListVM.updateRating(
+                        id: passedNovel.id,
+                        to: BookRating(rawValue: newRating) ?? passedNovel.rating
                     )
                 }
             }
@@ -470,29 +470,29 @@ struct MangaListListDetailsView: View {
                     .font(.headline)
                 
                 Picker("Chapter source", selection: $selectedSource) {
-                    ForEach(Array(passedManga.manga.keys), id: \.self) { key in
-                        Text(mangaVM.sources[key]?.label ?? key)
+                    ForEach(Array(passedNovel.novel.keys), id: \.self) { key in
+                        Text(novelVM.sources[key]?.label ?? key)
                             .tag(key)
                     }
                 }
                 
                 Picker("Last chapter", selection: $selectedLastChapter) {
-                    ForEach(passedManga.manga[selectedSource]?.chapters ?? [], id: \.id) { chapter in
+                    ForEach(passedNovel.novel[selectedSource]?.chapters ?? [], id: \.id) { chapter in
                         Text(chapter.title)
                             .tag(chapter.title)
                     }
                 }
-                .disabled(!passedManga.manga.keys.contains(selectedSource))
+                .disabled(!passedNovel.novel.keys.contains(selectedSource))
                 .onChange(of: selectedLastChapter) { newChapter in
-                    mangaListVM.updateLastChapter(
-                        id: passedManga.id,
+                    novelListVM.updateLastChapter(
+                        id: passedNovel.id,
                         to: newChapter
                     )
                 }
                 
                 HStack {
                     Text("Current last chapter:")
-                    Text(passedManga.lastChapter ?? "None")
+                    Text(passedNovel.lastChapter ?? "None")
                 }
             }
             .padding(.vertical)
@@ -509,7 +509,7 @@ struct MangaListListDetailsView: View {
                             displayedComponents: .date
                         )
                         .onChange(of: selectedLastReadDate) { newDate in
-                            mangaListVM.updateLastReadDate(id: passedManga.id, to: newDate)
+                            novelListVM.updateLastReadDate(id: passedNovel.id, to: newDate)
                         }
                     }
                     
@@ -517,12 +517,12 @@ struct MangaListListDetailsView: View {
                         showingLastChapterSelection.toggle()
                     }
                     .onAppear {
-                        showingLastChapterSelection = passedManga.lastReadDate != nil
-                        selectedLastReadDate = passedManga.lastReadDate ?? selectedLastReadDate
+                        showingLastChapterSelection = passedNovel.lastReadDate != nil
+                        selectedLastReadDate = passedNovel.lastReadDate ?? selectedLastReadDate
                     }
                     .onChange(of: showingLastChapterSelection) { showingLastChapter in
                         if !showingLastChapter {
-                            mangaListVM.updateLastReadDate(id: passedManga.id, to: nil)
+                            novelListVM.updateLastReadDate(id: passedNovel.id, to: nil)
                         }
                     }
                 }
@@ -530,7 +530,7 @@ struct MangaListListDetailsView: View {
 
                 HStack {
                     Text("Creation date:")
-                    Text(passedManga.creationDate.formatted(date: .abbreviated, time: .omitted))
+                    Text(passedNovel.creationDate.formatted(date: .abbreviated, time: .omitted))
                         .font(.body)
                 }
             }
@@ -548,8 +548,8 @@ struct MangaListListDetailsView: View {
                     .alert("Warning", isPresented: $showingDeleteAlert) {
                         Button("Cancel", role: .cancel) { }
                         Button("Delete", role: .destructive) {
-                            if let listElementIndex = mangaListVM.list.firstIndex(where: { $0.id == passedManga.id }) {
-                                mangaListVM.list.remove(at: listElementIndex)
+                            if let listElementIndex = novelListVM.list.firstIndex(where: { $0.id == passedNovel.id }) {
+                                novelListVM.list.remove(at: listElementIndex)
                                 
                                 if dismissOnDelete {
                                     dismiss()
@@ -565,28 +565,28 @@ struct MangaListListDetailsView: View {
             Spacer()
         }
         .onAppear {
-            selectedMangaRating = passedManga.rating.rawValue
-            selectedMangaStatus = passedManga.status.rawValue
+            selectedNovelRating = passedNovel.rating.rawValue
+            selectedNovelStatus = passedNovel.status.rawValue
         }
     }
 }
 
-struct MangaListAddNewToListView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelListAddNewToListView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
     
     @Environment(\.dismiss) var dismiss
     
     @State var storyTitle: String = ""
     @State var lastChapterTitle: String = ""
-    @State var selectedMangaStatus: BookStatus = .reading
-    @State var selectedMangaRating: BookRating = .none
+    @State var selectedNovelStatus: BookStatus = .reading
+    @State var selectedNovelRating: BookRating = .none
     
-    @State var mangaListNewImageUrl = ""
-    @State var mangaListNewAuthor = ""
+    @State var novelListNewImageUrl = ""
+    @State var novelListNewAuthor = ""
         
-    @State var mangaElements: [MangaWithSource] = []
-    @State var selectedMangaIndex: Set<Int> = Set()
+    @State var novelElements: [NovelWithSource] = []
+    @State var selectedNovelIndex: Set<Int> = Set()
     @State var searchState: LoadingState? = nil
     
     @State var selectedTab = 0
@@ -595,7 +595,7 @@ struct MangaListAddNewToListView: View {
     
     var body: some View {
         VStack {
-            Text("Add new manga")
+            Text("Add new novel")
                 .font(.title3.bold())
             
             TabView(selection: $selectedTab) {
@@ -607,14 +607,14 @@ struct MangaListAddNewToListView: View {
                     TextField("Last chapter title", text: $lastChapterTitle)
                     
                     Group {
-                        Picker("Status", selection: $selectedMangaStatus) {
+                        Picker("Status", selection: $selectedNovelStatus) {
                             ForEach(BookStatus.allCases, id: \.rawValue) {
                                 Text($0.rawValue)
                                     .tag($0)
                             }
                         }
                         
-                        Picker("Rating", selection: $selectedMangaRating) {
+                        Picker("Rating", selection: $selectedNovelRating) {
                             ForEach(BookRating.allCases, id: \.rawValue) {
                                 Text($0.rawValue)
                                     .tag($0)
@@ -624,32 +624,32 @@ struct MangaListAddNewToListView: View {
                 }
                 .padding()
                 .tabItem {
-                    Text("Manga list info")
+                    Text("Novel list info")
                 }
                 .tag(0)
                 .transition(.slide)
                 
                 VStack(alignment: .leading) {
                     NavigationView {
-                        List(0..<mangaElements.count, id: \.self, selection: $selectedMangaIndex) { index in
-                            let hasDuplicate = Array<String>(Set<String>(mangaElements.map { $0.source })).sorted() == mangaElements.map { $0.source }.sorted()
+                        List(0..<novelElements.count, id: \.self, selection: $selectedNovelIndex) { index in
+                            let hasDuplicate = Array<String>(Set<String>(novelElements.map { $0.source })).sorted() == novelElements.map { $0.source }.sorted()
                             
                             NavigationLink {
-                                if index >= 0 && mangaElements.count > index {
-                                    MangaListMangaDetailsEditorView(
-                                        mangaElement: $mangaElements[index],
+                                if index >= 0 && novelElements.count > index {
+                                    NovelListNovelDetailsEditorView(
+                                        novelElement: $novelElements[index],
                                         storyTitle: $storyTitle,
                                         lastChapterTitle: $lastChapterTitle,
-                                        selectedMangaStatus: $selectedMangaStatus,
-                                        selectedMangaRating: $selectedMangaRating,
-                                        mangaListNewImageUrl: $mangaListNewImageUrl,
-                                        mangaListNewAuthor: $mangaListNewAuthor)
+                                        selectedNovelStatus: $selectedNovelStatus,
+                                        selectedNovelRating: $selectedNovelRating,
+                                        novelListNewImageUrl: $novelListNewImageUrl,
+                                        novelListNewAuthor: $novelListNewAuthor)
                                 }
                             } label: {
-                                Text(mangaElements[index].source)
+                                Text(novelElements[index].source)
                                     .foregroundColor(hasDuplicate ? .primary : .red)
                             }
-                            .help(hasDuplicate ? "" : "There is another manga with the same source key.")
+                            .help(hasDuplicate ? "" : "There is another novel with the same source key.")
                         }
                         .listStyle(.bordered)
                     }
@@ -657,20 +657,20 @@ struct MangaListAddNewToListView: View {
                     HStack {
                         ControlGroup {
                             Button {
-                                mangaElements.remove(at: selectedMangaIndex.first!)
+                                novelElements.remove(at: selectedNovelIndex.first!)
                             } label: {
                                 Image(systemName: "minus")
                             }
                             
                             Menu {
                                 Button("Create manually") {
-                                    mangaElements.append(MangaWithSource(source: "manual", manga: Manga(title: storyTitle, authors: [])))
+                                    novelElements.append(NovelWithSource(source: "manual", novel: Novel(title: storyTitle, authors: [])))
                                 }
                                 
                                 Menu("Search in source") {
-                                    ForEach(mangaVM.sourcesArray, id: \.sourceId) { source in
+                                    ForEach(novelVM.sourcesArray, id: \.sourceId) { source in
                                         Button(source.label) {
-                                            searchAndGetManga(source: source)
+                                            searchAndGetNovel(source: source)
                                         }
                                     }
                                 }
@@ -703,14 +703,14 @@ struct MangaListAddNewToListView: View {
                 }
                 .padding()
                 .tabItem {
-                    Text("Manga info")
+                    Text("Novel info")
                 }
                 .tag(1)
                 .transition(.slide)
             }
             .onChange(of: selectedTab) { _ in
-                if selectedTab == 1 && mangaElements.isEmpty && !storyTitle.isEmpty {
-                    mangaElements.append(MangaWithSource(source: "manual", manga: Manga(title: storyTitle)))
+                if selectedTab == 1 && novelElements.isEmpty && !storyTitle.isEmpty {
+                    novelElements.append(NovelWithSource(source: "manual", novel: Novel(title: storyTitle)))
                 }
             }
             
@@ -722,15 +722,15 @@ struct MangaListAddNewToListView: View {
                 
                 Button(selectedTab == 1 ? "Add to list" : "Next") {
                     if selectedTab == 1 {
-                        let mangas: [String: Manga] = mangaElements.reduce(into: [String: Manga]()) {
-                            $0[$1.source] = $1.manga
+                        let novels: [String: Novel] = novelElements.reduce(into: [String: Novel]()) {
+                            $0[$1.source] = $1.novel
                         }
                         
-                        mangaListVM.addToList(
-                            mangas: mangas,
+                        novelListVM.addToList(
+                            novels: novels,
                             lastChapter: lastChapterTitle,
-                            status: selectedMangaStatus,
-                            rating: selectedMangaRating,
+                            status: selectedNovelStatus,
+                            rating: selectedNovelRating,
                             lastReadDate: Date.now
                         )
                         
@@ -741,20 +741,20 @@ struct MangaListAddNewToListView: View {
                         }
                     }
                 }
-                .disabled(selectedTab == 1 ? storyTitle.isEmpty && mangaElements.isEmpty : false)
+                .disabled(selectedTab == 1 ? storyTitle.isEmpty && novelElements.isEmpty : false)
             }
         }
         .padding()
     }
     
-    private func searchAndGetManga(source: MangaSource) {
+    private func searchAndGetNovel(source: NovelSource) {
         Task { @MainActor in
             searchState = .loading
                         
-            if let initialManga = await source.getSearchManga(pageNumber: 1, searchQuery: storyTitle).first {
-                await mangaVM.getMangaDetails(for: initialManga, source: source.sourceId) { result in
+            if let initialNovel = await source.getSearchNovel(pageNumber: 1, searchQuery: storyTitle).first {
+                await novelVM.getNovelDetails(for: initialNovel, source: source.sourceId) { result in
                     if let result = result {
-                        mangaElements.append(MangaWithSource(source: source.sourceId, manga: result))
+                        novelElements.append(NovelWithSource(source: source.sourceId, novel: result))
                         searchState = .success
                         
                         return
@@ -769,48 +769,48 @@ struct MangaListAddNewToListView: View {
     }
 }
 
-struct MangaListMangaDetailsEditorView: View {
-    @Binding var mangaElement: MangaWithSource
+struct NovelListNovelDetailsEditorView: View {
+    @Binding var novelElement: NovelWithSource
     
     @Binding var storyTitle: String
     @Binding var lastChapterTitle: String
-    @Binding var selectedMangaStatus: BookStatus
-    @Binding var selectedMangaRating: BookRating
+    @Binding var selectedNovelStatus: BookStatus
+    @Binding var selectedNovelRating: BookRating
     
-    @Binding var mangaListNewImageUrl: String
-    @Binding var mangaListNewAuthor: String
+    @Binding var novelListNewImageUrl: String
+    @Binding var novelListNewAuthor: String
         
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                TextField("Source", text: $mangaElement.source)
+                TextField("Source", text: $novelElement.source)
                     .padding(.bottom, 20)
                 
-                Text("Manga details")
+                Text("Novel details")
                     .frame(maxWidth: .infinity, alignment: .center)
                     .font(.headline)
                 
-                TextField("Title", text: $mangaElement.manga.title)
-                TextField("Description", text: $mangaElement.manga.description ?? "")
-                TextField("Image URL", text: $mangaListNewImageUrl)
-                    .onChange(of: mangaListNewImageUrl) { _ in
-                        if let url = URL(string: mangaListNewImageUrl) {
-                            mangaElement.manga.imageUrl = url
+                TextField("Title", text: $novelElement.novel.title  ?? "No title")
+                TextField("Description", text: $novelElement.novel.description ?? "")
+                TextField("Image URL", text: $novelListNewImageUrl)
+                    .onChange(of: novelListNewImageUrl) { _ in
+                        if let url = URL(string: novelListNewImageUrl) {
+                            novelElement.novel.imageUrl = url
                         }
                     }
                 
                 Text("Authors")
                 ScrollView {
-                    ForEach((mangaElement.manga.authors ?? []).indices, id: \.self) { authorIndex in
-                        let authorsBinding: Binding<[String]> = Binding(get: { mangaElement.manga.authors ?? [] }, set: { mangaElement.manga.authors = $0 })
+                    ForEach((novelElement.novel.authors ?? []).indices, id: \.self) { authorIndex in
+                        let authorsBinding: Binding<[String]> = Binding(get: { novelElement.novel.authors ?? [] }, set: { novelElement.novel.authors = $0 })
                         
                         TextField("Author", text: authorsBinding[authorIndex])
                     }
                     
-                    TextField("Add new author", text: $mangaListNewAuthor)
+                    TextField("Add new author", text: $novelListNewAuthor)
                         .onSubmit {
-                            mangaElement.manga.authors?.append(mangaListNewAuthor)
-                            mangaListNewAuthor = ""
+                            novelElement.novel.authors?.append(novelListNewAuthor)
+                            novelListNewAuthor = ""
                         }
                 }
             }
@@ -819,8 +819,8 @@ struct MangaListMangaDetailsEditorView: View {
     }
 }
 
-struct MangaListView_Previews: PreviewProvider {
+struct NovelListView_Previews: PreviewProvider {
     static var previews: some View {
-        MangaListView()
+        NovelListView()
     }
 }

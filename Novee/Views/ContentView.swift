@@ -58,6 +58,24 @@ struct ContentView: View {
                         }
                     }
                 }
+                
+                Section("Novel") {
+                    NavigationLink(tag: 6, selection: self.$selectedView, destination: { NovelMenuView() }) {
+                        HStack {
+                            Image(systemName: "book")
+                                .frame(width: 15)
+                            Text("Novel")
+                        }
+                    }
+                    
+                    NavigationLink(tag: 7, selection: self.$selectedView, destination: { NovelListView() }) {
+                        HStack {
+                            Image(systemName: "list.bullet")
+                                .frame(width: 15)
+                            Text("Novel list")
+                        }
+                    }
+                }
             }
             .listStyle(.sidebar)
             .onAppear {

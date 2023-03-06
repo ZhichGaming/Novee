@@ -1,17 +1,17 @@
 //
-//  MangaReaderView.swift
+//  NovelReaderView.swift
 //  Novee
 //
-//  Created by Nick on 2022-10-26.
+//  Created by Nick on 2023-03-05.
 //
 
 import SwiftUI
-import CachedAsyncImage
 import SystemNotification
+import CachedAsyncImage
 
-struct MangaReaderView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelReaderView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
     @StateObject var notification = SystemNotificationContext()
     
     @State private var zoom = 1.0
@@ -20,12 +20,12 @@ struct MangaReaderView: View {
     
     @State private var oldChapterTitle = ""
     
-    @State private var selectedMangaStatus: BookStatus = .reading
-    @State private var selectedMangaRating: BookRating = .none
+    @State private var selectedNovelStatus: BookStatus = .reading
+    @State private var selectedNovelRating: BookRating = .none
     @State private var selectedLastChapter: UUID = UUID()
 
-    let manga: Manga
-    @State var chapter: Chapter
+    let novel: Novel
+    @State var chapter: NovelChapter
     @Binding var window: NSWindow
 
     var body: some View {
@@ -33,42 +33,23 @@ struct MangaReaderView: View {
             ScrollView(.vertical) {
                 changeChaptersView
                 
-                if let images = chapter.images {
-                    VStack(spacing: 0) {
-                        ForEach(0..<images.keys.count, id: \.self) { index in
-                            if let currentImageElement = images[index] {
-                                switch currentImageElement.loadingState {
-                                case .success:
-                                    if let image = images.first { $0.key == index }?.value.image {
-                                        Image(nsImage: image)
-                                            .resizable()
-                                            .aspectRatio(contentMode: image.size.width > geometry.size.width ? .fit : .fill)
-                                            .frame(maxWidth: image.size.width < geometry.size.width ? image.size.width : geometry.size.width)
+                if let chapterContent = chapter.content {
+                    Text(chapterContent)
+                        .font(.system(size: 16))
+                        .lineSpacing(5)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .scaleEffect(CGSize(width: zoom, height: zoom))
+                        .gesture(MagnificationGesture()
+                                    .onChanged { value in
+                                        zoom = value.magnitude
                                     }
-                                case .failed:
-                                    Button("Failed to fetch image.") {
-                                        Task { @MainActor in
-                                            await mangaVM.sources[mangaVM.selectedSource]!
-                                                .refetchMangaPage(chapter: chapter, pageIndex: index) { image in
-                                                    Task { @MainActor in
-                                                        chapter.images?[index] = image
-                                                    }
-                                                }
-                                        }
+                                    .onEnded { _ in
+                                        zoom = 1.0
                                     }
-                                case .loading:
-                                    ProgressView()
-                                // This case is useless for images, it is only used for manga details.
-                                case .notFound:
-                                    EmptyView()
-                                }
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
+                        )
                 } else {
                     ProgressView()
-                        .frame(maxWidth: .infinity)
                 }
                 
                 changeChaptersView
@@ -76,10 +57,10 @@ struct MangaReaderView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: chapter) { [chapter] newChapter in
                 if chapter.id != newChapter.id {
-                    window.title = manga.title + " - " + newChapter.title
+                    window.title = (novel.title ?? "No title") + " - " + newChapter.title
                     
                     Task {
-                        await fetchImages()
+                        await fetchContent()
                     }
                     
                     showUpdateChapterNotification(newChapter: newChapter)
@@ -88,20 +69,20 @@ struct MangaReaderView: View {
         }
         .systemNotification(notification)
         .onAppear {
-            if mangaListVM.findInList(manga: manga) == nil {
-                showAddMangaNotification()
+            if novelListVM.findInList(novel: novel) == nil {
+                showAddNovelNotification()
             } else {
                 showUpdateChapterNotification(newChapter: chapter)
             }
             
             Task {
-                await fetchImages()
+                await fetchContent()
             }
         }
         .sheet(isPresented: $showingDetailsSheet) {
             VStack {
                 HStack {
-                    CachedAsyncImage(url: manga.imageUrl) { image in
+                    CachedAsyncImage(url: novel.imageUrl) { image in
                         image
                             .resizable()
                             .scaledToFill()
@@ -112,7 +93,7 @@ struct MangaReaderView: View {
                     }
                     
                     VStack(alignment: .leading) {
-                        Text(manga.title)
+                        Text(novel.title ?? "No title")
                             .font(.title2.bold())
                         Text(chapter.title)
                             .font(.headline)
@@ -122,14 +103,14 @@ struct MangaReaderView: View {
                 }
                 
                 TabView {
-                    MangaReaderDetailsView(manga: manga, chapter: chapter)
+                    NovelReaderDetailsView(novel: novel, chapter: chapter)
                         .tabItem {
                             Text("Reading options")
                         }
-                    
-                    MangaReaderAddToListView(manga: manga, chapter: chapter)
+
+                    NovelReaderAddToListView(novel: novel, chapter: chapter)
                         .tabItem {
-                            Text("Manga list")
+                            Text("Novel list")
                         }
                 }
             }
@@ -138,48 +119,48 @@ struct MangaReaderView: View {
         }
         .sheet(isPresented: $showingCustomizedAddToListSheet) {
             VStack {
-                Text(manga.title)
+                Text(novel.title ?? "No title")
                     .font(.headline)
 
                 Group {
-                    Picker("Status", selection: $selectedMangaStatus) {
+                    Picker("Status", selection: $selectedNovelStatus) {
                         ForEach(BookStatus.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
-                    
-                    Picker("Rating", selection: $selectedMangaRating) {
+
+                    Picker("Rating", selection: $selectedNovelRating) {
                         ForEach(BookRating.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
-                    
+
                     Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(manga.chapters ?? []) {
+                        ForEach(novel.chapters ?? []) {
                             Text($0.title)
                                 .tag($0.id)
                         }
                     }
                 }
-                
+
                 HStack {
                     Spacer()
                     Button("Cancel", role: .cancel) {
                         showingCustomizedAddToListSheet = false
                     }
-                    
+
                     Button("Add to list") {
-                        mangaListVM.addToList(
-                            source: mangaVM.selectedSource,
-                            manga: manga,
-                            lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
-                            status: selectedMangaStatus,
-                            rating: selectedMangaRating,
+                        novelListVM.addToList(
+                            source: novelVM.selectedSource,
+                            novel: novel,
+                            lastChapter: novel.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                            status: selectedNovelStatus,
+                            rating: selectedNovelRating,
                             lastReadDate: Date.now
                         )
-                        
+
                         showingCustomizedAddToListSheet = false
                     }
                 }
@@ -199,7 +180,7 @@ struct MangaReaderView: View {
     var changeChaptersView: some View {
         HStack {
             Button {
-                if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: -1) {
+                if let newChapter = novelVM.changeChapter(chapter: chapter, novel: novel, offset: -1) {
                     chapter = newChapter
                 }
             } label: {
@@ -208,10 +189,10 @@ struct MangaReaderView: View {
                     Image(systemName: "arrow.left")
                 }
             }
-            .disabled(chapter.id == manga.chapters?.first?.id)
+            .disabled(chapter.id == novel.chapters?.first?.id)
             
             Button {
-                if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: 1) {
+                if let newChapter = novelVM.changeChapter(chapter: chapter, novel: novel, offset: 1) {
                     chapter = newChapter
                 }
             } label: {
@@ -220,16 +201,16 @@ struct MangaReaderView: View {
                     Image(systemName: "arrow.right")
                 }
             }
-            .disabled(chapter.id == manga.chapters?.last?.id)
+            .disabled(chapter.id == novel.chapters?.last?.id)
         }
         .padding()
     }
     
-    private func showAddMangaNotification() {
+    private func showAddNovelNotification() {
         notification.present(configuration: .init(duration: 15)) {
             VStack {
                 VStack(alignment: .leading) {
-                    Text("Add this manga to your list?")
+                    Text("Add this novel to your list?")
                         .font(.footnote.bold())
                         .foregroundColor(.primary.opacity(0.6))
                     Text("Swipe to dismiss")
@@ -247,9 +228,9 @@ struct MangaReaderView: View {
                     }
                     
                     Button {
-                        mangaListVM.addToList(
-                            source: mangaVM.selectedSource,
-                            manga: manga,
+                        novelListVM.addToList(
+                            source: novelVM.selectedSource,
+                            novel: novel,
                             lastChapter: chapter.title,
                             status: .reading,
                             rating: .none,
@@ -268,12 +249,12 @@ struct MangaReaderView: View {
         }
     }
     
-    private func showUpdateChapterNotification(newChapter: Chapter) {
-        if let index = mangaListVM.list.firstIndex(where: { $0.id == mangaListVM.findInList(manga: manga)?.id }) {
-            if newChapter.title > mangaListVM.list[index].lastChapter ?? "" {
-                oldChapterTitle = mangaListVM.list[index].lastChapter ?? ""
-                mangaListVM.list[index].lastChapter = newChapter.title
-                
+    private func showUpdateChapterNotification(newChapter: NovelChapter) {
+        if let index = novelListVM.list.firstIndex(where: { $0.id == novelListVM.findInList(novel: novel)?.id }) {
+            if newChapter.title > novelListVM.list[index].lastChapter ?? "" {
+                oldChapterTitle = novelListVM.list[index].lastChapter ?? ""
+                novelListVM.list[index].lastChapter = newChapter.title
+
                 notification.present {
                     VStack {
                         VStack(alignment: .leading) {
@@ -288,7 +269,7 @@ struct MangaReaderView: View {
 
                         HStack {
                             Button {
-                                mangaListVM.list[index].lastChapter = oldChapterTitle
+                                novelListVM.list[index].lastChapter = oldChapterTitle
                                 notification.dismiss()
                             } label: {
                                 Text("Undo")
@@ -301,29 +282,25 @@ struct MangaReaderView: View {
                 }
             }
         } else {
-            print("Index in MangaReaderView onChange of chapter is nil!")
+            print("Index in NovelReaderView onChange of chapter is nil!")
         }
     }
     
-    private func fetchImages() async {
-        chapter.images = [:]
+    private func fetchContent() async {
+        chapter.content = nil
         
-        await mangaVM.sources[mangaVM.selectedSource]!.getMangaPages(manga: manga, chapter: self.chapter) { index, nsImage in
-            Task { @MainActor in
-                chapter.images?[index] = nsImage
-            }
-        }
+        chapter.content = await novelVM.sources[novelVM.selectedSource]!.getNovelContent(novel: novel, chapter: chapter)
     }
 }
 
-struct MangaReaderDetailsView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelReaderDetailsView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
     
     @Environment(\.dismiss) var dismiss
     
-    let manga: Manga
-    let chapter: Chapter
+    let novel: Novel
+    let chapter: NovelChapter
 
     var body: some View {
         VStack {
@@ -333,20 +310,20 @@ struct MangaReaderDetailsView: View {
     }
 }
 
-struct MangaReaderAddToListView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
+struct NovelReaderAddToListView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
 
     @Environment(\.dismiss) var dismiss
 
-    let manga: Manga
-    var chapter: Chapter? = nil
+    let novel: Novel
+    var chapter: NovelChapter? = nil
     
-    @State private var selectedMangaStatus: BookStatus = .reading
-    @State private var selectedMangaRating: BookRating = .none
+    @State private var selectedNovelStatus: BookStatus = .reading
+    @State private var selectedNovelRating: BookRating = .none
     @State private var selectedLastChapter: UUID = UUID()
     
-    @State private var selectedMangaListElement: MangaListElement?
+    @State private var selectedNovelListElement: NovelListElement?
     
     @State private var createNewEntry = false
     
@@ -357,7 +334,7 @@ struct MangaReaderAddToListView: View {
         HStack {
             VStack {
                 Button("Add new entry") {
-                    selectedMangaListElement = MangaListElement(manga: [:], status: .reading, rating: .none, creationDate: Date.now)
+                    selectedNovelListElement = NovelListElement(novel: [:], status: .reading, rating: .none, creationDate: Date.now)
                     createNewEntry = true
                 }
                                         
@@ -366,8 +343,8 @@ struct MangaReaderAddToListView: View {
                 }
                 .popover(isPresented: $showingFindManuallyPopup) {
                     VStack {
-                        List(mangaListVM.list.sorted { $0.manga.first?.value.title ?? "" < $1.manga.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
-                            Text(item.manga.first?.value.title ?? "No title")
+                        List(novelListVM.list.sorted { $0.novel.first?.value.title ?? "" < $1.novel.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
+                            Text(item.novel.first?.value.title ?? "No title")
                                 .tag(item.id)
                         }
                         .listStyle(.bordered(alternatesRowBackgrounds: true))
@@ -379,10 +356,10 @@ struct MangaReaderAddToListView: View {
                             
                             Button("Cancel") { showingFindManuallyPopup = false }
                             Button("Select") {
-                                selectedMangaListElement = mangaListVM.list.first(where: { $0.id == selectedListItem })
+                                selectedNovelListElement = novelListVM.list.first(where: { $0.id == selectedListItem })
                                 showingFindManuallyPopup = false
                             }
-                            .disabled(!mangaListVM.list.contains { $0.id == selectedListItem })
+                            .disabled(!novelListVM.list.contains { $0.id == selectedListItem })
                         }
                     }
                     .frame(width: 400, height: 300)
@@ -390,9 +367,9 @@ struct MangaReaderAddToListView: View {
                 }
                 
                 Spacer()
-                Text(mangaListVM.findInList(manga: manga)?.manga.first?.value.title ?? "Manga not found")
+                Text(novelListVM.findInList(novel: novel)?.novel.first?.value.title ?? "Novel not found")
                 
-                if let url = mangaListVM.findInList(manga: manga)?.manga.first?.value.imageUrl {
+                if let url = novelListVM.findInList(novel: novel)?.novel.first?.value.imageUrl {
                     CachedAsyncImage(url: url) { image in
                         image
                             .resizable()
@@ -409,17 +386,17 @@ struct MangaReaderAddToListView: View {
                 .padding(.horizontal)
             
             VStack {
-                Text("Manga options")
+                Text("Novel options")
 
                 Group {
-                    Picker("Status", selection: $selectedMangaStatus) {
+                    Picker("Status", selection: $selectedNovelStatus) {
                         ForEach(BookStatus.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
                     
-                    Picker("Rating", selection: $selectedMangaRating) {
+                    Picker("Rating", selection: $selectedNovelRating) {
                         ForEach(BookRating.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
@@ -427,13 +404,13 @@ struct MangaReaderAddToListView: View {
                     }
                     
                     Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(manga.chapters ?? []) {
+                        ForEach(novel.chapters ?? []) {
                             Text($0.title)
                                 .tag($0.id)
                         }
                     }
                 }
-                .disabled(selectedMangaListElement == nil)
+                .disabled(selectedNovelListElement == nil)
                 
                 HStack {
                     Spacer()
@@ -443,22 +420,22 @@ struct MangaReaderAddToListView: View {
                     
                     Button(createNewEntry ? "Add to list" : "Save") {
                         if createNewEntry {
-                            mangaListVM.addToList(
-                                source: mangaVM.selectedSource,
-                                manga: manga,
-                                lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
-                                status: selectedMangaStatus,
-                                rating: selectedMangaRating,
+                            novelListVM.addToList(
+                                source: novelVM.selectedSource,
+                                novel: novel,
+                                lastChapter: novel.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
+                                status: selectedNovelStatus,
+                                rating: selectedNovelRating,
                                 lastReadDate: Date.now
                             )
                         } else {
-                            mangaListVM.updateListEntry(
-                                id: selectedMangaListElement!.id,
-                                newValue: MangaListElement(
-                                    manga: [mangaVM.selectedSource: manga],
-                                    lastChapter: manga.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
-                                    status: selectedMangaStatus,
-                                    rating: selectedMangaRating,
+                            novelListVM.updateListEntry(
+                                id: selectedNovelListElement!.id,
+                                newValue: NovelListElement(
+                                    novel: [novelVM.selectedSource: novel],
+                                    lastChapter: novel.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
+                                    status: selectedNovelStatus,
+                                    rating: selectedNovelRating,
                                     lastReadDate: Date.now,
                                     creationDate: Date.now
                                 )
@@ -467,20 +444,20 @@ struct MangaReaderAddToListView: View {
                         
                         dismiss()
                     }
-                    .disabled(selectedMangaListElement == nil)
+                    .disabled(selectedNovelListElement == nil)
                 }
             }
         }
         .padding()
         .onAppear {
-            selectedMangaListElement = mangaListVM.findInList(manga: manga)
+            selectedNovelListElement = novelListVM.findInList(novel: novel)
         }
-        .onChange(of: selectedMangaListElement) { _ in
-            if let selectedMangaListElement = selectedMangaListElement {
-                selectedMangaStatus = selectedMangaListElement.status
-                selectedMangaRating = selectedMangaListElement.rating
+        .onChange(of: selectedNovelListElement) { _ in
+            if let selectedNovelListElement = selectedNovelListElement {
+                selectedNovelStatus = selectedNovelListElement.status
+                selectedNovelRating = selectedNovelListElement.rating
                 
-                selectedLastChapter = manga.chapters?.first { $0.title == selectedMangaListElement.lastChapter }?.id ?? UUID()
+                selectedLastChapter = novel.chapters?.first { $0.title == selectedNovelListElement.lastChapter }?.id ?? UUID()
             }
         }
     }

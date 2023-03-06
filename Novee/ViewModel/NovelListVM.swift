@@ -1,21 +1,21 @@
 //
-//  MangaListVM.swift
+//  NovelListVM.swift
 //  Novee
 //
-//  Created by Nick on 2023-01-04.
+//  Created by Nick on 2023-03-05.
 //
 
 import Foundation
 
-class MangaListVM: ObservableObject {
-    static let shared = MangaListVM()
+class NovelListVM: ObservableObject {
+    static let shared = NovelListVM()
     
     init() {
         list = []
         decode()
     }
     
-    @Published var list: [MangaListElement] {
+    @Published var list: [NovelListElement] {
         didSet {
             encode()
         }
@@ -25,7 +25,7 @@ class MangaListVM: ObservableObject {
         do {
             let encoded = try JSONEncoder().encode(list)
             
-            FileManager().createFile(atPath: URL.mangaListStorageUrl.path, contents: encoded)
+            FileManager().createFile(atPath: URL.novelListStorageUrl.path, contents: encoded)
         } catch {
             Log.shared.error(error)
         }
@@ -33,28 +33,28 @@ class MangaListVM: ObservableObject {
     
     func decode() {
         do {
-            if !FileManager().fileExists(atPath: URL.mangaListStorageUrl.path) {
-                FileManager().createFile(atPath: URL.mangaListStorageUrl.path, contents: Data([]))
+            if !FileManager().fileExists(atPath: URL.novelListStorageUrl.path) {
+                FileManager().createFile(atPath: URL.novelListStorageUrl.path, contents: Data([]))
                 return
             }
             
-            if let data = FileManager().contents(atPath: URL.mangaListStorageUrl.path) {
-                let decoded = try JSONDecoder().decode([MangaListElement].self, from: data)
+            if let data = FileManager().contents(atPath: URL.novelListStorageUrl.path) {
+                let decoded = try JSONDecoder().decode([NovelListElement].self, from: data)
                 list = decoded
             } else {
-                Log.shared.msg("An error occured while loading manga list data.")
+                Log.shared.msg("An error occured while loading novel list data.")
             }
         } catch {
             Log.shared.error(error)
         }
     }
     
-    func addToList(source: String, manga: Manga, lastChapter: String? = nil, status: BookStatus, rating: BookRating = .none, creationDate: Date = Date.now, lastReadDate: Date? = nil) {
-        list.append(MangaListElement(manga: [source: manga], lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
+    func addToList(source: String, novel: Novel, lastChapter: String? = nil, status: BookStatus, rating: BookRating = .none, creationDate: Date = Date.now, lastReadDate: Date? = nil) {
+        list.append(NovelListElement(novel: [source: novel], lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
     }
     
-    func addToList(mangas: [String: Manga], lastChapter: String? = nil, status: BookStatus, rating: BookRating = .none, creationDate: Date = Date.now, lastReadDate: Date? = nil) {
-        list.append(MangaListElement(manga: mangas, lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
+    func addToList(novels: [String: Novel], lastChapter: String? = nil, status: BookStatus, rating: BookRating = .none, creationDate: Date = Date.now, lastReadDate: Date? = nil) {
+        list.append(NovelListElement(novel: novels, lastChapter: lastChapter, status: status, rating: rating, lastReadDate: lastReadDate, creationDate: creationDate))
     }
     
     func removeFromList(id: UUID) {
@@ -67,9 +67,9 @@ class MangaListVM: ObservableObject {
     
     func removeSourceFromList(id: UUID, source: String) {
         if let index = list.firstIndex(where: { $0.id == id }) {
-            list[index].manga.removeValue(forKey: source)
+            list[index].novel.removeValue(forKey: source)
             
-            if list[index].manga.isEmpty {
+            if list[index].novel.isEmpty {
                 removeFromList(id: id)
             }
         } else {
@@ -77,15 +77,15 @@ class MangaListVM: ObservableObject {
         }
     }
     
-    func updateMangaInListElement(id: UUID, source: String, manga: Manga) {
+    func updateNovelInListElement(id: UUID, source: String, novel: Novel) {
         if let index = list.firstIndex(where: { $0.id == id }) {
-            list[index].manga[source] = manga
+            list[index].novel[source] = novel
         } else {
             Log.shared.msg("A list entry with this UUID could not be found.")
         }
     }
     
-    func updateListEntry(id: UUID, newValue: MangaListElement) {
+    func updateListEntry(id: UUID, newValue: NovelListElement) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index] = newValue
         } else {
@@ -125,15 +125,15 @@ class MangaListVM: ObservableObject {
         }
     }
     
-    func findInList(manga: Manga) -> MangaListElement? {
-        let inputTitles = [manga.title] + (manga.altTitles ?? [])
+    func findInList(novel: Novel) -> NovelListElement? {
+        let inputTitles = [novel.title] + (novel.altTitles ?? [])
         
-        for manga in list {
-            for source in manga.manga {
+        for novel in list {
+            for source in novel.novel {
                 for listTitle in [source.value.title] + (source.value.altTitles ?? []) {
                     for inputTitle in inputTitles {
                         if listTitle == inputTitle {
-                            return manga
+                            return novel
                         }
                     }
                 }
@@ -148,8 +148,8 @@ class MangaListVM: ObservableObject {
             let fiveDaysAgo = Calendar.current.date(byAdding: .day, value: -5, to: Date())!
 
             if list[index].lastReadDate ?? Date.now < fiveDaysAgo {
-                let containsLastChapter = Array(list[index].manga.values).map { manga in
-                    let chapterTitles = (manga.chapters ?? []).map { $0.title }
+                let containsLastChapter = Array(list[index].novel.values).map { novel in
+                    let chapterTitles = (novel.chapters ?? []).map { $0.title }
                     
                     if let lastTitle = chapterTitles.last, lastTitle == list[index].lastChapter ?? "" {
                         return true

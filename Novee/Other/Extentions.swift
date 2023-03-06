@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftSoup
 
 func ??<T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
     Binding(
@@ -52,7 +53,7 @@ extension View {
     }
 }
 
-extension MangaStatus {
+extension BookStatus {
     func getStatusColor() -> Color {
         switch self {
         case .completed:
@@ -129,13 +130,29 @@ extension URL {
     static let applicationSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     static let mangaListStorageUrl = applicationSupportDirectory.appendingPathComponent("mangalist", conformingTo: .json)
     static let animeListStorageUrl = applicationSupportDirectory.appendingPathComponent("animelist", conformingTo: .json)
+    static let novelListStorageUrl = applicationSupportDirectory.appendingPathComponent("novellist", conformingTo: .json)
     static let mangaStorageUrl = applicationSupportDirectory.appendingPathComponent("manga", conformingTo: .folder)
     static let animeStorageUrl = applicationSupportDirectory.appendingPathComponent("anime", conformingTo: .folder)
+    static let novelStorageUrl = applicationSupportDirectory.appendingPathComponent("novel", conformingTo: .folder)
 }
 
 extension Array {
     mutating func rearrange(fromIndex: Int, toIndex: Int){
         let element = self.remove(at: fromIndex)
         self.insert(element, at: toIndex)
+    }
+}
+
+extension Element {
+    func untilNext(_ nodeName: String) throws -> Elements {
+        var currentElement = self
+        var result: [Element] = [currentElement ]
+        
+        while try currentElement.nextElementSibling()?.nodeName() != nodeName {
+            result.append(try currentElement.nextElementSibling()!)
+            currentElement = try currentElement.nextElementSibling()!
+        }
+        
+        return Elements(result)
     }
 }
