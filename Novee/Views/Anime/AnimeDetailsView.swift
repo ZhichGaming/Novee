@@ -85,7 +85,7 @@ struct AnimeDetailsView: View {
                             )
                         } else {
                             VStack {
-                                Text("This manga was not found in your list.")
+                                Text("This anime was not found in your list.")
                                 Button("Add") {
                                     isShowingAddToListSheet = true
                                 }
@@ -202,6 +202,7 @@ struct AnimeInfoView: View {
 
 struct EpisodeList: View {
     @EnvironmentObject var animeVM: AnimeVM
+    @EnvironmentObject var animeListVM: AnimeListVM
     @EnvironmentObject var notification: SystemNotificationContext
     
     @Environment(\.openWindow) var openWindow
@@ -250,7 +251,18 @@ struct EpisodeList: View {
                     } else {
                         if let episodes = selectedAnime.episodes {
                             Spacer()
-                        
+                            
+                            let animeListElement = animeListVM.findInList(anime: selectedAnime)
+                            let currentEpisodeIndex = episodes.firstIndex { $0.title == animeListElement?.lastEpisode }
+                            let isInBounds = currentEpisodeIndex != nil && currentEpisodeIndex! + 1 < episodes.endIndex
+                            
+                            Button("Continue") {
+                                let nextEpisode = episodes[currentEpisodeIndex! + 1]
+                                
+                                openWindow(value: AnimeEpisodePair(anime: selectedAnime, episode: nextEpisode))
+                            }
+                            .disabled(!isInBounds)
+                            
                             Button("Watch first") {
                                 openWindow(value: AnimeEpisodePair(anime: selectedAnime, episode: episodes.first!))
                             }

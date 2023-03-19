@@ -255,6 +255,21 @@ struct NovelChapterList: View {
                     } else {
                         if let chapters = selectedNovel.chapters {
                             Spacer()
+                            
+                            let novelListElement = novelListVM.findInList(novel: selectedNovel)
+                            let currentChapterIndex = chapters.firstIndex { $0.title == novelListElement?.lastChapter }
+                            let isInBounds = currentChapterIndex != nil && currentChapterIndex! + 1 < chapters.endIndex
+                            
+                            Button("Continue") {
+                                let nextChapter = chapters[currentChapterIndex! + 1]
+                                
+                                openWindow(
+                                    title: (selectedNovel.title ?? "No Title") + " - " + nextChapter.title,
+                                    novel: selectedNovel,
+                                    chapter: nextChapter
+                                )
+                            }
+                            .disabled(!isInBounds)
                         
                             Button("Read first") {
                                 openWindow(

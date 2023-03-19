@@ -253,6 +253,21 @@ struct ChapterList: View {
                     } else {
                         if let chapters = selectedManga.chapters {
                             Spacer()
+                            
+                            let mangaListElement = mangaListVM.findInList(manga: selectedManga)
+                            let currentChapterIndex = chapters.firstIndex { $0.title == mangaListElement?.lastChapter }
+                            let isInBounds = currentChapterIndex != nil && currentChapterIndex! + 1 < chapters.endIndex
+                            
+                            Button("Continue") {
+                                let nextChapter = chapters[currentChapterIndex! + 1]
+                                
+                                openWindow(
+                                    title: selectedManga.title + " - " + nextChapter.title,
+                                    manga: selectedManga,
+                                    chapter: nextChapter
+                                )
+                            }
+                            .disabled(!isInBounds)
                         
                             Button("Read first") {
                                 openWindow(
