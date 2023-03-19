@@ -183,3 +183,77 @@ extension Elements {
         return result
     }
 }
+
+fileprivate extension Color {
+    typealias SystemColor = NSColor
+    
+    var colorComponents: (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat)? {
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        
+        SystemColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
+        // Note that non RGB color will raise an exception, that I don't now how to catch because it is an Objc exception.
+        
+        return (r, g, b, a)
+    }
+}
+
+extension Color: Codable {
+    enum CodingKeys: String, CodingKey {
+        case red, green, blue, alpha
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let r = try container.decode(Double.self, forKey: .red)
+        let g = try container.decode(Double.self, forKey: .green)
+        let b = try container.decode(Double.self, forKey: .blue)
+        let alpha = try container.decode(Double.self, forKey: .alpha)
+        
+        self.init(red: r, green: g, blue: b, opacity: alpha)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        guard let colorComponents = self.colorComponents else {
+            return
+        }
+        
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(colorComponents.red, forKey: .red)
+        try container.encode(colorComponents.green, forKey: .green)
+        try container.encode(colorComponents.blue, forKey: .blue)
+        try container.encode(colorComponents.alpha, forKey: .alpha)
+    }
+}
+
+extension Theme {
+    static var themes = [defaultTheme, calmTheme, focusTheme]
+    
+    static let defaultTheme = Theme(
+        name: "Default",
+        lightBackgroundColor: .clear,
+        darkBackgroundColor: .clear,
+        lightTextColor: .black,
+        darkTextColor: .white,
+        fontName: "Times New Roman"
+    )
+    static let calmTheme = Theme(
+        name: "Calm",
+        lightBackgroundColor: Color(red: 241/255, green: 225/255, blue: 199/255),
+        darkBackgroundColor: Color(red: 67/255, green: 59/255, blue: 48/255),
+        lightTextColor: Color(red: 55/255, green: 44/255, blue: 36/255),
+        darkTextColor: Color(red: 247/255, green: 236/255, blue: 217/255),
+        fontName: "Baskerville"
+    )
+    static let focusTheme = Theme(
+        name: "Focus",
+        lightBackgroundColor: Color(red: 255/255, green: 252/255, blue: 244/255),
+        darkBackgroundColor: Color(red: 26/255, green: 22/255, blue: 12/255),
+        lightTextColor: Color(red: 20/255, green: 18/255, blue: 1/255),
+        darkTextColor: Color(red: 255/255, green: 249/255, blue: 236/255),
+        fontName: "Calibri"
+    )
+}

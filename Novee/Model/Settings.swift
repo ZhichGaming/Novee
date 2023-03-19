@@ -6,10 +6,123 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct Settings: Codable {
-    var preferedLanguage: Language
-    var mangaPerPage: Int
+    var mangaSettings = MangaSettings()
+}
+
+enum NoveeColorScheme: String, Codable, CaseIterable {
+    case system = "System"
+    case dark = "Dark"
+    case light = "Light"
+}
+
+struct MangaSettings: Codable {
+    enum ImageFitOption: String, Codable, CaseIterable {
+        case fit = "Fit"
+        case fill = "Fill"
+        case original = "Original"
+    }
+    
+    enum NavigationType: String, Codable, CaseIterable {
+        case scroll = "Scroll"
+        case singlePage = "Single Page"
+        case doublePage = "Double Page"
+    }
+    
+    enum ReadingDirection: String, Codable, CaseIterable {
+        case leftToRight = "Left to Right"
+        case rightToLeft = "Right to Left"
+    }
+    
+    /// Color scheme, being light, dark or system. 
+    var colorScheme: NoveeColorScheme = .system
+    
+    /// The name of the theme of the manga reader window.
+    var selectedThemeName = "Default"
+    
+    /// The theme of the manga reader window.
+    var selectedTheme: Theme? {
+        Theme.themes.first { $0.name == selectedThemeName }
+    }
+    
+    /// Image fit option.
+    var imageFitOption = ImageFitOption.original
+    
+    /// Image navigation type.
+    var navigationType = NavigationType.scroll
+    
+    /// Direction of images loading if `navigationType` is `.doublePage`.
+    var readingDirection = ReadingDirection.rightToLeft
+}
+
+struct Theme: Codable, Hashable {
+    /// Theme name.
+    var name: String
+    
+    /// The custom color of the window background when it's light mode.
+    var lightBackgroundColor: Color
+    
+    /// The custom color of the window background when it's dark mode.
+    var darkBackgroundColor: Color
+    
+    /// The color of the text when it's light mode. This is for novels only.
+    var lightTextColor: Color
+    
+    /// The color of the text when it's dark mode. This is for novels only.
+    var darkTextColor: Color
+    
+    /// The name of the body font. This is for novels only.
+    var fontName: String
+    
+    /// The size of the body font. This is for novels only.
+    var fontSize: Double = 16
+    
+    enum CodingKeys: CodingKey {
+        case name
+        case lightBackgroundColor
+        case darkBackgroundColor
+        case lightTextColor
+        case darkTextColor
+        case fontName
+        case fontSize
+    }
+    
+    var font: Font {
+        guard let nsFont = NSFont(name: fontName, size: fontSize) else {
+            Log.shared.log("Error: Invalid font.", isError: true)
+            return Font.body
+        }
+        
+        return Font(nsFont)
+    }
+    
+    var backgroundColor: Color {
+        let colorScheme = SettingsVM.shared.settings.mangaSettings.colorScheme
+        
+        switch colorScheme {
+        case .light:
+            return lightBackgroundColor
+        case .dark:
+            return darkBackgroundColor
+        case .system:
+            return NSApplication.shared.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? darkBackgroundColor : lightBackgroundColor
+        }
+    }
+    
+    var textColor: Color {
+        let colorScheme = SettingsVM.shared.settings.mangaSettings.colorScheme
+        
+        switch colorScheme {
+        case .light:
+            return lightTextColor
+        case .dark:
+            return darkTextColor
+        case .system:
+            return NSApplication.shared.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? darkTextColor : lightTextColor
+        }
+    }
 }
 
 enum Language: String, Codable, CaseIterable, Hashable {

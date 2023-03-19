@@ -381,6 +381,7 @@ struct ChapterList: View {
             rootView: MangaReaderView(manga: manga, chapter: chapter, window: $window)
                 .environmentObject(mangaVM)
                 .environmentObject(mangaListVM)
+                .environmentObject(SettingsVM.shared)
                 .environmentObject(notification)
         )
     }

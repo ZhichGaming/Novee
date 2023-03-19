@@ -8,11 +8,10 @@
 import Foundation
 
 class SettingsVM: ObservableObject {
-    
     static var shared = SettingsVM()
     
     init() {
-        settings = Settings(preferedLanguage: .EN, mangaPerPage: 10)
+        settings = Settings()
         fetchSettings()
     }
     
