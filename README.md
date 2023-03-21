@@ -77,7 +77,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Novee Screen Shot][product-screenshot]](https://example.com)
+[![Novee Screen Shot][product-screenshot]](https://github.com/ZhichGaming/Novee/edit/master/README.md)
 
 Novee is an application made in Swift that lets you read manga, watch anime, read novels and keep track of them. This is my first big project and is still in development, any contribution is appreciated!
 
@@ -89,12 +89,10 @@ Novee is an application made in Swift that lets you read manga, watch anime, rea
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
 * Install Xcode from the Mac App Store.
 * Install Git from homebrew using the command `brew install git` or https://git-scm.com/downloads if you prefer.
 
