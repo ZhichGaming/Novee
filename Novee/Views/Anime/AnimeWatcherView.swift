@@ -99,6 +99,19 @@ struct AnimeWatcherView: View {
                             }
                         }
                     }
+                
+                Group {
+                    Button("") {
+                        navigateSeconds(5)
+                    }
+                    .keyboardShortcut(.rightArrow, modifiers: [])
+                    
+                    Button("") {
+                        navigateSeconds(-5)
+                    }
+                    .keyboardShortcut(.leftArrow, modifiers: [])
+                }
+                .opacity(0)
             } else {
                 ProgressView()
                     .onAppear {
@@ -212,6 +225,17 @@ struct AnimeWatcherView: View {
                 // Update the time the user left off
                 animeListVM.updateResumeTime(anime: selectedAnime, episode: selectedEpisode, newTime: time.seconds)
             }
+        }
+    }
+    
+    func navigateSeconds(_ time: Double) {
+        if let currentTime = player?.currentItem?.currentTime() {
+            print(currentTime)
+            let newTime = CMTime(seconds: currentTime.seconds + time, preferredTimescale: currentTime.timescale)
+            
+            player?.seek(to: newTime)
+        } else {
+            print("error")
         }
     }
     
