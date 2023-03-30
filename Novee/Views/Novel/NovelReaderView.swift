@@ -23,16 +23,14 @@ struct NovelReaderView: View {
     @State private var selectedNovelStatus: BookStatus = .reading
     @State private var selectedNovelRating: BookRating = .none
     @State private var selectedLastChapter: UUID = UUID()
+    @State private var pickerSelectedChapterId: UUID = UUID()
 
     let novel: Novel
     @State var chapter: NovelChapter
-    @Binding var window: NSWindow
 
     var body: some View {
         GeometryReader { geometry in
-            ScrollView(.vertical) {
-                changeChaptersView
-                
+            ScrollView(.vertical) {                
                 if let chapterContent = chapter.content {
                     Text(chapterContent)
                         .font(.system(size: 16))
@@ -56,9 +54,7 @@ struct NovelReaderView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: chapter) { [chapter] newChapter in
-                if chapter.id != newChapter.id {
-                    window.title = (novel.title ?? "No title") + " - " + newChapter.title
-                    
+                if chapter.id != newChapter.id {                    
                     Task {
                         await fetchContent()
                     }
@@ -167,14 +163,58 @@ struct NovelReaderView: View {
             }
             .padding()
         }
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                showingDetailsSheet = true
-            } label: {
-                Image(systemName: "ellipsis.circle")
+        .toolbar {
+            // Some toolbar items to change chapter
+            ToolbarItemGroup(placement: .primaryAction) {
+                Spacer()
+                
+                Button(action: {
+                    if let newChapter = novelVM.changeChapter(chapter: chapter, novel: novel, offset: -1) {
+                        chapter = newChapter
+                    }
+                }, label: {
+                    Image(systemName: "chevron.left")
+                })
+                .disabled(novel.chapters?.first?.id == chapter.id)
+                
+                Button(action: {
+                    if let newChapter = novelVM.changeChapter(chapter: chapter, novel: novel, offset: 1) {
+                        chapter = newChapter
+                    }
+                }, label: {
+                    Image(systemName: "chevron.right")
+                })
+                .disabled(novel.chapters?.last?.id == chapter.id)
+                
+                Picker("Select chapter", selection: $pickerSelectedChapterId) {
+                    ForEach(novel.chapters ?? []) { chapter in
+                        Text(chapter.title)
+                            .tag(chapter.id)
+                    }
+                }
+                .frame(maxWidth: 300)
+                .onAppear {
+                    pickerSelectedChapterId = chapter.id
+                }
+                .onChange(of: chapter) { newChapter in
+                    pickerSelectedChapterId = newChapter.id
+                }
+                .onChange(of: pickerSelectedChapterId) { newChapterId in
+                    if let newChapter = novel.chapters?.first(where: { $0.id == newChapterId }) {
+                        chapter = newChapter
+                    }
+                }
             }
-            .padding()
+            
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    showingDetailsSheet = true
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
         }
+        .navigationTitle(chapter.title)
     }
     
     var changeChaptersView: some View {

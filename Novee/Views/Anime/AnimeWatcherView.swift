@@ -185,6 +185,7 @@ struct AnimeWatcherView: View {
                             .tag(episode.id)
                     }
                 }
+                .frame(maxWidth: 300)
                 .onAppear {
                     pickerSelectedEpisodeId = selectedEpisode.id
                     

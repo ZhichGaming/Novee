@@ -790,7 +790,7 @@ struct NovelListNovelDetailsEditorView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .font(.headline)
                 
-                TextField("Title", text: $novelElement.novel.title  ?? "No title")
+                TextField("Title", text: $novelElement.novel.title ?? "No title")
                 TextField("Description", text: $novelElement.novel.description ?? "")
                 TextField("Image URL", text: $novelListNewImageUrl)
                     .onChange(of: novelListNewImageUrl) { _ in

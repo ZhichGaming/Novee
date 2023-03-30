@@ -212,6 +212,8 @@ struct ChapterList: View {
     @EnvironmentObject var mangaListVM: MangaListVM
     @EnvironmentObject var notification: SystemNotificationContext
     
+    @Environment(\.openWindow) var openWindow
+    
     @Binding var selectedManga: Manga
     @State var selected: UUID?
     
@@ -219,9 +221,7 @@ struct ChapterList: View {
     @State private var showingSearch = false
     @State private var chapterQuery = ""
     @State private var presentedDownloadChapterSheet: Chapter? = nil
-    
-    @State var window: NSWindow = NSWindow()
-    
+        
     var filteredChapters: [Chapter]? {
         var result: [Chapter]?
         
@@ -261,29 +261,17 @@ struct ChapterList: View {
                             Button("Continue") {
                                 let nextChapter = chapters[currentChapterIndex! + 1]
                                 
-                                openWindow(
-                                    title: selectedManga.title + " - " + nextChapter.title,
-                                    manga: selectedManga,
-                                    chapter: nextChapter
-                                )
+                                openWindow(value: MangaChapterPair(manga: selectedManga, chapter: nextChapter))
                             }
                             .disabled(!isInBounds)
                         
                             Button("Read first") {
-                                openWindow(
-                                    title: selectedManga.title + " - " + chapters.first!.title,
-                                    manga: selectedManga,
-                                    chapter: chapters.first!
-                                )
+                                openWindow(value: MangaChapterPair(manga: selectedManga, chapter: chapters.first!))
                             }
                             .disabled(filteredChapters.isEmpty)
                             
                             Button("Read last") {
-                                openWindow(
-                                    title: selectedManga.title + " - " + chapters.last!.title,
-                                    manga: selectedManga,
-                                    chapter: chapters.last!
-                                )
+                                openWindow(value: MangaChapterPair(manga: selectedManga, chapter: chapters.last!))
                             }
                             .disabled(filteredChapters.isEmpty)
 
@@ -329,11 +317,7 @@ struct ChapterList: View {
                     /// Make entire area tappable
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2) {
-                        openWindow(
-                            title: selectedManga.title + " - " + chapter.title,
-                            manga: selectedManga,
-                            chapter: chapter
-                        )
+                        openWindow(value: MangaChapterPair(manga: selectedManga, chapter: chapter))
                     }
                 }
                 .listStyle(.bordered(alternatesRowBackgrounds: true))
@@ -380,25 +364,6 @@ struct ChapterList: View {
             Text("No chapters have been found.")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-    
-    private func openWindow(title: String, manga: Manga, chapter: Chapter) {
-        window = NSWindow(
-            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false)
-        window.center()
-        window.isReleasedWhenClosed = false
-        window.title = title
-        window.makeKeyAndOrderFront(nil)
-        window.contentView = NSHostingView(
-            rootView: MangaReaderView(manga: manga, chapter: chapter, window: $window)
-                .environmentObject(mangaVM)
-                .environmentObject(mangaListVM)
-                .environmentObject(SettingsVM.shared)
-                .environmentObject(notification)
-        )
     }
 }
 

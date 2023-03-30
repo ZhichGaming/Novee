@@ -46,3 +46,9 @@ struct NovelChapter: Hashable, Identifiable, Codable {
         case timeUploaded
     }
 }
+
+struct NovelChapterPair: Codable, Hashable {
+    var novel: Novel
+    var chapter: NovelChapter
+}
+

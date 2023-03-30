@@ -24,10 +24,10 @@ struct MangaReaderView: View {
     @State private var selectedMangaStatus: BookStatus = .reading
     @State private var selectedMangaRating: BookRating = .none
     @State private var selectedLastChapter: UUID = UUID()
+    @State private var pickerSelectedChapterId: UUID = UUID()
 
     let manga: Manga
     @State var chapter: Chapter
-    @Binding var window: NSWindow
     
     var selectedColorScheme: ColorScheme? {
         settingsVM.settings.mangaSettings.colorScheme == .light ? .light : settingsVM.settings.mangaSettings.colorScheme == .dark ? .dark : nil
@@ -47,9 +47,7 @@ struct MangaReaderView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: chapter) { [chapter] newChapter in
-                if chapter.id != newChapter.id {
-                    window.title = manga.title + " - " + newChapter.title
-                    
+                if chapter.id != newChapter.id {                    
                     Task {
                         await fetchImages()
                     }
@@ -84,7 +82,7 @@ struct MangaReaderView: View {
                     }
                     
                     VStack(alignment: .leading) {
-                        Text(manga.title)
+                        Text(manga.title ?? "No title")
                             .font(.title2.bold())
                         Text(chapter.title)
                             .font(.headline)
@@ -117,7 +115,7 @@ struct MangaReaderView: View {
         }
         .sheet(isPresented: $showingCustomizedAddToListSheet) {
             VStack {
-                Text(manga.title)
+                Text(manga.title ?? "No title")
                     .font(.headline)
 
                 Group {
@@ -165,16 +163,60 @@ struct MangaReaderView: View {
             }
             .padding()
         }
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                showingDetailsSheet = true
-            } label: {
-                Image(systemName: "ellipsis.circle")
+        .toolbar {
+            // Some toolbar items to change chapter
+            ToolbarItemGroup(placement: .primaryAction) {
+                Spacer()
+                
+                Button(action: {
+                    if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: -1) {
+                        chapter = newChapter
+                    }
+                }, label: {
+                    Image(systemName: "chevron.left")
+                })
+                .disabled(manga.chapters?.first?.id == chapter.id)
+                
+                Button(action: {
+                    if let newChapter = mangaVM.changeChapter(chapter: chapter, manga: manga, offset: 1) {
+                        chapter = newChapter
+                    }
+                }, label: {
+                    Image(systemName: "chevron.right")
+                })
+                .disabled(manga.chapters?.last?.id == chapter.id)
+                
+                Picker("Select chapter", selection: $pickerSelectedChapterId) {
+                    ForEach(manga.chapters ?? []) { chapter in
+                        Text(chapter.title)
+                            .tag(chapter.id)
+                    }
+                }
+                .frame(maxWidth: 300)
+                .onAppear {
+                    pickerSelectedChapterId = chapter.id
+                }
+                .onChange(of: chapter) { newChapter in
+                    pickerSelectedChapterId = newChapter.id
+                }
+                .onChange(of: pickerSelectedChapterId) { newChapterId in
+                    if let newChapter = manga.chapters?.first(where: { $0.id == newChapterId }) {
+                        chapter = newChapter
+                    }
+                }
             }
-            .padding()
+            
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    showingDetailsSheet = true
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
         }
         .preferredColorScheme(selectedColorScheme)
         .background(settingsVM.settings.mangaSettings.selectedTheme?.backgroundColor)
+        .navigationTitle(chapter.title)
     }
     
     private func showAddMangaNotification() {
@@ -278,8 +320,6 @@ struct MangaReaderScrollReaderView: View {
     
     var body: some View {
         ScrollView(.vertical) {
-            changeChaptersView
-            
             if let images = chapter.images {
                 VStack(spacing: 0) {
                     ForEach(0..<images.keys.count, id: \.self) { index in

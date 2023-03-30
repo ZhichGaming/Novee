@@ -214,6 +214,8 @@ struct NovelChapterList: View {
     @EnvironmentObject var novelListVM: NovelListVM
     @EnvironmentObject var notification: SystemNotificationContext
     
+    @Environment(\.openWindow) var openWindow
+    
     @Binding var selectedNovel: Novel
     @State var selected: UUID?
     
@@ -263,29 +265,17 @@ struct NovelChapterList: View {
                             Button("Continue") {
                                 let nextChapter = chapters[currentChapterIndex! + 1]
                                 
-                                openWindow(
-                                    title: (selectedNovel.title ?? "No Title") + " - " + nextChapter.title,
-                                    novel: selectedNovel,
-                                    chapter: nextChapter
-                                )
+                                openWindow(value: NovelChapterPair(novel: selectedNovel, chapter: nextChapter))
                             }
                             .disabled(!isInBounds)
                         
                             Button("Read first") {
-                                openWindow(
-                                    title: (selectedNovel.title ?? "No title") + " - " + chapters.first!.title,
-                                    novel: selectedNovel,
-                                    chapter: chapters.first!
-                                )
+                                openWindow(value: NovelChapterPair(novel: selectedNovel, chapter: chapters.first!))
                             }
                             .disabled(filteredChapters.isEmpty)
                             
                             Button("Read last") {
-                                openWindow(
-                                    title: (selectedNovel.title ?? "No title") + " - " + chapters.last!.title,
-                                    novel: selectedNovel,
-                                    chapter: chapters.last!
-                                )
+                                openWindow(value: NovelChapterPair(novel: selectedNovel, chapter: chapters.last!))
                             }
                             .disabled(filteredChapters.isEmpty)
 
@@ -330,11 +320,7 @@ struct NovelChapterList: View {
                     /// Make entire area tappable
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2) {
-                        openWindow(
-                            title: (selectedNovel.title ?? "No title") + " - " + chapter.title,
-                            novel: selectedNovel,
-                            chapter: chapter
-                        )
+                        openWindow(value: NovelChapterPair(novel: selectedNovel, chapter: chapter))
                     }
                 }
                 .listStyle(.bordered(alternatesRowBackgrounds: true))
@@ -379,23 +365,5 @@ struct NovelChapterList: View {
             Text("No chapters have been found.")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-    
-    private func openWindow(title: String, novel: Novel, chapter: NovelChapter) {
-        window = NSWindow(
-            contentRect: NSRect(x: 20, y: 20, width: 1000, height: 625),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false)
-        window.center()
-        window.isReleasedWhenClosed = false
-        window.title = title
-        window.makeKeyAndOrderFront(nil)
-        window.contentView = NSHostingView(
-            rootView: NovelReaderView(novel: novel, chapter: chapter, window: $window)
-                .environmentObject(novelVM)
-                .environmentObject(novelListVM)
-                .environmentObject(notification)
-        )
     }
 }

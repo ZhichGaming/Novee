@@ -53,6 +53,11 @@ struct Chapter: Hashable, Identifiable, Codable {
     }
 }
 
+struct MangaChapterPair: Codable, Hashable {
+    var manga: Manga
+    var chapter: Chapter
+}
+
 struct MangaImage: Hashable {
     var image: NSImage?
     

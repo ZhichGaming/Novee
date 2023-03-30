@@ -50,6 +50,30 @@ struct NoveeApp: App {
             }
         }
         .windowStyle(.titleBar)
+        
+        WindowGroup(for: MangaChapterPair.self) { $mangaChapter in
+            if let mangaChapter = mangaChapter {
+                MangaReaderView(manga: mangaChapter.manga, chapter: mangaChapter.chapter)
+                    .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
+                    .environmentObject(MangaVM.shared)
+                    .environmentObject(MangaListVM.shared)
+                    .environmentObject(SettingsVM.shared)
+                    .presentedWindowToolbarStyle(.unified)
+            }
+        }
+        .windowStyle(.titleBar)
+        
+        WindowGroup(for: NovelChapterPair.self) { $novelChapter in
+            if let novelChapter = novelChapter {
+                NovelReaderView(novel: novelChapter.novel, chapter: novelChapter.chapter)
+                    .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
+                    .environmentObject(NovelVM.shared)
+                    .environmentObject(NovelListVM.shared)
+                    .environmentObject(SettingsVM.shared)
+                    .presentedWindowToolbarStyle(.unified)
+            }
+        }
+        .windowStyle(.titleBar)
 
         SwiftUI.Settings {
             SettingsView()
