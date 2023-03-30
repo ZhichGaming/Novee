@@ -62,7 +62,7 @@ struct MangaListView: View {
                 
                 for titles in mangaInstances {
                     for title in titles {
-                        if title.uppercased().contains(listQuery.uppercased()) {
+                        if title?.uppercased().contains(listQuery.uppercased()) ?? false {
                             return false
                         }
                     }
@@ -277,7 +277,7 @@ struct MangaListDetailsSheetView: View {
                                         }
                                     }
                                     
-                                    Text(manga.title)
+                                    Text(manga.title ?? "No title")
                                         .font(.headline)
                                 }
                                 .frame(width: 200)
@@ -790,7 +790,7 @@ struct MangaListMangaDetailsEditorView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .font(.headline)
                 
-                TextField("Title", text: $mangaElement.manga.title)
+                TextField("Title", text: $mangaElement.manga.title ?? "No title")
                 TextField("Description", text: $mangaElement.manga.description ?? "")
                 TextField("Image URL", text: $mangaListNewImageUrl)
                     .onChange(of: mangaListNewImageUrl) { _ in

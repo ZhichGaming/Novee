@@ -16,7 +16,7 @@ enum LoadingState: Codable {
 struct Manga: Hashable, Identifiable, Codable {
     var id = UUID()
     
-    var title: String
+    var title: String?
     var altTitles: [String]?
     var description: String?
     var authors: [String]?

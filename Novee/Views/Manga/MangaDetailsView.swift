@@ -153,10 +153,12 @@ struct MangaInfoView: View {
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 5) {
-                Button(selectedManga.title) {
-                    let pasteBoard = NSPasteboard.general
-                    pasteBoard.clearContents()
-                    pasteBoard.writeObjects([selectedManga.title as NSString])
+                Button(selectedManga.title ?? "No title") {
+                    if let title = selectedManga.title {
+                        let pasteBoard = NSPasteboard.general
+                        pasteBoard.clearContents()
+                        pasteBoard.writeObjects([title as NSString])
+                    }
                 }
                 .background {
                     Color.secondary

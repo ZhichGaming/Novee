@@ -140,7 +140,7 @@ class MangaVM: ObservableObject {
                 }
                 
                 do {
-                    let safeMangaTitle = manga.title.sanitizedFileName
+                    let safeMangaTitle = manga.title?.sanitizedFileName ?? "Unknown"
                     let currentMangaFolder = URL.mangaStorageUrl.appendingPathComponent(safeMangaTitle, conformingTo: .folder)
                     let currentChapterFolder = currentMangaFolder.appendingPathComponent(chapter.title.sanitizedFileName)
                     
