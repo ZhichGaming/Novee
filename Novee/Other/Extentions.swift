@@ -53,35 +53,18 @@ extension View {
     }
 }
 
-extension BookStatus {
+extension Status {
     func getStatusColor() -> Color {
         switch self {
         case .completed:
             return Color.green
         case .dropped:
             return Color.red
-        case .reading:
+        case .viewing:
             return Color.orange
         case .waiting:
             return Color.yellow
-        case .toRead:
-            return Color.purple
-        }
-    }
-}
-
-extension AnimeStatus {
-    func getStatusColor() -> Color {
-        switch self {
-        case .completed:
-            return Color.green
-        case .dropped:
-            return Color.red
-        case .watching:
-            return Color.orange
-        case .waiting:
-            return Color.yellow
-        case .toWatch:
+        case .toView:
             return Color.purple
         }
     }

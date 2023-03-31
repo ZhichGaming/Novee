@@ -33,10 +33,10 @@ struct NovelListView: View {
         var result = novelListVM.list
         
         if !showingWaiting { result.removeAll { $0.status == .waiting } }
-        if !showingReading { result.removeAll { $0.status == .reading } }
+        if !showingReading { result.removeAll { $0.status == .viewing } }
         if !showingDropped { result.removeAll { $0.status == .dropped } }
         if !showingCompleted { result.removeAll { $0.status == .completed } }
-        if !showingToRead { result.removeAll { $0.status == .toRead } }
+        if !showingToRead { result.removeAll { $0.status == .toView } }
         
         if !showingRatingNone { result.removeAll { $0.rating == .none } }
         if !showingRatingHorrible { result.removeAll { $0.rating == .horrible } }
@@ -46,19 +46,19 @@ struct NovelListView: View {
         
         if selectedSortingStyle == "Recently updated" {
             result.sort {
-                return $0.lastReadDate ?? Date.distantPast > $1.lastReadDate ?? Date.distantPast
+                return $0.lastViewedDate ?? Date.distantPast > $1.lastViewedDate ?? Date.distantPast
             }
         } else if selectedSortingStyle == "Recently added" {
             result.sort { $0.creationDate.compare($1.creationDate) == .orderedDescending }
         } else {
             result.sort {
-                return $0.novel.first?.value.title ?? "" < $1.novel.first?.value.title ?? ""
+                return $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? ""
             }
         }
         
         if !listQuery.isEmpty {
             result.removeAll { novel in
-                let novelInstances = novel.novel.map { [$0.value.title] + ($0.value.altTitles ?? []) }
+                let novelInstances = novel.content.map { [$0.value.title] + ($0.value.altTitles ?? []) }
                 
                 for titles in novelInstances {
                     for title in titles {
@@ -209,10 +209,10 @@ struct NovelListRowView: View {
     
     var body: some View {
         HStack {
-            Text(novel.novel.first?.value.title ?? "No title")
+            Text(novel.content.first?.value.title ?? "No title")
                 .frame(width: geo.size.width * 0.3, alignment: .leading)
                 .lineLimit(2)
-            Text(novel.lastChapter ?? "No last chapter")
+            Text(novel.lastSegment ?? "No last chapter")
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
                 .lineLimit(2)
             Text(novel.status.rawValue)
@@ -254,13 +254,13 @@ struct NovelListDetailsSheetView: View {
 
     var body: some View {
         VStack {
-            Text(passedNovel.novel.first?.value.title ?? "None")
+            Text(passedNovel.content.first?.value.title ?? "None")
                 .font(.title2.bold())
             
             TabView {
                 ScrollView {
                     ForEach(novelKeysArray, id: \.self) { key in
-                        if let novel = passedNovel.novel[key] {
+                        if let novel = passedNovel.content[key] {
                             Text(novelVM.sources[key]?.label ?? key)
                                 .font(.title2.bold())
                                 .padding(.top)
@@ -364,7 +364,7 @@ struct NovelListDetailsSheetView: View {
                                     Button("Delete", role: .destructive) {
                                         withAnimation {
                                             novelListVM.removeSourceFromList(id: passedNovel.id, source: source)
-                                            passedNovel.novel.removeValue(forKey: source)
+                                            passedNovel.content.removeValue(forKey: source)
                                             
                                             if !novelListVM.list.contains(where: { $0.id == passedNovel.id }) {
                                                 dismiss()
@@ -382,10 +382,10 @@ struct NovelListDetailsSheetView: View {
                         }
                     }
                     .onAppear {
-                        novelKeysArray = Array(passedNovel.novel.keys)
+                        novelKeysArray = Array(passedNovel.content.keys)
                                                 
                         Task { @MainActor in
-                            passedNovel.novel = await novelVM.getAllUpdatedNovelDetails(for: passedNovel.novel)
+                            passedNovel.content = await novelVM.getAllUpdatedNovelDetails(for: passedNovel.content)
                         }
                     }
                 }
@@ -439,7 +439,7 @@ struct NovelListListDetailsView: View {
                     .font(.headline)
                 
                 Picker("Novel status", selection: $selectedNovelStatus) {
-                    ForEach(BookStatus.allCases, id: \.rawValue) { status in
+                    ForEach(Status.allCases, id: \.rawValue) { status in
                         Text(status.rawValue)
                             .tag(status.rawValue)
                     }
@@ -447,12 +447,12 @@ struct NovelListListDetailsView: View {
                 .onChange(of: selectedNovelStatus) { newStatus in
                     novelListVM.updateStatus(
                         id: passedNovel.id,
-                        to: BookStatus(rawValue: newStatus) ?? passedNovel.status
+                        to: Status(rawValue: newStatus) ?? passedNovel.status
                     )
                 }
                 
                 Picker("Novel rating", selection: $selectedNovelRating) {
-                    ForEach(BookRating.allCases, id: \.rawValue) { rating in
+                    ForEach(Rating.allCases, id: \.rawValue) { rating in
                         Text(rating.rawValue)
                             .tag(rating.rawValue)
                     }
@@ -460,7 +460,7 @@ struct NovelListListDetailsView: View {
                 .onChange(of: selectedNovelRating) { newRating in
                     novelListVM.updateRating(
                         id: passedNovel.id,
-                        to: BookRating(rawValue: newRating) ?? passedNovel.rating
+                        to: Rating(rawValue: newRating) ?? passedNovel.rating
                     )
                 }
             }
@@ -470,21 +470,21 @@ struct NovelListListDetailsView: View {
                     .font(.headline)
                 
                 Picker("Chapter source", selection: $selectedSource) {
-                    ForEach(Array(passedNovel.novel.keys), id: \.self) { key in
+                    ForEach(Array(passedNovel.content.keys), id: \.self) { key in
                         Text(novelVM.sources[key]?.label ?? key)
                             .tag(key)
                     }
                 }
                 
                 Picker("Last chapter", selection: $selectedLastChapter) {
-                    ForEach(passedNovel.novel[selectedSource]?.chapters ?? [], id: \.id) { chapter in
+                    ForEach(passedNovel.content[selectedSource]?.segments ?? [], id: \.id) { chapter in
                         Text(chapter.title)
                             .tag(chapter.title)
                     }
                 }
-                .disabled(!passedNovel.novel.keys.contains(selectedSource))
+                .disabled(!passedNovel.content.keys.contains(selectedSource))
                 .onChange(of: selectedLastChapter) { newChapter in
-                    novelListVM.updateLastChapter(
+                    novelListVM.updateLastSegment(
                         id: passedNovel.id,
                         to: newChapter
                     )
@@ -492,7 +492,7 @@ struct NovelListListDetailsView: View {
                 
                 HStack {
                     Text("Current last chapter:")
-                    Text(passedNovel.lastChapter ?? "None")
+                    Text(passedNovel.lastSegment ?? "None")
                 }
             }
             .padding(.vertical)
@@ -509,7 +509,7 @@ struct NovelListListDetailsView: View {
                             displayedComponents: .date
                         )
                         .onChange(of: selectedLastReadDate) { newDate in
-                            novelListVM.updateLastReadDate(id: passedNovel.id, to: newDate)
+                            novelListVM.updateLastViewedDate(id: passedNovel.id, to: newDate)
                         }
                     }
                     
@@ -517,12 +517,12 @@ struct NovelListListDetailsView: View {
                         showingLastChapterSelection.toggle()
                     }
                     .onAppear {
-                        showingLastChapterSelection = passedNovel.lastReadDate != nil
-                        selectedLastReadDate = passedNovel.lastReadDate ?? selectedLastReadDate
+                        showingLastChapterSelection = passedNovel.lastViewedDate != nil
+                        selectedLastReadDate = passedNovel.lastViewedDate ?? selectedLastReadDate
                     }
                     .onChange(of: showingLastChapterSelection) { showingLastChapter in
                         if !showingLastChapter {
-                            novelListVM.updateLastReadDate(id: passedNovel.id, to: nil)
+                            novelListVM.updateLastViewedDate(id: passedNovel.id, to: nil)
                         }
                     }
                 }
@@ -578,9 +578,9 @@ struct NovelListAddNewToListView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var storyTitle: String = ""
-    @State var lastChapterTitle: String = ""
-    @State var selectedNovelStatus: BookStatus = .reading
-    @State var selectedNovelRating: BookRating = .none
+    @State var lastSegmentTitle: String = ""
+    @State var selectedNovelStatus: Status = .viewing
+    @State var selectedNovelRating: Rating = .none
     
     @State var novelListNewImageUrl = ""
     @State var novelListNewAuthor = ""
@@ -604,18 +604,18 @@ struct NovelListAddNewToListView: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     TextField("Title", text: $storyTitle)
-                    TextField("Last chapter title", text: $lastChapterTitle)
+                    TextField("Last chapter title", text: $lastSegmentTitle)
                     
                     Group {
                         Picker("Status", selection: $selectedNovelStatus) {
-                            ForEach(BookStatus.allCases, id: \.rawValue) {
+                            ForEach(Status.allCases, id: \.rawValue) {
                                 Text($0.rawValue)
                                     .tag($0)
                             }
                         }
                         
                         Picker("Rating", selection: $selectedNovelRating) {
-                            ForEach(BookRating.allCases, id: \.rawValue) {
+                            ForEach(Rating.allCases, id: \.rawValue) {
                                 Text($0.rawValue)
                                     .tag($0)
                             }
@@ -639,7 +639,7 @@ struct NovelListAddNewToListView: View {
                                     NovelListNovelDetailsEditorView(
                                         novelElement: $novelElements[index],
                                         storyTitle: $storyTitle,
-                                        lastChapterTitle: $lastChapterTitle,
+                                        lastSegmentTitle: $lastSegmentTitle,
                                         selectedNovelStatus: $selectedNovelStatus,
                                         selectedNovelRating: $selectedNovelRating,
                                         novelListNewImageUrl: $novelListNewImageUrl,
@@ -728,10 +728,10 @@ struct NovelListAddNewToListView: View {
                         
                         novelListVM.addToList(
                             novels: novels,
-                            lastChapter: lastChapterTitle,
+                            lastSegment: lastSegmentTitle,
                             status: selectedNovelStatus,
                             rating: selectedNovelRating,
-                            lastReadDate: Date.now
+                            lastViewedDate: Date.now
                         )
                         
                         dismiss()
@@ -773,9 +773,9 @@ struct NovelListNovelDetailsEditorView: View {
     @Binding var novelElement: NovelWithSource
     
     @Binding var storyTitle: String
-    @Binding var lastChapterTitle: String
-    @Binding var selectedNovelStatus: BookStatus
-    @Binding var selectedNovelRating: BookRating
+    @Binding var lastSegmentTitle: String
+    @Binding var selectedNovelStatus: Status
+    @Binding var selectedNovelRating: Rating
     
     @Binding var novelListNewImageUrl: String
     @Binding var novelListNewAuthor: String

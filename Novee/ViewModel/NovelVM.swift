@@ -28,8 +28,8 @@ class NovelVM: ObservableObject {
     private let readlightnovels = ReadLightNovels()
     
     func changeChapter(chapter: NovelChapter, novel: Novel, offset: Int = 1) -> NovelChapter? {
-        if let chapterIndex: Int = novel.chapters?.firstIndex(where: { $0.id == chapter.id }) {
-            guard let chapters = novel.chapters else {
+        if let chapterIndex: Int = novel.segments?.firstIndex(where: { $0.id == chapter.id }) {
+            guard let chapters = novel.segments else {
                 Log.shared.msg("Error: Chapters are empty!")
                 return nil
             }

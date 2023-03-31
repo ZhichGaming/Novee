@@ -9,11 +9,7 @@ import Foundation
 import SwiftUI
 import AppKit
 
-enum LoadingState: Codable {
-    case loading, success, failed, notFound
-}
-
-struct Manga: Hashable, Identifiable, Codable {
+struct Manga: Media, Hashable, Identifiable, Codable {
     var id = UUID()
     
     var title: String?
@@ -26,7 +22,7 @@ struct Manga: Hashable, Identifiable, Codable {
     
     var detailsUrl: URL?
     var imageUrl: URL?
-    var chapters: [Chapter]?
+    var segments: [Chapter]?
 }
 
 struct MangaTag: Hashable, Identifiable, Codable {
@@ -36,11 +32,11 @@ struct MangaTag: Hashable, Identifiable, Codable {
     var url: URL?
 }
 
-struct Chapter: Hashable, Identifiable, Codable {
+struct Chapter: MediaSegment, Hashable, Identifiable, Codable {
     var id = UUID()
     var title: String
 
-    var chapterUrl: URL
+    var segmentUrl: URL
     var images: [Int:MangaImage]?
 
     var timeUploaded: Date?
@@ -48,7 +44,7 @@ struct Chapter: Hashable, Identifiable, Codable {
     enum CodingKeys: CodingKey {
         case id
         case title
-        case chapterUrl
+        case segmentUrl
         case timeUploaded
     }
 }

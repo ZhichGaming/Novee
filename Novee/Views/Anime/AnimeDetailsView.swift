@@ -78,7 +78,7 @@ struct AnimeDetailsView: View {
                     }
                     
                     Group {
-                        if let animeListElement = animeListVM.findInList(anime: selectedAnime) {
+                        if let animeListElement = animeListVM.findInList(media: selectedAnime) {
                             AnimeListListDetailsView(
                                 passedAnime: animeListElement,
                                 dismissOnDelete: false
@@ -109,11 +109,11 @@ struct AnimeDetailsView: View {
                             if let newAnime = newAnime {
                                 selectedAnime = newAnime
                                 
-                                if let animeListElement = animeListVM.findInList(anime: selectedAnime) {
-                                    animeListVM.updateAnimeInListElement(
+                                if let animeListElement = animeListVM.findInList(media: selectedAnime) {
+                                    animeListVM.updateMediaInListElement(
                                         id: animeListElement.id,
                                         source: animeVM.selectedSource,
-                                        anime: selectedAnime
+                                        media: selectedAnime
                                     )
                                 }
                             } else {
@@ -223,7 +223,7 @@ struct EpisodeList: View {
     var filteredEpisodes: [Episode]? {
         var result: [Episode]?
         
-        if let episodes = selectedAnime.episodes {
+        if let episodes = selectedAnime.segments {
             if ascendingOrder {
                 result = episodes
             } else {
@@ -249,11 +249,11 @@ struct EpisodeList: View {
                         TextField("Search for a episode", text: $episodeQuery)
                             .textFieldStyle(.roundedBorder)
                     } else {
-                        if let episodes = selectedAnime.episodes {
+                        if let episodes = selectedAnime.segments {
                             Spacer()
                             
-                            let animeListElement = animeListVM.findInList(anime: selectedAnime)
-                            let currentEpisodeIndex = episodes.firstIndex { $0.title == animeListElement?.lastEpisode }
+                            let animeListElement = animeListVM.findInList(media: selectedAnime)
+                            let currentEpisodeIndex = episodes.firstIndex { $0.title == animeListElement?.lastSegment }
                             let isInBounds = currentEpisodeIndex != nil && currentEpisodeIndex! + 1 < episodes.endIndex
                             
                             Button("Continue") {
@@ -392,10 +392,10 @@ struct AnimeDetailsView_Previews: PreviewProvider {
             tags: [AnimeTag(name: "Example Tag", url: URL(string: "https://example.com")!)],
             detailsUrl: URL(string: "https://example.com"),
             imageUrl: URL(string: "https://example.com")!,
-            episodes: [
-                Episode(title: "Example Episode"),
-                Episode(title: "Example Episode 2"),
-                Episode(title: "Example Episode 3")
+            segments: [
+                Episode(title: "Example Episode", segmentUrl: URL(string: "https://example.com/ep1")!),
+                Episode(title: "Example Episode 2", segmentUrl: URL(string: "https://example.com/ep2")!),
+                Episode(title: "Example Episode 3", segmentUrl: URL(string: "https://example.com/ep3")!)
             ]
         )
 

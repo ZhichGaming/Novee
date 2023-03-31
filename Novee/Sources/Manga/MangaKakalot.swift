@@ -52,7 +52,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 result.description = try manga.children().last()?.getSeparatedText()
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
-                result.chapters = [try Chapter(title: manga.child(2).text(), chapterUrl: URL(string: manga.child(2).attr("href"))!)]
+                result.segments = [try Chapter(title: manga.child(2).text(), segmentUrl: URL(string: manga.child(2).attr("href"))!)]
                 
                 super.mangaData.append(result)
                 finalResult.append(result)
@@ -103,8 +103,8 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
-                result.chapters = try manga.getElementsByClass("story_chapter").map {
-                    try Chapter(title: $0.child(0).text(), chapterUrl: URL(string: $0.child(0).attr("href"))!)
+                result.segments = try manga.getElementsByClass("story_chapter").map {
+                    try Chapter(title: $0.child(0).text(), segmentUrl: URL(string: $0.child(0).attr("href"))!)
                 }.reversed()
                 
                 super.mangaData.append(result)
@@ -170,14 +170,14 @@ class MangaKakalot: MangaFetcher, MangaSource {
                             .child(0)
                             .child(0)
                             .text(),
-                        chapterUrl: URL(string: try chapterElement
+                        segmentUrl: URL(string: try chapterElement
                             .child(0)
                             .child(0)
                             .attr("href"))!
                     ))
             }
 
-            result?.chapters = chapters.reversed()
+            result?.segments = chapters.reversed()
             result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
@@ -199,7 +199,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
         var htmlPage = ""
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
+            let (data, _) = try await URLSession.shared.data(from: chapter.segmentUrl)
 
             if let stringData = String(data: data, encoding: .utf8) {
                 if stringData.isEmpty {

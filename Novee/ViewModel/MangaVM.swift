@@ -34,8 +34,8 @@ class MangaVM: ObservableObject {
     private let asurascans = AsuraScans()
     
     func changeChapter(chapter: Chapter, manga: Manga, offset: Int = 1) -> Chapter? {
-        if let chapterIndex: Int = manga.chapters?.firstIndex(where: { $0.id == chapter.id }) {
-            guard let chapters = manga.chapters else {
+        if let chapterIndex: Int = manga.segments?.firstIndex(where: { $0.id == chapter.id }) {
+            guard let chapters = manga.segments else {
                 Log.shared.msg("Error: Chapters are empty!")
                 return nil
             }

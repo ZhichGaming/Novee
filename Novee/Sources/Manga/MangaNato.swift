@@ -52,7 +52,7 @@ class MangaNato: MangaFetcher, MangaSource {
                 result.description = try manga.child(1).child(3).getSeparatedText()
                 result.detailsUrl = try URL(string: manga.child(1).child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
-                result.chapters = [try Chapter(title: manga.child(1).child(1).text(), chapterUrl: URL(string: manga.child(1).child(1).attr("href"))!)]
+                result.segments = [try Chapter(title: manga.child(1).child(1).text(), segmentUrl: URL(string: manga.child(1).child(1).attr("href"))!)]
 
                 super.mangaData.append(result)
                 finalResult.append(result)
@@ -103,8 +103,8 @@ class MangaNato: MangaFetcher, MangaSource {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
-                result.chapters = try manga.child(1).getElementsByClass("item-chapter").map {
-                    try Chapter(title: $0.text(), chapterUrl: URL(string: $0.attr("href"))!)
+                result.segments = try manga.child(1).getElementsByClass("item-chapter").map {
+                    try Chapter(title: $0.text(), segmentUrl: URL(string: $0.attr("href"))!)
                 }
 
                 super.mangaData.append(result)
@@ -172,13 +172,13 @@ class MangaNato: MangaFetcher, MangaSource {
                         title: try chapterElement
                             .child(0)
                             .text(),
-                        chapterUrl: URL(string: try chapterElement
+                        segmentUrl: URL(string: try chapterElement
                             .child(0)
                             .attr("href"))!
                     ))
             }
 
-            result?.chapters = chapters.reversed()
+            result?.segments = chapters.reversed()
             result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
@@ -199,7 +199,7 @@ class MangaNato: MangaFetcher, MangaSource {
     func getMangaPages(manga: Manga, chapter: Chapter, returnImage: @escaping (Int, MangaImage) -> Void) async {
         var htmlPage = ""
         do {
-            let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
+            let (data, _) = try await URLSession.shared.data(from: chapter.segmentUrl)
 
             if let stringData = String(data: data, encoding: .utf8) {
                 if stringData.isEmpty {

@@ -104,9 +104,9 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                 tags: newAnime.genres?.map { AnimeTag(name: $0) },
                 detailsUrl: anime.detailsUrl,
                 imageUrl: URL(string: newAnime.image ?? ""),
-                episodes: newAnime.episodes?.map { Episode(
+                segments: newAnime.episodes?.map { Episode(
                     title: "Episode \($0.number)",
-                    episodeUrl: URL(string: $0.url)!,
+                    segmentUrl: URL(string: $0.url)!,
                     episodeId: $0.id)
                 })
             result?.detailsLoadingState = .success

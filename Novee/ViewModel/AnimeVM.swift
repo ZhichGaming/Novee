@@ -36,8 +36,8 @@ class AnimeVM: ObservableObject {
     private let gogoanime = Gogoanime()
     
     func changeEpisode(episode: Episode, anime: Anime, offset: Int = 1) -> Episode? {
-        if let episodeIndex = anime.episodes?.firstIndex(where: { $0.id == episode.id }) {
-            guard let episodes = anime.episodes else {
+        if let episodeIndex = anime.segments?.firstIndex(where: { $0.id == episode.id }) {
+            guard let episodes = anime.segments else {
                 Log.shared.msg("Error: Episodes are empty!")
                 return nil
             }

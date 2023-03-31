@@ -31,11 +31,11 @@ class NovelFetcher {
             return
         }
         
-        NovelVM.shared.sources[NovelVM.shared.selectedSource]!.novelData[index].chapters = []
+        NovelVM.shared.sources[NovelVM.shared.selectedSource]!.novelData[index].segments = []
     }
     
     func resetChapters(index: Int) {
-        NovelVM.shared.sources[NovelVM.shared.selectedSource]!.novelData[index].chapters = []
+        NovelVM.shared.sources[NovelVM.shared.selectedSource]!.novelData[index].segments = []
     }
 }
 

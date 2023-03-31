@@ -36,9 +36,9 @@ struct AnimeWatcherView: View {
             if let player = player {
                 VideoPlayer(player: player)
                     .onAppear {
-                        selectedEpisode.resumeTime = animeListVM.findChapterInList(anime: selectedAnime, episode: selectedEpisode)?.resumeTime
+                        selectedEpisode.resumeTime = animeListVM.findEpisodeInList(anime: selectedAnime, episode: selectedEpisode)?.resumeTime
                         
-                        if selectedAnime.episodes?.last?.id != selectedEpisode.id {
+                        if selectedAnime.segments?.last?.id != selectedEpisode.id {
                             addPeriodicTimeObserver()
                         }
                         
@@ -170,17 +170,17 @@ struct AnimeWatcherView: View {
                 }, label: {
                     Image(systemName: "chevron.left")
                 })
-                .disabled(selectedAnime.episodes?.first?.id == selectedEpisode.id)
+                .disabled(selectedAnime.segments?.first?.id == selectedEpisode.id)
                 
                 Button(action: {
                     nextEpisode()
                 }, label: {
                     Image(systemName: "chevron.right")
                 })
-                .disabled(selectedAnime.episodes?.last?.id == selectedEpisode.id)
+                .disabled(selectedAnime.segments?.last?.id == selectedEpisode.id)
                 
                 Picker("Select episode", selection: $pickerSelectedEpisodeId) {
-                    ForEach(selectedAnime.episodes ?? []) { episode in
+                    ForEach(selectedAnime.segments ?? []) { episode in
                         Text(episode.title)
                             .tag(episode.id)
                     }
@@ -189,7 +189,7 @@ struct AnimeWatcherView: View {
                 .onAppear {
                     pickerSelectedEpisodeId = selectedEpisode.id
                     
-                    if animeListVM.findInList(anime: selectedAnime) == nil {
+                    if animeListVM.findInList(media: selectedAnime) == nil {
                         showAddAnimeNotification()
                     } else {
                         showUpdateEpisodeNotification(newEpisode: selectedEpisode)
@@ -256,7 +256,7 @@ struct AnimeWatcherView: View {
     func selectAndLoadEpisode() {
         player?.pause()
 
-        selectedEpisode = selectedAnime.episodes?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
+        selectedEpisode = selectedAnime.segments?.first { $0.id == pickerSelectedEpisodeId } ?? selectedEpisode
         player = nil
     }
     
@@ -289,10 +289,10 @@ struct AnimeWatcherView: View {
                         animeListVM.addToList(
                             source: animeVM.selectedSource,
                             anime: selectedAnime,
-                            lastEpisode: selectedEpisode.title,
-                            status: .watching,
+                            lastSegment: selectedEpisode.title,
+                            status: .viewing,
                             rating: .none,
-                            lastWatchDate: Date.now
+                            lastViewedDate: Date.now
                         )
                         
                         notification.dismiss()
@@ -308,9 +308,9 @@ struct AnimeWatcherView: View {
     }
     
     private func showUpdateEpisodeNotification(newEpisode: Episode) {
-        if let index = animeListVM.list.firstIndex(where: { $0.id == animeListVM.findInList(anime: selectedAnime)?.id }) {
-            oldEpisodeTitle = animeListVM.list[index].lastEpisode ?? ""
-            animeListVM.list[index].lastEpisode = newEpisode.title
+        if let index = animeListVM.list.firstIndex(where: { $0.id == animeListVM.findInList(media: selectedAnime)?.id }) {
+            oldEpisodeTitle = animeListVM.list[index].lastSegment ?? ""
+            animeListVM.list[index].lastSegment = newEpisode.title
             
             notification.present {
                 VStack {
@@ -326,7 +326,7 @@ struct AnimeWatcherView: View {
 
                     HStack {
                         Button {
-                            animeListVM.list[index].lastEpisode = oldEpisodeTitle
+                            animeListVM.list[index].lastSegment = oldEpisodeTitle
                             notification.dismiss()
                         } label: {
                             Text("Undo")
@@ -388,8 +388,8 @@ struct AnimeWatcherAddToListView: View {
     let anime: Anime
     var episode: Episode? = nil
     
-    @State private var selectedAnimeStatus: AnimeStatus = .watching
-    @State private var selectedAnimeRating: AnimeRating = .none
+    @State private var selectedStatus: Status = .viewing
+    @State private var selectedRating: Rating = .none
     @State private var selectedLastEpisode: UUID = UUID()
     
     @State private var selectedAnimeListElement: AnimeListElement?
@@ -403,26 +403,26 @@ struct AnimeWatcherAddToListView: View {
         HStack {
             VStack {
                 Button("Add new entry") {
-                    selectedAnimeListElement = AnimeListElement(anime: [:], status: .watching, rating: .none, creationDate: Date.now)
+                    selectedAnimeListElement = AnimeListElement(content: [:], status: .viewing, rating: .none, creationDate: Date.now)
                     createNewEntry = true
                 }
-                                        
+
                 Button("Find manually") {
                     showingFindManuallyPopup = true
                 }
                 .popover(isPresented: $showingFindManuallyPopup) {
                     VStack {
-                        List(animeListVM.list.sorted { $0.anime.first?.value.title ?? "" < $1.anime.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
-                            Text(item.anime.first?.value.title ?? "No title")
+                        List(animeListVM.list.sorted { $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
+                            Text(item.content.first?.value.title ?? "No title")
                                 .tag(item.id)
                         }
                         .listStyle(.bordered(alternatesRowBackgrounds: true))
-                        
+
                         Text("Type in the list to search.")
-                        
+
                         HStack {
                             Spacer()
-                            
+
                             Button("Cancel") { showingFindManuallyPopup = false }
                             Button("Select") {
                                 selectedAnimeListElement = animeListVM.list.first(where: { $0.id == selectedListItem })
@@ -434,11 +434,11 @@ struct AnimeWatcherAddToListView: View {
                     .frame(width: 400, height: 300)
                     .padding()
                 }
-                
+
                 Spacer()
-                Text(animeListVM.findInList(anime: anime)?.anime.first?.value.title ?? "Anime not found")
-                
-                if let url = animeListVM.findInList(anime: anime)?.anime.first?.value.imageUrl {
+                Text(animeListVM.findInList(media: anime)?.content.first?.value.title ?? "Anime not found")
+
+                if let url = animeListVM.findInList(media: anime)?.content.first?.value.imageUrl {
                     CachedAsyncImage(url: url) { image in
                         image
                             .resizable()
@@ -447,70 +447,70 @@ struct AnimeWatcherAddToListView: View {
                         ProgressView()
                     }
                 }
-                
+
                 Spacer()
             }
-            
+
             Divider()
                 .padding(.horizontal)
-            
+
             VStack {
                 Text("Anime options")
 
                 Group {
-                    Picker("Status", selection: $selectedAnimeStatus) {
-                        ForEach(AnimeStatus.allCases, id: \.rawValue) {
+                    Picker("Status", selection: $selectedStatus) {
+                        ForEach(Status.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
-                    
-                    Picker("Rating", selection: $selectedAnimeRating) {
-                        ForEach(AnimeRating.allCases, id: \.rawValue) {
+
+                    Picker("Rating", selection: $selectedRating) {
+                        ForEach(Rating.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
-                    
+
                     Picker("Last episode", selection: $selectedLastEpisode) {
-                        ForEach(anime.episodes ?? []) {
+                        ForEach(anime.segments ?? []) {
                             Text($0.title)
                                 .tag($0.id)
                         }
                     }
                 }
                 .disabled(selectedAnimeListElement == nil)
-                
+
                 HStack {
                     Spacer()
                     Button("Cancel", role: .cancel) {
                         dismiss()
                     }
-                    
+
                     Button(createNewEntry ? "Add to list" : "Save") {
                         if createNewEntry {
                             animeListVM.addToList(
                                 source: animeVM.selectedSource,
                                 anime: anime,
-                                lastEpisode: anime.episodes?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
-                                status: selectedAnimeStatus,
-                                rating: selectedAnimeRating,
-                                lastWatchDate: Date.now
+                                lastSegment: anime.segments?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
+                                status: selectedStatus,
+                                rating: selectedRating,
+                                lastViewedDate: Date.now
                             )
                         } else {
                             animeListVM.updateListEntry(
                                 id: selectedAnimeListElement!.id,
                                 newValue: AnimeListElement(
-                                    anime: [animeVM.selectedSource: anime],
-                                    lastEpisode: anime.episodes?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
-                                    status: selectedAnimeStatus,
-                                    rating: selectedAnimeRating,
-                                    lastWatchDate: Date.now,
+                                    content: [animeVM.selectedSource: anime],
+                                    lastSegment: anime.segments?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
+                                    status: selectedStatus,
+                                    rating: selectedRating,
+                                    lastViewedDate: Date.now,
                                     creationDate: Date.now
                                 )
                             )
                         }
-                        
+
                         dismiss()
                     }
                     .disabled(selectedAnimeListElement == nil)
@@ -519,14 +519,14 @@ struct AnimeWatcherAddToListView: View {
         }
         .padding()
         .onAppear {
-            selectedAnimeListElement = animeListVM.findInList(anime: anime)
+            selectedAnimeListElement = animeListVM.findInList(media: anime)
         }
         .onChange(of: selectedAnimeListElement) { _ in
             if let selectedAnimeListElement = selectedAnimeListElement {
-                selectedAnimeStatus = selectedAnimeListElement.status
-                selectedAnimeRating = selectedAnimeListElement.rating
+                selectedStatus = selectedAnimeListElement.status
+                selectedRating = selectedAnimeListElement.rating
                 
-                selectedLastEpisode = anime.episodes?.first { $0.title == selectedAnimeListElement.lastEpisode }?.id ?? UUID()
+                selectedLastEpisode = anime.segments?.first { $0.title == selectedAnimeListElement.lastSegment }?.id ?? UUID()
             }
         }
     }

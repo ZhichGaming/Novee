@@ -8,7 +8,7 @@
 import Foundation
 import CoreMedia
 
-struct Anime: Hashable, Identifiable, Codable {
+struct Anime: Media, Hashable, Identifiable, Codable {
     var id = UUID()
     
     var title: String?
@@ -21,7 +21,7 @@ struct Anime: Hashable, Identifiable, Codable {
     
     var detailsUrl: URL?
     var imageUrl: URL?
-    var episodes: [Episode]?
+    var segments: [Episode]?
 }
 
 struct AnimeTag: Hashable, Identifiable, Codable {
@@ -31,13 +31,13 @@ struct AnimeTag: Hashable, Identifiable, Codable {
     var url: URL?
 }
 
-struct Episode: Hashable, Identifiable, Codable {
+struct Episode: MediaSegment, Hashable, Identifiable, Codable {
     var id = UUID()
     var title: String
 
     /// The url to the episode of the anime where the human usually watches.
     /// Use `streamingUrl` for the url to the video itself.
-    var episodeUrl: URL?
+    var segmentUrl: URL
     var streamingUrls: [StreamingUrl]?
     
     /// Referer url to bypass 403 error

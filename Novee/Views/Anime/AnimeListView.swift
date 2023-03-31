@@ -36,10 +36,10 @@ struct AnimeListView: View {
         var result = animeListVM.list
         
         if !showingWaiting { result.removeAll { $0.status == .waiting } }
-        if !showingWatching { result.removeAll { $0.status == .watching } }
+        if !showingWatching { result.removeAll { $0.status == .viewing } }
         if !showingDropped { result.removeAll { $0.status == .dropped } }
         if !showingCompleted { result.removeAll { $0.status == .completed } }
-        if !showingToWatch { result.removeAll { $0.status == .toWatch } }
+        if !showingToWatch { result.removeAll { $0.status == .toView } }
         
         if !showingRatingNone { result.removeAll { $0.rating == .none } }
         if !showingRatingHorrible { result.removeAll { $0.rating == .horrible } }
@@ -49,19 +49,19 @@ struct AnimeListView: View {
         
         if selectedSortingStyle == "Recently updated" {
             result.sort {
-                return $0.lastWatchDate ?? Date.distantPast > $1.lastWatchDate ?? Date.distantPast
+                return $0.lastViewedDate ?? Date.distantPast > $1.lastViewedDate ?? Date.distantPast
             }
         } else if selectedSortingStyle == "Recently added" {
             result.sort { $0.creationDate.compare($1.creationDate) == .orderedDescending }
         } else {
             result.sort {
-                return $0.anime.first?.value.title ?? "" < $1.anime.first?.value.title ?? ""
+                return $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? ""
             }
         }
         
         if !listQuery.isEmpty {
             result.removeAll { anime in
-                let animeInstances = anime.anime.map { [$0.value.title ?? ""] + ($0.value.altTitles ?? []) }
+                let animeInstances = anime.content.map { [$0.value.title ?? ""] + ($0.value.altTitles ?? []) }
                 
                 for titles in animeInstances {
                     for title in titles {
@@ -212,10 +212,10 @@ struct AnimeListRowView: View {
     
     var body: some View {
         HStack {
-            Text(anime.anime.first?.value.title ?? "No title")
+            Text(anime.content.first?.value.title ?? "No title")
                 .frame(width: geo.size.width * 0.3, alignment: .leading)
                 .lineLimit(2)
-            Text(anime.lastEpisode ?? "No last episode")
+            Text(anime.lastSegment ?? "No last episode")
                 .frame(width: geo.size.width * 0.2, alignment: .leading)
                 .lineLimit(2)
             Text(anime.status.rawValue)
@@ -257,13 +257,13 @@ struct AnimeListDetailsSheetView: View {
 
     var body: some View {
         VStack {
-            Text(passedAnime.anime.first?.value.title ?? "None")
+            Text(passedAnime.content.first?.value.title ?? "None")
                 .font(.title2.bold())
             
             TabView {
                 ScrollView {
                     ForEach(animeKeysArray, id: \.self) { key in
-                        if let anime = passedAnime.anime[key] {
+                        if let anime = passedAnime.content[key] {
                             Text(animeVM.sources[key]?.label ?? key)
                                 .font(.title2.bold())
                                 .padding(.top)
@@ -367,7 +367,7 @@ struct AnimeListDetailsSheetView: View {
                                     Button("Delete", role: .destructive) {
                                         withAnimation {
                                             animeListVM.removeSourceFromList(id: passedAnime.id, source: source)
-                                            passedAnime.anime.removeValue(forKey: source)
+                                            passedAnime.content.removeValue(forKey: source)
                                             
                                             if !animeListVM.list.contains(where: { $0.id == passedAnime.id }) {
                                                 dismiss()
@@ -385,10 +385,10 @@ struct AnimeListDetailsSheetView: View {
                         }
                     }
                     .onAppear {
-                        animeKeysArray = Array(passedAnime.anime.keys)
+                        animeKeysArray = Array(passedAnime.content.keys)
                         
                         Task { @MainActor in
-                            passedAnime.anime = await animeVM.getAllUpdatedAnimeDetails(for: passedAnime.anime)
+                            passedAnime.content = await animeVM.getAllUpdatedAnimeDetails(for: passedAnime.content)
                         }
                         
                     }
@@ -428,8 +428,8 @@ struct AnimeListListDetailsView: View {
     
     @State private var selectedSource: String = ""
     @State private var selectedLastEpisode: String = ""
-    @State private var selectedAnimeRating: String = ""
-    @State private var selectedAnimeStatus: String = ""
+    @State private var selectedRating: String = ""
+    @State private var selectedStatus: String = ""
     
     @State private var showingDeleteAlert = false
     
@@ -442,29 +442,29 @@ struct AnimeListListDetailsView: View {
                 Text("Anime status/rating")
                     .font(.headline)
                 
-                Picker("Anime status", selection: $selectedAnimeStatus) {
-                    ForEach(AnimeStatus.allCases, id: \.rawValue) { status in
+                Picker("Anime status", selection: $selectedStatus) {
+                    ForEach(Status.allCases, id: \.rawValue) { status in
                         Text(status.rawValue)
                             .tag(status.rawValue)
                     }
                 }
-                .onChange(of: selectedAnimeStatus) { newStatus in
+                .onChange(of: selectedStatus) { newStatus in
                     animeListVM.updateStatus(
                         id: passedAnime.id,
-                        to: AnimeStatus(rawValue: newStatus) ?? passedAnime.status
+                        to: Status(rawValue: newStatus) ?? passedAnime.status
                     )
                 }
                 
-                Picker("Anime rating", selection: $selectedAnimeRating) {
-                    ForEach(AnimeRating.allCases, id: \.rawValue) { rating in
+                Picker("Anime rating", selection: $selectedRating) {
+                    ForEach(Rating.allCases, id: \.rawValue) { rating in
                         Text(rating.rawValue)
                             .tag(rating.rawValue)
                     }
                 }
-                .onChange(of: selectedAnimeRating) { newRating in
+                .onChange(of: selectedRating) { newRating in
                     animeListVM.updateRating(
                         id: passedAnime.id,
-                        to: AnimeRating(rawValue: newRating) ?? passedAnime.rating
+                        to: Rating(rawValue: newRating) ?? passedAnime.rating
                     )
                 }
             }
@@ -474,21 +474,21 @@ struct AnimeListListDetailsView: View {
                     .font(.headline)
                 
                 Picker("Episode source", selection: $selectedSource) {
-                    ForEach(Array(passedAnime.anime.keys), id: \.self) { key in
+                    ForEach(Array(passedAnime.content.keys), id: \.self) { key in
                         Text(animeVM.sources[key]?.label ?? key)
                             .tag(key)
                     }
                 }
                 
                 Picker("Last episode", selection: $selectedLastEpisode) {
-                    ForEach(passedAnime.anime[selectedSource]?.episodes ?? [], id: \.id) { episode in
+                    ForEach(passedAnime.content[selectedSource]?.segments ?? [], id: \.id) { episode in
                         Text(episode.title)
                             .tag(episode.title)
                     }
                 }
-                .disabled(!passedAnime.anime.keys.contains(selectedSource))
+                .disabled(!passedAnime.content.keys.contains(selectedSource))
                 .onChange(of: selectedLastEpisode) { newEpisode in
-                    animeListVM.updateLastEpisode(
+                    animeListVM.updateLastSegment(
                         id: passedAnime.id,
                         to: newEpisode
                     )
@@ -496,7 +496,7 @@ struct AnimeListListDetailsView: View {
                 
                 HStack {
                     Text("Current last episode:")
-                    Text(passedAnime.lastEpisode ?? "None")
+                    Text(passedAnime.lastSegment ?? "None")
                 }
             }
             .padding(.vertical)
@@ -513,7 +513,7 @@ struct AnimeListListDetailsView: View {
                             displayedComponents: .date
                         )
                         .onChange(of: selectedLastReadDate) { newDate in
-                            animeListVM.updateLastReadDate(id: passedAnime.id, to: newDate)
+                            animeListVM.updateLastViewedDate(id: passedAnime.id, to: newDate)
                         }
                     }
                     
@@ -521,12 +521,12 @@ struct AnimeListListDetailsView: View {
                         showingLastEpisodeSelection.toggle()
                     }
                     .onAppear {
-                        showingLastEpisodeSelection = passedAnime.lastWatchDate != nil
-                        selectedLastReadDate = passedAnime.lastWatchDate ?? selectedLastReadDate
+                        showingLastEpisodeSelection = passedAnime.lastViewedDate != nil
+                        selectedLastReadDate = passedAnime.lastViewedDate ?? selectedLastReadDate
                     }
                     .onChange(of: showingLastEpisodeSelection) { showingLastEpisode in
                         if !showingLastEpisode {
-                            animeListVM.updateLastReadDate(id: passedAnime.id, to: nil)
+                            animeListVM.updateLastViewedDate(id: passedAnime.id, to: nil)
                         }
                     }
                 }
@@ -569,8 +569,8 @@ struct AnimeListListDetailsView: View {
             Spacer()
         }
         .onAppear {
-            selectedAnimeRating = passedAnime.rating.rawValue
-            selectedAnimeStatus = passedAnime.status.rawValue
+            selectedRating = passedAnime.rating.rawValue
+            selectedStatus = passedAnime.status.rawValue
         }
     }
 }
@@ -582,9 +582,9 @@ struct AnimeListAddNewToListView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var storyTitle: String = ""
-    @State var lastEpisodeTitle: String = ""
-    @State var selectedAnimeStatus: AnimeStatus = .watching
-    @State var selectedAnimeRating: AnimeRating = .none
+    @State var lastSegmentTitle: String = ""
+    @State var selectedStatus: Status = .viewing
+    @State var selectedRating: Rating = .none
     
     @State var animeListNewImageUrl = ""
     @State var animeListNewAuthor = ""
@@ -608,18 +608,18 @@ struct AnimeListAddNewToListView: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     TextField("Title", text: $storyTitle)
-                    TextField("Last episode title", text: $lastEpisodeTitle)
+                    TextField("Last episode title", text: $lastSegmentTitle)
                     
                     Group {
-                        Picker("Status", selection: $selectedAnimeStatus) {
-                            ForEach(AnimeStatus.allCases, id: \.rawValue) {
+                        Picker("Status", selection: $selectedStatus) {
+                            ForEach(Status.allCases, id: \.rawValue) {
                                 Text($0.rawValue)
                                     .tag($0)
                             }
                         }
                         
-                        Picker("Rating", selection: $selectedAnimeRating) {
-                            ForEach(AnimeRating.allCases, id: \.rawValue) {
+                        Picker("Rating", selection: $selectedRating) {
+                            ForEach(Rating.allCases, id: \.rawValue) {
                                 Text($0.rawValue)
                                     .tag($0)
                             }
@@ -643,9 +643,9 @@ struct AnimeListAddNewToListView: View {
                                     AnimeListAnimeDetailsEditorView(
                                         animeElement: $animeElements[index],
                                         storyTitle: $storyTitle,
-                                        lastEpisodeTitle: $lastEpisodeTitle,
-                                        selectedAnimeStatus: $selectedAnimeStatus,
-                                        selectedAnimeRating: $selectedAnimeRating,
+                                        lastSegmentTitle: $lastSegmentTitle,
+                                        selectedStatus: $selectedStatus,
+                                        selectedRating: $selectedRating,
                                         animeListNewImageUrl: $animeListNewImageUrl,
                                         animeListNewAuthor: $animeListNewAuthor)
                                 }
@@ -732,10 +732,10 @@ struct AnimeListAddNewToListView: View {
                         
                         animeListVM.addToList(
                             animes: animes,
-                            lastEpisode: lastEpisodeTitle,
-                            status: selectedAnimeStatus,
-                            rating: selectedAnimeRating,
-                            lastWatchDate: Date.now
+                            lastSegment: lastSegmentTitle,
+                            status: selectedStatus,
+                            rating: selectedRating,
+                            lastViewedDate: Date.now
                         )
                         
                         dismiss()
@@ -777,9 +777,9 @@ struct AnimeListAnimeDetailsEditorView: View {
     @Binding var animeElement: AnimeWithSource
     
     @Binding var storyTitle: String
-    @Binding var lastEpisodeTitle: String
-    @Binding var selectedAnimeStatus: AnimeStatus
-    @Binding var selectedAnimeRating: AnimeRating
+    @Binding var lastSegmentTitle: String
+    @Binding var selectedStatus: Status
+    @Binding var selectedRating: Rating
     
     @Binding var animeListNewImageUrl: String
     @Binding var animeListNewAuthor: String

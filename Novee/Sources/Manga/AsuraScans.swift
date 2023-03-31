@@ -51,10 +51,10 @@ class AsuraScans: MangaFetcher, MangaSource {
                 result.detailsUrl = try URL(string: manga.child(0).child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).child(0).child(0).attr("src"))
                 if manga.child(0).child(1).children().count > 1 {
-                    result.chapters = try manga.child(0).child(1).child(1).children().array().map {
+                    result.segments = try manga.child(0).child(1).child(1).children().array().map {
                         let chapterElement = $0.children().array().first { $0.nodeName() == "a" }!
                         
-                        return Chapter(title: try chapterElement.text(), chapterUrl: URL(string: try chapterElement.attr("href"))!)
+                        return Chapter(title: try chapterElement.text(), segmentUrl: URL(string: try chapterElement.attr("href"))!)
                     }
                 }
                 
@@ -178,7 +178,7 @@ class AsuraScans: MangaFetcher, MangaSource {
                             .child(0)
                             .child(0)
                             .text(),
-                        chapterUrl: URL(string: try chapterElement
+                        segmentUrl: URL(string: try chapterElement
                             .child(0)
                             .child(0)
                             .child(0)
@@ -187,7 +187,7 @@ class AsuraScans: MangaFetcher, MangaSource {
                 )
             }
 
-            result?.chapters = chapters.reversed()
+            result?.segments = chapters.reversed()
             result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
@@ -209,7 +209,7 @@ class AsuraScans: MangaFetcher, MangaSource {
         var htmlPage = ""
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
+            let (data, _) = try await URLSession.shared.data(from: chapter.segmentUrl)
 
             if let stringData = String(data: data, encoding: .utf8) {
                 if stringData.isEmpty {

@@ -124,7 +124,7 @@ struct NovelColumnView: View {
                     MediaColumnElementView(
                         imageUrl: novel.imageUrl,
                         title: novel.title,
-                        installmentTitles: novel.chapters?.map { $0.title })
+                        installmentTitles: novel.segments?.map { $0.title })
                 }
             }
 //        } else if novelVM.noveldexResponse == nil {

@@ -7,44 +7,28 @@
 
 import Foundation
 
-enum BookStatus: String, Hashable, CaseIterable, Codable {
-    case dropped = "Dropped"
-    case completed = "Completed"
-    case reading = "Reading"
-    case waiting = "Waiting"
-    case toRead = "To read"
-}
-
-enum BookRating: String, Hashable, CaseIterable, Codable {
-    case horrible = "Horrible"
-    case bad = "Bad"
-    case good = "Good"
-    case best = "Best"
-    case none = "None"
-}
-
-struct MangaListElement: Hashable, Identifiable, Codable {
+struct MangaListElement: MediaListElement, Hashable, Identifiable, Codable {
     let id = UUID()
     
-    var manga: [String: Manga] /// Manga from different sources
-    var lastChapter: String? {
+    var content: [String: Manga] /// Manga from different sources
+    var lastSegment: String? {
         didSet {
-            if lastChapter != nil {
-                lastReadDate = Date.now
+            if lastSegment != nil {
+                lastViewedDate = Date.now
             }
         }
     }
-    var status: BookStatus
-    var rating: BookRating
-    var lastReadDate: Date?
+    var status: Status
+    var rating: Rating
+    var lastViewedDate: Date?
     var creationDate: Date
     
     enum CodingKeys: CodingKey {
-        case manga
-        case lastChapter
+        case content
+        case lastSegment
         case status
         case rating
-        case lastReadDate
+        case lastViewedDate
         case creationDate
     }
 }

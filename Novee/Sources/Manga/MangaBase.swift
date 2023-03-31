@@ -76,11 +76,11 @@ class MangaFetcher {
             return
         }
         
-        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].chapters = []
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].segments = []
     }
     
     func resetChapters(index: Int) {
-        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].chapters = []
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[index].segments = []
     }
     
     /// These functions are here if they are ever going to be used. They are useless at the time of being written since the pages are currently not stored within MangaVM. 
@@ -95,11 +95,11 @@ class MangaFetcher {
             return
         }
         
-        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = [:]
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].segments?[chapterIndex].images = [:]
     }
     
     func resetPages(mangaIndex: Int, chapterIndex: Int) {
-        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].chapters?[chapterIndex].images = [:]
+        MangaVM.shared.sources[MangaVM.shared.selectedSource]!.mangaData[mangaIndex].segments?[chapterIndex].images = [:]
     }
 }
 

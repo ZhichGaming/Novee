@@ -7,28 +7,28 @@
 
 import Foundation
 
-struct NovelListElement: Hashable, Identifiable, Codable {
+struct NovelListElement: MediaListElement, Hashable, Identifiable, Codable {
     let id = UUID()
     
-    var novel: [String: Novel] /// Novel from different sources
-    var lastChapter: String? {
+    var content: [String: Novel] /// Novel from different sources
+    var lastSegment: String? {
         didSet {
-            if lastChapter != nil {
-                lastReadDate = Date.now
+            if lastSegment != nil {
+                lastViewedDate = Date.now
             }
         }
     }
-    var status: BookStatus
-    var rating: BookRating
-    var lastReadDate: Date?
+    var status: Status
+    var rating: Rating
+    var lastViewedDate: Date?
     var creationDate: Date
     
     enum CodingKeys: CodingKey {
-        case novel
-        case lastChapter
+        case content
+        case lastSegment
         case status
         case rating
-        case lastReadDate
+        case lastViewedDate
         case creationDate
     }
 }

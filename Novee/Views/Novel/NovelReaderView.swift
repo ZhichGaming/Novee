@@ -20,8 +20,8 @@ struct NovelReaderView: View {
     
     @State private var oldChapterTitle = ""
     
-    @State private var selectedNovelStatus: BookStatus = .reading
-    @State private var selectedNovelRating: BookRating = .none
+    @State private var selectedNovelStatus: Status = .viewing
+    @State private var selectedNovelRating: Rating = .none
     @State private var selectedLastChapter: UUID = UUID()
     @State private var pickerSelectedChapterId: UUID = UUID()
 
@@ -65,7 +65,7 @@ struct NovelReaderView: View {
         }
         .systemNotification(notification)
         .onAppear {
-            if novelListVM.findInList(novel: novel) == nil {
+            if novelListVM.findInList(media: novel) == nil {
                 showAddNovelNotification()
             } else {
                 showUpdateChapterNotification(newChapter: chapter)
@@ -120,21 +120,21 @@ struct NovelReaderView: View {
 
                 Group {
                     Picker("Status", selection: $selectedNovelStatus) {
-                        ForEach(BookStatus.allCases, id: \.rawValue) {
+                        ForEach(Status.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
 
                     Picker("Rating", selection: $selectedNovelRating) {
-                        ForEach(BookRating.allCases, id: \.rawValue) {
+                        ForEach(Rating.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
 
                     Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(novel.chapters ?? []) {
+                        ForEach(novel.segments ?? []) {
                             Text($0.title)
                                 .tag($0.id)
                         }
@@ -151,10 +151,10 @@ struct NovelReaderView: View {
                         novelListVM.addToList(
                             source: novelVM.selectedSource,
                             novel: novel,
-                            lastChapter: novel.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
+                            lastSegment: novel.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
                             status: selectedNovelStatus,
                             rating: selectedNovelRating,
-                            lastReadDate: Date.now
+                            lastViewedDate: Date.now
                         )
 
                         showingCustomizedAddToListSheet = false
@@ -175,7 +175,7 @@ struct NovelReaderView: View {
                 }, label: {
                     Image(systemName: "chevron.left")
                 })
-                .disabled(novel.chapters?.first?.id == chapter.id)
+                .disabled(novel.segments?.first?.id == chapter.id)
                 
                 Button(action: {
                     if let newChapter = novelVM.changeChapter(chapter: chapter, novel: novel, offset: 1) {
@@ -184,10 +184,10 @@ struct NovelReaderView: View {
                 }, label: {
                     Image(systemName: "chevron.right")
                 })
-                .disabled(novel.chapters?.last?.id == chapter.id)
+                .disabled(novel.segments?.last?.id == chapter.id)
                 
                 Picker("Select chapter", selection: $pickerSelectedChapterId) {
-                    ForEach(novel.chapters ?? []) { chapter in
+                    ForEach(novel.segments ?? []) { chapter in
                         Text(chapter.title)
                             .tag(chapter.id)
                     }
@@ -200,7 +200,7 @@ struct NovelReaderView: View {
                     pickerSelectedChapterId = newChapter.id
                 }
                 .onChange(of: pickerSelectedChapterId) { newChapterId in
-                    if let newChapter = novel.chapters?.first(where: { $0.id == newChapterId }) {
+                    if let newChapter = novel.segments?.first(where: { $0.id == newChapterId }) {
                         chapter = newChapter
                     }
                 }
@@ -229,7 +229,7 @@ struct NovelReaderView: View {
                     Image(systemName: "arrow.left")
                 }
             }
-            .disabled(chapter.id == novel.chapters?.first?.id)
+            .disabled(chapter.id == novel.segments?.first?.id)
             
             Button {
                 if let newChapter = novelVM.changeChapter(chapter: chapter, novel: novel, offset: 1) {
@@ -241,7 +241,7 @@ struct NovelReaderView: View {
                     Image(systemName: "arrow.right")
                 }
             }
-            .disabled(chapter.id == novel.chapters?.last?.id)
+            .disabled(chapter.id == novel.segments?.last?.id)
         }
         .padding()
     }
@@ -271,10 +271,10 @@ struct NovelReaderView: View {
                         novelListVM.addToList(
                             source: novelVM.selectedSource,
                             novel: novel,
-                            lastChapter: chapter.title,
-                            status: .reading,
+                            lastSegment: chapter.title,
+                            status: .viewing,
                             rating: .none,
-                            lastReadDate: Date.now
+                            lastViewedDate: Date.now
                         )
                         
                         notification.dismiss()
@@ -290,9 +290,9 @@ struct NovelReaderView: View {
     }
     
     private func showUpdateChapterNotification(newChapter: NovelChapter) {
-        if let index = novelListVM.list.firstIndex(where: { $0.id == novelListVM.findInList(novel: novel)?.id }) {
-            oldChapterTitle = novelListVM.list[index].lastChapter ?? ""
-            novelListVM.list[index].lastChapter = newChapter.title
+        if let index = novelListVM.list.firstIndex(where: { $0.id == novelListVM.findInList(media: novel)?.id }) {
+            oldChapterTitle = novelListVM.list[index].lastSegment ?? ""
+            novelListVM.list[index].lastSegment = newChapter.title
 
             notification.present {
                 VStack {
@@ -308,7 +308,7 @@ struct NovelReaderView: View {
 
                     HStack {
                         Button {
-                            novelListVM.list[index].lastChapter = oldChapterTitle
+                            novelListVM.list[index].lastSegment = oldChapterTitle
                             notification.dismiss()
                         } label: {
                             Text("Undo")
@@ -357,8 +357,8 @@ struct NovelReaderAddToListView: View {
     let novel: Novel
     var chapter: NovelChapter? = nil
     
-    @State private var selectedNovelStatus: BookStatus = .reading
-    @State private var selectedNovelRating: BookRating = .none
+    @State private var selectedNovelStatus: Status = .viewing
+    @State private var selectedNovelRating: Rating = .none
     @State private var selectedLastChapter: UUID = UUID()
     
     @State private var selectedNovelListElement: NovelListElement?
@@ -372,7 +372,7 @@ struct NovelReaderAddToListView: View {
         HStack {
             VStack {
                 Button("Add new entry") {
-                    selectedNovelListElement = NovelListElement(novel: [:], status: .reading, rating: .none, creationDate: Date.now)
+                    selectedNovelListElement = NovelListElement(content: [:], status: .viewing, rating: .none, creationDate: Date.now)
                     createNewEntry = true
                 }
                                         
@@ -381,8 +381,8 @@ struct NovelReaderAddToListView: View {
                 }
                 .popover(isPresented: $showingFindManuallyPopup) {
                     VStack {
-                        List(novelListVM.list.sorted { $0.novel.first?.value.title ?? "" < $1.novel.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
-                            Text(item.novel.first?.value.title ?? "No title")
+                        List(novelListVM.list.sorted { $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
+                            Text(item.content.first?.value.title ?? "No title")
                                 .tag(item.id)
                         }
                         .listStyle(.bordered(alternatesRowBackgrounds: true))
@@ -405,9 +405,9 @@ struct NovelReaderAddToListView: View {
                 }
                 
                 Spacer()
-                Text(novelListVM.findInList(novel: novel)?.novel.first?.value.title ?? "Novel not found")
+                Text(novelListVM.findInList(media: novel)?.content.first?.value.title ?? "Novel not found")
                 
-                if let url = novelListVM.findInList(novel: novel)?.novel.first?.value.imageUrl {
+                if let url = novelListVM.findInList(media: novel)?.content.first?.value.imageUrl {
                     CachedAsyncImage(url: url) { image in
                         image
                             .resizable()
@@ -428,21 +428,21 @@ struct NovelReaderAddToListView: View {
 
                 Group {
                     Picker("Status", selection: $selectedNovelStatus) {
-                        ForEach(BookStatus.allCases, id: \.rawValue) {
+                        ForEach(Status.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
                     
                     Picker("Rating", selection: $selectedNovelRating) {
-                        ForEach(BookRating.allCases, id: \.rawValue) {
+                        ForEach(Rating.allCases, id: \.rawValue) {
                             Text($0.rawValue)
                                 .tag($0)
                         }
                     }
                     
                     Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(novel.chapters ?? []) {
+                        ForEach(novel.segments ?? []) {
                             Text($0.title)
                                 .tag($0.id)
                         }
@@ -461,20 +461,20 @@ struct NovelReaderAddToListView: View {
                             novelListVM.addToList(
                                 source: novelVM.selectedSource,
                                 novel: novel,
-                                lastChapter: novel.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
+                                lastSegment: novel.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
                                 status: selectedNovelStatus,
                                 rating: selectedNovelRating,
-                                lastReadDate: Date.now
+                                lastViewedDate: Date.now
                             )
                         } else {
                             novelListVM.updateListEntry(
                                 id: selectedNovelListElement!.id,
                                 newValue: NovelListElement(
-                                    novel: [novelVM.selectedSource: novel],
-                                    lastChapter: novel.chapters?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
+                                    content: [novelVM.selectedSource: novel],
+                                    lastSegment: novel.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
                                     status: selectedNovelStatus,
                                     rating: selectedNovelRating,
-                                    lastReadDate: Date.now,
+                                    lastViewedDate: Date.now,
                                     creationDate: Date.now
                                 )
                             )
@@ -488,14 +488,14 @@ struct NovelReaderAddToListView: View {
         }
         .padding()
         .onAppear {
-            selectedNovelListElement = novelListVM.findInList(novel: novel)
+            selectedNovelListElement = novelListVM.findInList(media: novel)
         }
         .onChange(of: selectedNovelListElement) { _ in
             if let selectedNovelListElement = selectedNovelListElement {
                 selectedNovelStatus = selectedNovelListElement.status
                 selectedNovelRating = selectedNovelListElement.rating
                 
-                selectedLastChapter = novel.chapters?.first { $0.title == selectedNovelListElement.lastChapter }?.id ?? UUID()
+                selectedLastChapter = novel.segments?.first { $0.title == selectedNovelListElement.lastSegment }?.id ?? UUID()
             }
         }
     }

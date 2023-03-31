@@ -78,7 +78,7 @@ struct MangaDetailsView: View {
                     }
                     
                     Group {
-                        if let mangaListElement = mangaListVM.findInList(manga: selectedManga) {
+                        if let mangaListElement = mangaListVM.findInList(media: selectedManga) {
                             MangaListListDetailsView(
                                 passedManga: mangaListElement,
                                 dismissOnDelete: false
@@ -99,11 +99,11 @@ struct MangaDetailsView: View {
                 }
             }
             .onAppear {
-                if let mangaListId = mangaListVM.findInList(manga: selectedManga)?.id {
-                    mangaListVM.updateMangaInListElement(
+                if let mangaListId = mangaListVM.findInList(media: selectedManga)?.id {
+                    mangaListVM.updateMediaInListElement(
                         id: mangaListId,
                         source: mangaVM.selectedSource,
-                        manga: selectedManga
+                        media: selectedManga
                     )
                 }
             }
@@ -118,11 +118,11 @@ struct MangaDetailsView: View {
                             if let newManga = newManga {
                                 selectedManga = newManga
                                 
-                                if let mangaListId = mangaListVM.findInList(manga: selectedManga)?.id {
-                                    mangaListVM.updateMangaInListElement(
+                                if let mangaListId = mangaListVM.findInList(media: selectedManga)?.id {
+                                    mangaListVM.updateMediaInListElement(
                                         id: mangaListId,
                                         source: mangaVM.selectedSource,
-                                        manga: selectedManga
+                                        media: selectedManga
                                     )
                                 }
                             } else {
@@ -227,7 +227,7 @@ struct ChapterList: View {
     var filteredChapters: [Chapter]? {
         var result: [Chapter]?
         
-        if let chapters = selectedManga.chapters {
+        if let chapters = selectedManga.segments {
             if ascendingOrder {
                 result = chapters
             } else {
@@ -253,11 +253,11 @@ struct ChapterList: View {
                         TextField("Search for a chapter", text: $chapterQuery)
                             .textFieldStyle(.roundedBorder)
                     } else {
-                        if let chapters = selectedManga.chapters {
+                        if let chapters = selectedManga.segments {
                             Spacer()
                             
-                            let mangaListElement = mangaListVM.findInList(manga: selectedManga)
-                            let currentChapterIndex = chapters.firstIndex { $0.title == mangaListElement?.lastChapter }
+                            let mangaListElement = mangaListVM.findInList(media: selectedManga)
+                            let currentChapterIndex = chapters.firstIndex { $0.title == mangaListElement?.lastSegment }
                             let isInBounds = currentChapterIndex != nil && currentChapterIndex! + 1 < chapters.endIndex
                             
                             Button("Continue") {
@@ -381,9 +381,9 @@ struct MangaDetailsView_Previews: PreviewProvider {
                 MangaTag(name: "Tag 2", url: URL(string: "https://example.com/tag2"))
             ], detailsUrl: URL(string: "https://example.com"),
             imageUrl: URL(string: "https://example.com/image.jpg"),
-            chapters: [
-                Chapter(title: "Chapter 1", chapterUrl: URL(string: "https://example.com/chapter1")!),
-                Chapter(title: "Chapter 2", chapterUrl: URL(string: "https://example.com/chapter2")!)
+            segments: [
+                Chapter(title: "Chapter 1", segmentUrl: URL(string: "https://example.com/chapter1")!),
+                Chapter(title: "Chapter 2", segmentUrl: URL(string: "https://example.com/chapter2")!)
             ]
         )
         

@@ -78,7 +78,7 @@ struct NovelDetailsView: View {
                     }
                     
                     Group {
-                        if let novelListElement = novelListVM.findInList(novel: selectedNovel) {
+                        if let novelListElement = novelListVM.findInList(media: selectedNovel) {
                             NovelListListDetailsView(
                                 passedNovel: novelListElement,
                                 dismissOnDelete: false
@@ -99,11 +99,11 @@ struct NovelDetailsView: View {
                 }
             }
             .onAppear {
-                if let novelListId = novelListVM.findInList(novel: selectedNovel)?.id {
-                    novelListVM.updateNovelInListElement(
+                if let novelListId = novelListVM.findInList(media: selectedNovel)?.id {
+                    novelListVM.updateMediaInListElement(
                         id: novelListId,
                         source: novelVM.selectedSource,
-                        novel: selectedNovel
+                        media: selectedNovel
                     )
                 }
             }
@@ -118,11 +118,11 @@ struct NovelDetailsView: View {
                             if let newNovel = newNovel {
                                 selectedNovel = newNovel
                                 
-                                if let novelListId = novelListVM.findInList(novel: selectedNovel)?.id {
-                                    novelListVM.updateNovelInListElement(
+                                if let novelListId = novelListVM.findInList(media: selectedNovel)?.id {
+                                    novelListVM.updateMediaInListElement(
                                         id: novelListId,
                                         source: novelVM.selectedSource,
-                                        novel: selectedNovel
+                                        media: selectedNovel
                                     )
                                 }
                             } else {
@@ -229,7 +229,7 @@ struct NovelChapterList: View {
     var filteredChapters: [NovelChapter]? {
         var result: [NovelChapter]?
         
-        if let chapters = selectedNovel.chapters {
+        if let chapters = selectedNovel.segments {
             if ascendingOrder {
                 result = chapters
             } else {
@@ -255,11 +255,11 @@ struct NovelChapterList: View {
                         TextField("Search for a chapter", text: $chapterQuery)
                             .textFieldStyle(.roundedBorder)
                     } else {
-                        if let chapters = selectedNovel.chapters {
+                        if let chapters = selectedNovel.segments {
                             Spacer()
                             
-                            let novelListElement = novelListVM.findInList(novel: selectedNovel)
-                            let currentChapterIndex = chapters.firstIndex { $0.title == novelListElement?.lastChapter }
+                            let novelListElement = novelListVM.findInList(media: selectedNovel)
+                            let currentChapterIndex = chapters.firstIndex { $0.title == novelListElement?.lastSegment }
                             let isInBounds = currentChapterIndex != nil && currentChapterIndex! + 1 < chapters.endIndex
                             
                             Button("Continue") {

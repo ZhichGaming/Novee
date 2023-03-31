@@ -181,7 +181,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
                 chapters.append(contentsOf: await fetchChapters(novelId: novelId, chapterPage: i, referer: requestUrl.absoluteString))
             }
             
-            result?.chapters = chapters
+            result?.segments = chapters
             result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
@@ -222,7 +222,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
                 let chapterUrl = try URL(string: chapterElement.child(1).attr("href"))
                 
                 if let chapterUrl = chapterUrl {
-                    chapters.append(NovelChapter(title: chapterTitle, chapterUrl: chapterUrl))
+                    chapters.append(NovelChapter(title: chapterTitle, segmentUrl: chapterUrl))
                 }
             }
             
@@ -238,7 +238,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
         var result = ""
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: chapter.chapterUrl)
+            let (data, _) = try await URLSession.shared.data(from: chapter.segmentUrl)
 
             guard let stringData = String(data: data, encoding: .utf8) else {
                 Log.shared.msg("An error occured while fetching manga pages.")

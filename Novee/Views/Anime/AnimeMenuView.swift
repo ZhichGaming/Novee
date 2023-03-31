@@ -125,7 +125,7 @@ struct AnimeColumnView: View {
                     MediaColumnElementView(
                         imageUrl: anime.imageUrl,
                         title: anime.title,
-                        installmentTitles: anime.episodes?.map { $0.title })
+                        installmentTitles: anime.segments?.map { $0.title })
                 }
             }
 //        } else if mangaVM.mangadexResponse == nil {

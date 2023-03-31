@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Novel: Hashable, Identifiable, Codable {
+struct Novel: Media, Hashable, Identifiable, Codable {
     var id = UUID()
     
     var title: String?
@@ -20,7 +20,7 @@ struct Novel: Hashable, Identifiable, Codable {
     
     var detailsUrl: URL?
     var imageUrl: URL?
-    var chapters: [NovelChapter]?
+    var segments: [NovelChapter]?
 }
 
 struct NovelTag: Hashable, Identifiable, Codable {
@@ -30,11 +30,11 @@ struct NovelTag: Hashable, Identifiable, Codable {
     var url: URL?
 }
 
-struct NovelChapter: Hashable, Identifiable, Codable {
+struct NovelChapter: MediaSegment, Hashable, Identifiable, Codable {
     var id = UUID()
     var title: String
 
-    var chapterUrl: URL
+    var segmentUrl: URL
     var content: String?
 
     var timeUploaded: Date?
@@ -42,7 +42,7 @@ struct NovelChapter: Hashable, Identifiable, Codable {
     enum CodingKeys: CodingKey {
         case id
         case title
-        case chapterUrl
+        case segmentUrl
         case timeUploaded
     }
 }
