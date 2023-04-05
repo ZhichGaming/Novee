@@ -23,12 +23,20 @@ enum Rating: String, Hashable, CaseIterable, Codable {
     case none = "None"
 }
 
+enum MediaType: String, Hashable, CaseIterable, Codable {
+    case anime = "Anime"
+    case manga = "Manga"
+    case novel = "Novel"
+}
+
 protocol MediaListElement: Hashable, Codable, Identifiable {
-    associatedtype MediaType: Media
+    associatedtype AssociatedMediaType: Media
+    
+    var type: MediaType { get }
     
     var id: UUID { get }
     
-    var content: [String: MediaType]  { get set }
+    var content: [String: AssociatedMediaType]  { get set }
     var lastSegment: String? { get set }
     var status: Status { get set }
     var rating: Rating { get set }

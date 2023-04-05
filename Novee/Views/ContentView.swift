@@ -10,13 +10,21 @@ import AppKit
 import CachedAsyncImage
 
 struct ContentView: View {
-    @State private var selectedView: Int? = -1
+    @State private var selectedView: String? = "home"
 
     var body: some View {
         NavigationView {
             List {
+                NavigationLink(tag: "home", selection: self.$selectedView, destination: { HomeView(tab: $selectedView) }) {
+                    HStack {
+                        Image(systemName: "house")
+                            .frame(width: 15)
+                        Text("Home")
+                    }
+                }
+                
                 Section("Anime") {
-                    NavigationLink(tag: 1, selection: self.$selectedView, destination: { AnimeMenuView() }) {
+                    NavigationLink(tag: "anime", selection: self.$selectedView, destination: { AnimeMenuView() }) {
                         HStack {
                             Image(systemName: "tv")
                                 .frame(width: 15)
@@ -24,7 +32,7 @@ struct ContentView: View {
                         }
                     }
                     
-                    NavigationLink(tag: 2, selection: self.$selectedView, destination: { AnimeListView() }) {
+                    NavigationLink(tag: "animelist", selection: self.$selectedView, destination: { AnimeListView() }) {
                         HStack {
                             Image(systemName: "list.bullet")
                                 .frame(width: 15)
@@ -34,7 +42,7 @@ struct ContentView: View {
                 }
                 
                 Section("Manga") {
-                    NavigationLink(tag: 3, selection: self.$selectedView, destination: { MangaMenuView() }) {
+                    NavigationLink(tag: "manga", selection: self.$selectedView, destination: { MangaMenuView() }) {
                         HStack {
                             Image(systemName: "book.closed")
                                 .frame(width: 15)
@@ -42,7 +50,7 @@ struct ContentView: View {
                         }
                     }
                     
-                    NavigationLink(tag: 4, selection: self.$selectedView, destination: { MangaListView() }) {
+                    NavigationLink(tag: "mangalist", selection: self.$selectedView, destination: { MangaListView() }) {
                         HStack {
                             Image(systemName: "list.bullet")
                                 .frame(width: 15)
@@ -50,7 +58,7 @@ struct ContentView: View {
                         }
                     }
                     
-                    NavigationLink(tag: 5, selection: self.$selectedView, destination: { MangaLocalLibraryView() }) {
+                    NavigationLink(tag: "mangalibrary", selection: self.$selectedView, destination: { MangaLocalLibraryView() }) {
                         HStack {
                             Image(systemName: "books.vertical")
                                 .frame(width: 15)
@@ -60,7 +68,7 @@ struct ContentView: View {
                 }
                 
                 Section("Novel") {
-                    NavigationLink(tag: 6, selection: self.$selectedView, destination: { NovelMenuView() }) {
+                    NavigationLink(tag: "novel", selection: self.$selectedView, destination: { NovelMenuView() }) {
                         HStack {
                             Image(systemName: "book")
                                 .frame(width: 15)
@@ -68,7 +76,7 @@ struct ContentView: View {
                         }
                     }
                     
-                    NavigationLink(tag: 7, selection: self.$selectedView, destination: { NovelListView() }) {
+                    NavigationLink(tag: "novellist", selection: self.$selectedView, destination: { NovelListView() }) {
                         HStack {
                             Image(systemName: "list.bullet")
                                 .frame(width: 15)
@@ -78,9 +86,6 @@ struct ContentView: View {
                 }
             }
             .listStyle(.sidebar)
-            .onAppear {
-                self.selectedView = 1
-            }
             .toolbar {
                 ToolbarItem(placement: .navigation) {
                     Button(action: toggleSidebar, label: {
@@ -104,19 +109,9 @@ struct MediaColumnElementView: View {
     
     var body: some View {
         HStack {
-            CachedAsyncImage(url: imageUrl) { image in
-                image
-                    .resizable()
-                    .scaledToFit()
-                    .cornerRadius(5)
-                    .frame(width: 75)
-                    .clipped()
-                    .shadow(radius: 2, x: 2, y: 2)
-            } placeholder: {
-                ProgressView()
-                    .frame(width: 75)
-            }
-                        
+            StyledImage(imageUrl: imageUrl)
+                .frame(width: 75)
+
             VStack(alignment: .leading) {
                 Text(title ?? "No title")
                     .font(.title3)
@@ -135,6 +130,23 @@ struct MediaColumnElementView: View {
         .frame(height: 100)
         .contentShape(Rectangle())
         .padding(.vertical, 2)
+    }
+}
+
+struct StyledImage: View {
+    var imageUrl: URL?
+    
+    var body: some View {
+        CachedAsyncImage(url: imageUrl) { image in
+            image
+                .resizable()
+                .scaledToFit()
+                .cornerRadius(5)
+                .clipped()
+                .shadow(radius: 2, x: 2, y: 2)
+        } placeholder: {
+            ProgressView()
+        }
     }
 }
 

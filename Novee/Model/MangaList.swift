@@ -8,6 +8,8 @@
 import Foundation
 
 struct MangaListElement: MediaListElement, Hashable, Identifiable, Codable {
+    let type: MediaType = .manga
+    
     let id = UUID()
     
     var content: [String: Manga] /// Manga from different sources

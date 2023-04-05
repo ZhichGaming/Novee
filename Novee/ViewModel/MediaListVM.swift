@@ -71,7 +71,7 @@ class MediaListVM<T: MediaListElement>: ObservableObject {
         }
     }
 
-    func updateMediaInListElement(id: UUID, source: String, media: T.MediaType) {
+    func updateMediaInListElement(id: UUID, source: String, media: T.AssociatedMediaType) {
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index].content[source] = media
         } else {
@@ -165,9 +165,9 @@ class MediaListVM<T: MediaListElement>: ObservableObject {
         }
     }
 
-    func getLatestMedia() -> T? {
-        let latest = list.sorted(by: { $0.creationDate < $1.creationDate }).last
+    func getLatestMedia(_ length: Int = 10) -> [T] {
+        let sorted = list.sorted(by: { $0.creationDate < $1.creationDate })
 
-        return latest
+        return sorted.suffix(length)
     }
 }

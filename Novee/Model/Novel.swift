@@ -21,6 +21,18 @@ struct Novel: Media, Hashable, Identifiable, Codable {
     var detailsUrl: URL?
     var imageUrl: URL?
     var segments: [NovelChapter]?
+    
+    enum CodingKeys: CodingKey {
+        case id
+        case title
+        case altTitles
+        case description
+        case authors
+        case tags
+        case detailsUrl
+        case imageUrl
+        case segments
+    }
 }
 
 struct NovelTag: Hashable, Identifiable, Codable {

@@ -8,6 +8,8 @@
 import Foundation
 
 struct AnimeListElement: MediaListElement, Hashable, Identifiable, Codable {
+    let type: MediaType = .anime
+    
     let id = UUID()
     
     var content: [String: Anime] /// Anime from different sources

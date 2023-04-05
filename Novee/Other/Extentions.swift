@@ -70,6 +70,19 @@ extension Status {
     }
 }
 
+extension MediaType {
+    func getColor() -> Color {
+        switch self {
+        case .anime:
+            return .orange
+        case .manga:
+            return .indigo
+        case .novel:
+            return .pink
+        }
+    }
+}
+
 extension NSImage {
     func pngData() -> Data? {
         if let tiffRepresentation = self.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) {

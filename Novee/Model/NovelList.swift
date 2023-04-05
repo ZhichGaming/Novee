@@ -8,6 +8,8 @@
 import Foundation
 
 struct NovelListElement: MediaListElement, Hashable, Identifiable, Codable {
+    let type: MediaType = .novel
+    
     let id = UUID()
     
     var content: [String: Novel] /// Novel from different sources

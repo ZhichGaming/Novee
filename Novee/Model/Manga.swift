@@ -23,6 +23,18 @@ struct Manga: Media, Hashable, Identifiable, Codable {
     var detailsUrl: URL?
     var imageUrl: URL?
     var segments: [Chapter]?
+    
+    enum CodingKeys: CodingKey {
+        case id
+        case title
+        case altTitles
+        case description
+        case authors
+        case tags
+        case detailsUrl
+        case imageUrl
+        case segments
+    }
 }
 
 struct MangaTag: Hashable, Identifiable, Codable {
