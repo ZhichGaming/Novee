@@ -151,7 +151,7 @@ class AsuraScans: MangaFetcher, MangaSource {
             
             if let tagsElement = try infoElement.child(1).children().array().first(where: { try $0.text().hasPrefix("Genres") }) {
                 result?.tags = try tagsElement.child(1).children().array().map {
-                        try MangaTag(name: $0.text(), url: URL(string: $0.attr("href")))
+                        try MediaTag(name: $0.text(), url: URL(string: $0.attr("href")))
                     }
             }
             
@@ -188,7 +188,6 @@ class AsuraScans: MangaFetcher, MangaSource {
             }
 
             result?.segments = chapters.reversed()
-            result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
         }

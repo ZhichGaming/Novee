@@ -50,6 +50,14 @@ class MediaListVM<T: MediaListElement>: ObservableObject {
             Log.shared.error(error)
         }
     }
+    
+    func addToList(source: String, media: T.AssociatedMediaType, lastSegment: String? = nil, status: Status, rating: Rating = .none, creationDate: Date = Date.now, lastViewedDate: Date? = nil) {
+        list.append(T(content: [source: media], lastSegment: lastSegment, status: status, rating: rating, lastViewedDate: lastViewedDate, creationDate: creationDate))
+    }
+    
+    func addToList(medias: [String: T.AssociatedMediaType], lastSegment: String? = nil, status: Status, rating: Rating = .none, creationDate: Date = Date.now, lastViewedDate: Date? = nil) {
+        list.append(T(content: medias, lastSegment: lastSegment, status: status, rating: rating, lastViewedDate: lastViewedDate, creationDate: creationDate))
+    }
 
     func removeFromList(id: UUID) {
         if let index = list.firstIndex(where: { $0.id == id }) {

@@ -42,4 +42,6 @@ protocol MediaListElement: Hashable, Codable, Identifiable {
     var rating: Rating { get set }
     var lastViewedDate: Date? { get set }
     var creationDate: Date { get set }
+    
+    init(content: [String: AssociatedMediaType], lastSegment: String?, status: Status, rating: Rating, lastViewedDate: Date?, creationDate: Date)
 }

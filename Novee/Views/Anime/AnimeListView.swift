@@ -192,7 +192,7 @@ struct AnimeListView: View {
                             AnimeListDetailsSheetView(passedAnime: animeListElement)
                         }
                         .navigationDestination(for: Anime.self) { anime in
-                            AnimeDetailsView(selectedAnime: anime)
+                            AnimeDetailsView(anime: anime)
                         }
                     }
                     .sheet(isPresented: $showingAddNewAnimeSheet) {
@@ -699,8 +699,6 @@ struct AnimeListAddNewToListView: View {
                                     .fill(.red)
                                     .frame(width: 5, height: 5)
                                 Text("Fetching failed!")
-                            case .notFound:
-                                EmptyView()
                             }
                         }
                     }
@@ -731,7 +729,7 @@ struct AnimeListAddNewToListView: View {
                         }
                         
                         animeListVM.addToList(
-                            animes: animes,
+                            medias: animes,
                             lastSegment: lastSegmentTitle,
                             status: selectedStatus,
                             rating: selectedRating,
@@ -756,15 +754,11 @@ struct AnimeListAddNewToListView: View {
             searchState = .loading
             
             if let initialAnime = await source.getSearchAnime(pageNumber: 1, searchQuery: storyTitle).first {
-                await animeVM.getAnimeDetails(for: initialAnime, source: source.sourceId) { result in
-                    if let result = result {
-                        animeElements.append(AnimeWithSource(source: source.sourceId, anime: result))
-                        searchState = .success
-                        
-                        return
-                    } else {
-                        searchState = .failed
-                    }
+                if let result = await animeVM.getAnimeDetails(for: initialAnime, source: source.sourceId) {
+                    animeElements.append(AnimeWithSource(source: source.sourceId, anime: result))
+                    searchState = .success
+                } else {
+                    searchState = .failed
                 }
             } else {
                 searchState = .failed

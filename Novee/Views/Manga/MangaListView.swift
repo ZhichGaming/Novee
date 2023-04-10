@@ -189,7 +189,7 @@ struct MangaListView: View {
                             MangaListDetailsSheetView(passedManga: mangaListElement)
                         }
                         .navigationDestination(for: Manga.self) { manga in
-                            MangaDetailsView(selectedManga: manga)
+                            MangaDetailsView(manga: manga)
                         }
                     }
                     .sheet(isPresented: $showingAddNewMangaSheet) {
@@ -695,8 +695,6 @@ struct MangaListAddNewToListView: View {
                                     .fill(.red)
                                     .frame(width: 5, height: 5)
                                 Text("Fetching failed!")
-                            case .notFound:
-                                EmptyView()
                             }
                         }
                     }
@@ -727,7 +725,7 @@ struct MangaListAddNewToListView: View {
                         }
                         
                         mangaListVM.addToList(
-                            mangas: mangas,
+                            medias: mangas,
                             lastSegment: lastSegmentTitle,
                             status: selectedMangaStatus,
                             rating: selectedMangaRating,
@@ -752,15 +750,13 @@ struct MangaListAddNewToListView: View {
             searchState = .loading
                         
             if let initialManga = await source.getSearchManga(pageNumber: 1, searchQuery: storyTitle).first {
-                await mangaVM.getMangaDetails(for: initialManga, source: source.sourceId) { result in
-                    if let result = result {
-                        mangaElements.append(MangaWithSource(source: source.sourceId, manga: result))
-                        searchState = .success
-                        
-                        return
-                    } else {
-                        searchState = .failed
-                    }
+                if let result = await mangaVM.getMangaDetails(for: initialManga, source: source.sourceId) {
+                    mangaElements.append(MangaWithSource(source: source.sourceId, manga: result))
+                    searchState = .success
+                    
+                    return
+                } else {
+                    searchState = .failed
                 }
             } else {
                 searchState = .failed

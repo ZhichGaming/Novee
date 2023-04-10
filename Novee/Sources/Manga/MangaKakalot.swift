@@ -158,7 +158,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
                 .replacingOccurrences(of: "Author(s) : ", with: "")
                 .components(separatedBy: ", ")
             result?.tags = try tags.map { tag in
-                try MangaTag(name: tag.text(), url: URL(string: tag.attr("href")))
+                try MediaTag(name: tag.text(), url: URL(string: tag.attr("href")))
             }
             
             var chapters: [Chapter] = []
@@ -178,7 +178,6 @@ class MangaKakalot: MangaFetcher, MangaSource {
             }
 
             result?.segments = chapters.reversed()
-            result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
         }

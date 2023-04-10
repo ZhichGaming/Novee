@@ -160,7 +160,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
                 .children()
                 .select("a")
                 .map {
-                    try NovelTag(name: $0.text(), url: URL(string: $0.attr("href")))
+                    try MediaTag(name: $0.text(), url: URL(string: $0.attr("href")))
                 }
                         
             var chapters: [NovelChapter] = []
@@ -182,7 +182,6 @@ class ReadLightNovels: NovelFetcher, NovelSource {
             }
             
             result?.segments = chapters
-            result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
         }

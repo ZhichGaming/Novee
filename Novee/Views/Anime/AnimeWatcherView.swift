@@ -116,14 +116,12 @@ struct AnimeWatcherView: View {
                 ProgressView()
                     .onAppear {
                         Task {
-                            await animeVM.getStreamingUrl(for: selectedEpisode, anime: selectedAnime) { newEpisode in
-                                if let newEpisode = newEpisode {
-                                    selectedEpisode = newEpisode
-                                    
-                                    if let url = getStreamingUrl()?.url {
-                                        player = AVPlayer(url: url)
-                                        streamingUrl = url
-                                    }
+                            if let newEpisode = await animeVM.getStreamingUrl(for: selectedEpisode, anime: selectedAnime) {
+                                selectedEpisode = newEpisode
+                                
+                                if let url = getStreamingUrl()?.url {
+                                    player = AVPlayer(url: url)
+                                    streamingUrl = url
                                 }
                             }
                         }
@@ -206,7 +204,9 @@ struct AnimeWatcherView: View {
             }
         }
         .sheet(isPresented: $showingCustomizedAddToListSheet) {
-            AnimeWatcherAddToListView(anime: selectedAnime, episode: selectedEpisode)
+            AddToListView(media: selectedAnime, segment: selectedEpisode)
+                .environmentObject(animeVM as MediaVM<Anime>)
+                .environmentObject(animeListVM as MediaListVM<AnimeListElement>)
         }
         .navigationTitle(selectedEpisode.title)
         .systemNotification(notification)
@@ -288,7 +288,7 @@ struct AnimeWatcherView: View {
                     Button {
                         animeListVM.addToList(
                             source: animeVM.selectedSource,
-                            anime: selectedAnime,
+                            media: selectedAnime,
                             lastSegment: selectedEpisode.title,
                             status: .viewing,
                             rating: .none,
@@ -375,159 +375,6 @@ struct AnimeWatcherView: View {
     private func seekToResumeTime() {
         if let resumeTime = selectedEpisode.resumeTime {
             self.player?.seek(to: CMTime(seconds: resumeTime, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))
-        }
-    }
-}
-
-struct AnimeWatcherAddToListView: View {
-    @EnvironmentObject var animeVM: AnimeVM
-    @EnvironmentObject var animeListVM: AnimeListVM
-
-    @Environment(\.dismiss) var dismiss
-
-    let anime: Anime
-    var episode: Episode? = nil
-    
-    @State private var selectedStatus: Status = .viewing
-    @State private var selectedRating: Rating = .none
-    @State private var selectedLastEpisode: UUID = UUID()
-    
-    @State private var selectedAnimeListElement: AnimeListElement?
-    
-    @State private var createNewEntry = false
-    
-    @State private var selectedListItem = UUID()
-    @State private var showingFindManuallyPopup = false
-    
-    var body: some View {
-        HStack {
-            VStack {
-                Button("Add new entry") {
-                    selectedAnimeListElement = AnimeListElement(content: [:], status: .viewing, rating: .none, creationDate: Date.now)
-                    createNewEntry = true
-                }
-
-                Button("Find manually") {
-                    showingFindManuallyPopup = true
-                }
-                .popover(isPresented: $showingFindManuallyPopup) {
-                    VStack {
-                        List(animeListVM.list.sorted { $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
-                            Text(item.content.first?.value.title ?? "No title")
-                                .tag(item.id)
-                        }
-                        .listStyle(.bordered(alternatesRowBackgrounds: true))
-
-                        Text("Type in the list to search.")
-
-                        HStack {
-                            Spacer()
-
-                            Button("Cancel") { showingFindManuallyPopup = false }
-                            Button("Select") {
-                                selectedAnimeListElement = animeListVM.list.first(where: { $0.id == selectedListItem })
-                                showingFindManuallyPopup = false
-                            }
-                            .disabled(!animeListVM.list.contains { $0.id == selectedListItem })
-                        }
-                    }
-                    .frame(width: 400, height: 300)
-                    .padding()
-                }
-
-                Spacer()
-                Text(animeListVM.findInList(media: anime)?.content.first?.value.title ?? "Anime not found")
-
-                if let url = animeListVM.findInList(media: anime)?.content.first?.value.imageUrl {
-                    CachedAsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                }
-
-                Spacer()
-            }
-
-            Divider()
-                .padding(.horizontal)
-
-            VStack {
-                Text("Anime options")
-
-                Group {
-                    Picker("Status", selection: $selectedStatus) {
-                        ForEach(Status.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-
-                    Picker("Rating", selection: $selectedRating) {
-                        ForEach(Rating.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-
-                    Picker("Last episode", selection: $selectedLastEpisode) {
-                        ForEach(anime.segments ?? []) {
-                            Text($0.title)
-                                .tag($0.id)
-                        }
-                    }
-                }
-                .disabled(selectedAnimeListElement == nil)
-
-                HStack {
-                    Spacer()
-                    Button("Cancel", role: .cancel) {
-                        dismiss()
-                    }
-
-                    Button(createNewEntry ? "Add to list" : "Save") {
-                        if createNewEntry {
-                            animeListVM.addToList(
-                                source: animeVM.selectedSource,
-                                anime: anime,
-                                lastSegment: anime.segments?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
-                                status: selectedStatus,
-                                rating: selectedRating,
-                                lastViewedDate: Date.now
-                            )
-                        } else {
-                            animeListVM.updateListEntry(
-                                id: selectedAnimeListElement!.id,
-                                newValue: AnimeListElement(
-                                    content: [animeVM.selectedSource: anime],
-                                    lastSegment: anime.segments?.first { $0.id == selectedLastEpisode }?.title ?? episode?.title,
-                                    status: selectedStatus,
-                                    rating: selectedRating,
-                                    lastViewedDate: Date.now,
-                                    creationDate: Date.now
-                                )
-                            )
-                        }
-
-                        dismiss()
-                    }
-                    .disabled(selectedAnimeListElement == nil)
-                }
-            }
-        }
-        .padding()
-        .onAppear {
-            selectedAnimeListElement = animeListVM.findInList(media: anime)
-        }
-        .onChange(of: selectedAnimeListElement) { _ in
-            if let selectedAnimeListElement = selectedAnimeListElement {
-                selectedStatus = selectedAnimeListElement.status
-                selectedRating = selectedAnimeListElement.rating
-                
-                selectedLastEpisode = anime.segments?.first { $0.title == selectedAnimeListElement.lastSegment }?.id ?? UUID()
-            }
         }
     }
 }

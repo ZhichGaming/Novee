@@ -9,16 +9,16 @@ import Foundation
 import CoreMedia
 
 struct Anime: Media, Hashable, Identifiable, Codable {
+    typealias MediaListElementType = AnimeListElement
+    
     var id = UUID()
     
     var title: String?
     var altTitles: [String]?
     var description: String?
     var authors: [String]?
-    var tags: [AnimeTag]?
-    
-    var detailsLoadingState: LoadingState = .loading
-    
+    var tags: [MediaTag]?
+        
     var detailsUrl: URL?
     var imageUrl: URL?
     var segments: [Episode]?
@@ -34,13 +34,6 @@ struct Anime: Media, Hashable, Identifiable, Codable {
         case imageUrl
         case segments
     }
-}
-
-struct AnimeTag: Hashable, Identifiable, Codable {
-    var id = UUID()
-    
-    var name: String
-    var url: URL?
 }
 
 struct Episode: MediaSegment, Hashable, Identifiable, Codable {

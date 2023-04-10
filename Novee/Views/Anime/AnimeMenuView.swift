@@ -115,19 +115,20 @@ struct AnimeColumnView: View {
     @EnvironmentObject var animeVM: AnimeVM
     
     @Binding var selectedSource: String
-
+    
     var body: some View {
         VStack {
             List(animeVM.sources[selectedSource]!.animeData) { anime in
                 NavigationLink {
-                    AnimeDetailsView(selectedAnime: anime)
+                    AnimeDetailsView(anime: anime)
                 } label: {
                     MediaColumnElementView(
                         imageUrl: anime.imageUrl,
                         title: anime.title,
-                        installmentTitles: anime.segments?.map { $0.title })
+                        segmentTitles: anime.segments?.map { $0.title })
                 }
             }
+            .listStyle(.plain)
 //        } else if mangaVM.mangadexResponse == nil {
 //            let _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
 //                showingReload = true
@@ -140,6 +141,54 @@ struct AnimeColumnView: View {
 //            }
         }
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct AnimeDetailsView: View {
+    @EnvironmentObject var animeVM: AnimeVM
+    @EnvironmentObject var animeListVM: AnimeListVM
+    
+    var anime: Anime
+    
+    var isDownloading: Bool {
+        animeVM.episodeDownloadProgress != nil
+    }
+    
+    var downloadProgress: Double? {
+        animeVM.episodeDownloadProgress?.progress
+    }
+    
+    var downloadTotal: Double? {
+        animeVM.episodeDownloadProgress?.total
+    }
+    
+    var body: some View {
+        MediaDetailsView(selectedMedia: anime, fetchDetails: { () -> Anime? in
+            return await animeVM.getAnimeDetails(for: anime)
+        }, updateMediaInList: { newMedia in
+            if let animeListElement = animeListVM.findInList(media: newMedia) {
+                animeListVM.updateMediaInListElement(
+                    id: animeListElement.id,
+                    source: animeVM.selectedSource,
+                    media: newMedia
+                )
+            }
+        }, resetDownloadProgress: {
+            animeVM.resetEpisodeDownloadProgress()
+        }, downloadSegment: { segment in
+            Task {
+                var streamingUrl: StreamingUrl?
+                
+                let newEpisode = await animeVM.getStreamingUrl(for: segment, anime: anime)
+                streamingUrl = newEpisode?.streamingUrls?.last
+                
+                if let streamingUrl = streamingUrl {
+                    await animeVM.downloadEpisode(for: streamingUrl, anime: anime)
+                }
+            }
+        }, isDownloading: isDownloading, downloadProgress: downloadProgress, downloadTotal: downloadTotal)
+        .environmentObject(animeVM as MediaVM<Anime>)
+        .environmentObject(animeListVM as MediaListVM<AnimeListElement>)
     }
 }
 

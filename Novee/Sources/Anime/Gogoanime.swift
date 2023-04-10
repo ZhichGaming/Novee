@@ -97,11 +97,11 @@ class Gogoanime: AnimeFetcher, AnimeSource {
             
             let newAnime = try JSONDecoder().decode(GogoanimeDetailsApi.self, from: data)
             
-            var result: Anime? = Anime(
+            let result: Anime? = Anime(
                 title: newAnime.title,
                 altTitles: newAnime.otherName != nil ? [newAnime.otherName!] : nil,
                 description: newAnime.description,
-                tags: newAnime.genres?.map { AnimeTag(name: $0) },
+                tags: newAnime.genres?.map { MediaTag(name: $0) },
                 detailsUrl: anime.detailsUrl,
                 imageUrl: URL(string: newAnime.image ?? ""),
                 segments: newAnime.episodes?.map { Episode(
@@ -109,7 +109,6 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                     segmentUrl: URL(string: $0.url)!,
                     episodeId: $0.id)
                 })
-            result?.detailsLoadingState = .success
             
             return result
         } catch {

@@ -7,6 +7,11 @@
 
 import Foundation
 
-class MediaVM: ObservableObject {
-    static var shared = MediaVM()
+class MediaVM<T: Media>: ObservableObject {
+    init(selectedSource: String) {
+        self.selectedSource = selectedSource
+    }
+    
+    @Published var selectedSource: String
+    @Published var pageNumber = 1
 }

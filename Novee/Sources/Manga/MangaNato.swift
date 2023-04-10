@@ -158,7 +158,7 @@ class MangaNato: MangaFetcher, MangaSource {
             
             if let tags = tags {
                 result?.tags = try tags.map { tag in
-                    try MangaTag(name: tag.text(), url: URL(string: tag.attr("href")))
+                    try MediaTag(name: tag.text(), url: URL(string: tag.attr("href")))
                 }
             } else {
                 print("Could not find tags")
@@ -179,7 +179,6 @@ class MangaNato: MangaFetcher, MangaSource {
             }
 
             result?.segments = chapters.reversed()
-            result?.detailsLoadingState = .success
         } catch {
             Log.shared.error(error)
         }

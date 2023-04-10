@@ -104,7 +104,9 @@ struct NovelReaderView: View {
                             Text("Reading options")
                         }
 
-                    NovelReaderAddToListView(novel: novel, chapter: chapter)
+                    AddToListView(media: novel, segment: chapter)
+                        .environmentObject(novelVM as MediaVM<Novel>)
+                        .environmentObject(novelListVM as MediaListVM<NovelListElement>)
                         .tabItem {
                             Text("Novel list")
                         }
@@ -114,54 +116,9 @@ struct NovelReaderView: View {
             .padding()
         }
         .sheet(isPresented: $showingCustomizedAddToListSheet) {
-            VStack {
-                Text(novel.title ?? "No title")
-                    .font(.headline)
-
-                Group {
-                    Picker("Status", selection: $selectedNovelStatus) {
-                        ForEach(Status.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-
-                    Picker("Rating", selection: $selectedNovelRating) {
-                        ForEach(Rating.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-
-                    Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(novel.segments ?? []) {
-                            Text($0.title)
-                                .tag($0.id)
-                        }
-                    }
-                }
-
-                HStack {
-                    Spacer()
-                    Button("Cancel", role: .cancel) {
-                        showingCustomizedAddToListSheet = false
-                    }
-
-                    Button("Add to list") {
-                        novelListVM.addToList(
-                            source: novelVM.selectedSource,
-                            novel: novel,
-                            lastSegment: novel.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
-                            status: selectedNovelStatus,
-                            rating: selectedNovelRating,
-                            lastViewedDate: Date.now
-                        )
-
-                        showingCustomizedAddToListSheet = false
-                    }
-                }
-            }
-            .padding()
+            AddToListView(media: novel, segment: chapter)
+                .environmentObject(novelVM as MediaVM<Novel>)
+                .environmentObject(novelListVM as MediaListVM<NovelListElement>)
         }
         .toolbar {
             // Some toolbar items to change chapter
@@ -270,7 +227,7 @@ struct NovelReaderView: View {
                     Button {
                         novelListVM.addToList(
                             source: novelVM.selectedSource,
-                            novel: novel,
+                            media: novel,
                             lastSegment: chapter.title,
                             status: .viewing,
                             rating: .none,
@@ -345,158 +302,5 @@ struct NovelReaderDetailsView: View {
             
         }
         .padding()
-    }
-}
-
-struct NovelReaderAddToListView: View {
-    @EnvironmentObject var novelVM: NovelVM
-    @EnvironmentObject var novelListVM: NovelListVM
-
-    @Environment(\.dismiss) var dismiss
-
-    let novel: Novel
-    var chapter: NovelChapter? = nil
-    
-    @State private var selectedNovelStatus: Status = .viewing
-    @State private var selectedNovelRating: Rating = .none
-    @State private var selectedLastChapter: UUID = UUID()
-    
-    @State private var selectedNovelListElement: NovelListElement?
-    
-    @State private var createNewEntry = false
-    
-    @State private var selectedListItem = UUID()
-    @State private var showingFindManuallyPopup = false
-    
-    var body: some View {
-        HStack {
-            VStack {
-                Button("Add new entry") {
-                    selectedNovelListElement = NovelListElement(content: [:], status: .viewing, rating: .none, creationDate: Date.now)
-                    createNewEntry = true
-                }
-                                        
-                Button("Find manually") {
-                    showingFindManuallyPopup = true
-                }
-                .popover(isPresented: $showingFindManuallyPopup) {
-                    VStack {
-                        List(novelListVM.list.sorted { $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
-                            Text(item.content.first?.value.title ?? "No title")
-                                .tag(item.id)
-                        }
-                        .listStyle(.bordered(alternatesRowBackgrounds: true))
-                        
-                        Text("Type in the list to search.")
-                        
-                        HStack {
-                            Spacer()
-                            
-                            Button("Cancel") { showingFindManuallyPopup = false }
-                            Button("Select") {
-                                selectedNovelListElement = novelListVM.list.first(where: { $0.id == selectedListItem })
-                                showingFindManuallyPopup = false
-                            }
-                            .disabled(!novelListVM.list.contains { $0.id == selectedListItem })
-                        }
-                    }
-                    .frame(width: 400, height: 300)
-                    .padding()
-                }
-                
-                Spacer()
-                Text(novelListVM.findInList(media: novel)?.content.first?.value.title ?? "Novel not found")
-                
-                if let url = novelListVM.findInList(media: novel)?.content.first?.value.imageUrl {
-                    CachedAsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                }
-                
-                Spacer()
-            }
-            
-            Divider()
-                .padding(.horizontal)
-            
-            VStack {
-                Text("Novel options")
-
-                Group {
-                    Picker("Status", selection: $selectedNovelStatus) {
-                        ForEach(Status.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-                    
-                    Picker("Rating", selection: $selectedNovelRating) {
-                        ForEach(Rating.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-                    
-                    Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(novel.segments ?? []) {
-                            Text($0.title)
-                                .tag($0.id)
-                        }
-                    }
-                }
-                .disabled(selectedNovelListElement == nil)
-                
-                HStack {
-                    Spacer()
-                    Button("Cancel", role: .cancel) {
-                        dismiss()
-                    }
-                    
-                    Button(createNewEntry ? "Add to list" : "Save") {
-                        if createNewEntry {
-                            novelListVM.addToList(
-                                source: novelVM.selectedSource,
-                                novel: novel,
-                                lastSegment: novel.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
-                                status: selectedNovelStatus,
-                                rating: selectedNovelRating,
-                                lastViewedDate: Date.now
-                            )
-                        } else {
-                            novelListVM.updateListEntry(
-                                id: selectedNovelListElement!.id,
-                                newValue: NovelListElement(
-                                    content: [novelVM.selectedSource: novel],
-                                    lastSegment: novel.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
-                                    status: selectedNovelStatus,
-                                    rating: selectedNovelRating,
-                                    lastViewedDate: Date.now,
-                                    creationDate: Date.now
-                                )
-                            )
-                        }
-                        
-                        dismiss()
-                    }
-                    .disabled(selectedNovelListElement == nil)
-                }
-            }
-        }
-        .padding()
-        .onAppear {
-            selectedNovelListElement = novelListVM.findInList(media: novel)
-        }
-        .onChange(of: selectedNovelListElement) { _ in
-            if let selectedNovelListElement = selectedNovelListElement {
-                selectedNovelStatus = selectedNovelListElement.status
-                selectedNovelRating = selectedNovelListElement.rating
-                
-                selectedLastChapter = novel.segments?.first { $0.title == selectedNovelListElement.lastSegment }?.id ?? UUID()
-            }
-        }
     }
 }

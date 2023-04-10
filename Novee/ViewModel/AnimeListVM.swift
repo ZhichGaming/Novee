@@ -14,14 +14,6 @@ class AnimeListVM: MediaListVM<AnimeListElement> {
         super.init(savePath: URL.animeListStorageUrl.path)
     }
     
-    func addToList(source: String, anime: Anime, lastSegment: String? = nil, status: Status, rating: Rating = .none, creationDate: Date = Date.now, lastViewedDate: Date? = nil) {
-        list.append(AnimeListElement(content: [source: anime], lastSegment: lastSegment, status: status, rating: rating, lastViewedDate: lastViewedDate, creationDate: creationDate))
-    }
-    
-    func addToList(animes: [String: Anime], lastSegment: String? = nil, status: Status, rating: Rating = .none, creationDate: Date = Date.now, lastViewedDate: Date? = nil) {
-        list.append(AnimeListElement(content: animes, lastSegment: lastSegment, status: status, rating: rating, lastViewedDate: lastViewedDate, creationDate: creationDate))
-    }
-    
     func findEpisodeInList(anime: Anime, episode: Episode) -> Episode? {
         let animeListElement = findInList(media: anime)
         

@@ -189,7 +189,7 @@ struct NovelListView: View {
                             NovelListDetailsSheetView(passedNovel: novelListElement)
                         }
                         .navigationDestination(for: Novel.self) { novel in
-                            NovelDetailsView(selectedNovel: novel)
+                            NovelDetailsView(novel: novel)
                         }
                     }
                     .sheet(isPresented: $showingAddNewNovelSheet) {
@@ -695,8 +695,6 @@ struct NovelListAddNewToListView: View {
                                     .fill(.red)
                                     .frame(width: 5, height: 5)
                                 Text("Fetching failed!")
-                            case .notFound:
-                                EmptyView()
                             }
                         }
                     }
@@ -727,7 +725,7 @@ struct NovelListAddNewToListView: View {
                         }
                         
                         novelListVM.addToList(
-                            novels: novels,
+                            medias: novels,
                             lastSegment: lastSegmentTitle,
                             status: selectedNovelStatus,
                             rating: selectedNovelRating,
@@ -752,15 +750,13 @@ struct NovelListAddNewToListView: View {
             searchState = .loading
                         
             if let initialNovel = await source.getSearchNovel(pageNumber: 1, searchQuery: storyTitle).first {
-                await novelVM.getNovelDetails(for: initialNovel, source: source.sourceId) { result in
-                    if let result = result {
-                        novelElements.append(NovelWithSource(source: source.sourceId, novel: result))
-                        searchState = .success
-                        
-                        return
-                    } else {
-                        searchState = .failed
-                    }
+                if let result = await novelVM.getNovelDetails(for: initialNovel, source: source.sourceId) {
+                    novelElements.append(NovelWithSource(source: source.sourceId, novel: result))
+                    searchState = .success
+                    
+                    return
+                } else {
+                    searchState = .failed
                 }
             } else {
                 searchState = .failed

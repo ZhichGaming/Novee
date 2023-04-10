@@ -13,12 +13,4 @@ class NovelListVM: MediaListVM<NovelListElement> {
     init() {
         super.init(savePath: URL.novelListStorageUrl.path)
     }
-    
-    func addToList(source: String, novel: Novel, lastSegment: String? = nil, status: Status, rating: Rating = .none, creationDate: Date = Date.now, lastViewedDate: Date? = nil) {
-        list.append(NovelListElement(content: [source: novel], lastSegment: lastSegment, status: status, rating: rating, lastViewedDate: lastViewedDate, creationDate: creationDate))
-    }
-    
-    func addToList(novels: [String: Novel], lastSegment: String? = nil, status: Status, rating: Rating = .none, creationDate: Date = Date.now, lastViewedDate: Date? = nil) {
-        list.append(NovelListElement(content: novels, lastSegment: lastSegment, status: status, rating: rating, lastViewedDate: lastViewedDate, creationDate: creationDate))
-    }
 }

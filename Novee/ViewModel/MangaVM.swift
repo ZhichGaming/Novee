@@ -8,10 +8,12 @@
 import Foundation
 import SwiftUI
 
-class MangaVM: ObservableObject {
+class MangaVM: MediaVM<Manga> {
     static let shared = MangaVM()
     
     init() {
+        super.init(selectedSource: "mangakakalot")
+        
         sources[mangakakalot.sourceId] = mangakakalot
         sources[manganato.sourceId] = manganato
         sources[chapmanganato.sourceId] = chapmanganato
@@ -19,8 +21,6 @@ class MangaVM: ObservableObject {
     }
 
     @Published var sources: [String: any MangaSource] = [:]
-    @Published var selectedSource = "mangakakalot"
-    @Published var pageNumber = 1
     
     @Published var chapterDownloadProgress: ChapterDownloadProgress? = nil
 
@@ -48,38 +48,15 @@ class MangaVM: ObservableObject {
         return nil
     }
     
-    func getMangaDetails(for manga: Manga) async {
+    @discardableResult
+    func getMangaDetails(for manga: Manga) async -> Manga? {
         let mangaIndex = (sources[selectedSource]?.mangaData.firstIndex(of: manga))!
         let finalUrl = sources[selectedSource]?.mangaData[mangaIndex].detailsUrl?.getFinalURL()
 
-        DispatchQueue.main.async { [self] in
+        let continuation = await withCheckedContinuation { continuation in
             if sources[selectedSource]?.baseUrl.contains(finalUrl?.host ?? "") == true {
                 Task {
-                    await sources[selectedSource]!.getMangaDetails(manga: manga)
-                }
-                return
-            }
-            
-            for source in sourcesArray {
-                if source.baseUrl.contains(finalUrl?.host ?? "") == true {
-                    Task {
-                        await sources[source.sourceId]!.getMangaDetails(manga: manga)
-                    }
-                    break
-                } else if source.sourceId == sourcesArray.last?.sourceId {
-                    sources[selectedSource]?.mangaData[mangaIndex].detailsLoadingState = .notFound
-                }
-            }
-        }
-    }
-    
-    func getMangaDetails(for manga: Manga, source: String, result: @escaping (Manga?) -> Void) async {
-        let finalUrl = manga.detailsUrl?.getFinalURL()
-        
-        DispatchQueue.main.async { [self] in
-            if sources[source]?.baseUrl.contains(finalUrl?.host ?? "") == true {
-                Task {
-                    result(await sources[source]!.getMangaDetails(manga: manga))
+                    continuation.resume(returning: await sources[selectedSource]!.getMangaDetails(manga: manga))
                 }
                 
                 return
@@ -88,37 +65,55 @@ class MangaVM: ObservableObject {
             for source in sourcesArray {
                 if source.baseUrl.contains(finalUrl?.host ?? "") == true {
                     Task {
-                        result(await sources[source.sourceId]!.getMangaDetails(manga: manga))
+                        continuation.resume(returning: await sources[source.sourceId]!.getMangaDetails(manga: manga))
                     }
                     
                     break
                 }
             }
         }
+        
+        return continuation
+    }
+    
+    @discardableResult
+    func getMangaDetails(for manga: Manga, source: String) async -> Manga? {
+        let finalUrl = manga.detailsUrl?.getFinalURL()
+        
+        let continuation = await withCheckedContinuation { continuation in
+            if sources[source]?.baseUrl.contains(finalUrl?.host ?? "") == true {
+                Task {
+                    continuation.resume(returning: await sources[source]!.getMangaDetails(manga: manga))
+                }
+                
+                return
+            }
+            
+            for source in sourcesArray {
+                if source.baseUrl.contains(finalUrl?.host ?? "") == true {
+                    Task {
+                        continuation.resume(returning: await sources[source.sourceId]!.getMangaDetails(manga: manga))
+                    }
+                    
+                    break
+                }
+            }
+        }
+        
+        return continuation
     }
     
     func getAllUpdatedMangaDetails(for oldSources: [String: Manga]) async -> [String: Manga] {
         var result = [String: Manga]()
-        let semaphore = DispatchGroup()
 
         for oldSource in oldSources {
             if let _ = sources[oldSource.key] {
-                semaphore.enter()
-                
-                await getMangaDetails(for: oldSource.value, source: oldSource.key) { newManga in
-                    if let newManga = newManga {
-                        result[oldSource.key] = newManga
-                    } else {
-                        result[oldSource.key] = oldSource.value
-                    }
-                    
-                    semaphore.leave()
+                if let newManga = await getMangaDetails(for: oldSource.value, source: oldSource.key) {
+                    result[oldSource.key] = newManga
+                } else {
+                    result[oldSource.key] = oldSource.value
                 }
             }
-        }
-        
-        DispatchQueue.global().sync {
-            semaphore.wait()
         }
         
         return result

@@ -253,3 +253,12 @@ extension Theme {
         fontName: "Calibri"
     )
 }
+
+extension Date {
+    func toString(style: DateFormatter.Style = .medium) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = style
+        
+        return formatter.string(from: self)
+    }
+}

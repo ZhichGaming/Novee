@@ -41,9 +41,9 @@ struct NoveeApp: App {
             }
         }
         
-        WindowGroup(for: AnimeEpisodePair.self) { $animeEpisode in
+        WindowGroup(for: MediaSegmentPair<Anime>.self) { $animeEpisode in
             if let animeEpisode = animeEpisode {
-                AnimeWatcherView(selectedAnime: animeEpisode.anime, selectedEpisode: animeEpisode.episode)
+                AnimeWatcherView(selectedAnime: animeEpisode.media, selectedEpisode: animeEpisode.segment)
                     .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
                     .environmentObject(AnimeVM.shared)
                     .environmentObject(AnimeListVM.shared)
@@ -52,9 +52,9 @@ struct NoveeApp: App {
         }
         .windowStyle(.titleBar)
         
-        WindowGroup(for: MangaChapterPair.self) { $mangaChapter in
+        WindowGroup(for: MediaSegmentPair<Manga>.self) { $mangaChapter in
             if let mangaChapter = mangaChapter {
-                MangaReaderView(manga: mangaChapter.manga, chapter: mangaChapter.chapter)
+                MangaReaderView(manga: mangaChapter.media, chapter: mangaChapter.segment)
                     .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
                     .environmentObject(MangaVM.shared)
                     .environmentObject(MangaListVM.shared)
@@ -64,9 +64,9 @@ struct NoveeApp: App {
         }
         .windowStyle(.titleBar)
         
-        WindowGroup(for: NovelChapterPair.self) { $novelChapter in
+        WindowGroup(for: MediaSegmentPair<Novel>.self) { $novelChapter in
             if let novelChapter = novelChapter {
-                NovelReaderView(novel: novelChapter.novel, chapter: novelChapter.chapter)
+                NovelReaderView(novel: novelChapter.media, chapter: novelChapter.segment)
                     .frame(minWidth: 200, maxWidth: .infinity, minHeight: 125, maxHeight: .infinity)
                     .environmentObject(NovelVM.shared)
                     .environmentObject(NovelListVM.shared)

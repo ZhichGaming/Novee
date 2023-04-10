@@ -7,10 +7,12 @@
 
 import Foundation
 
-class AnimeVM: ObservableObject {
+class AnimeVM: MediaVM<Anime> {
     static let shared = AnimeVM()
     
     init() {
+        super.init(selectedSource: "gogoanime")
+        
         sources[gogoanime.sourceId] = gogoanime
         
         if let resolution = UserDefaults.standard.string(forKey: "lastSelectedAnimeResolution") {
@@ -19,8 +21,6 @@ class AnimeVM: ObservableObject {
     }
 
     @Published var sources: [String: any AnimeSource] = [:]
-    @Published var selectedSource = "gogoanime"
-    @Published var pageNumber = 1
     @Published var lastSelectedResolution = "720p" {
         didSet {
             UserDefaults.standard.set(lastSelectedResolution, forKey: "lastSelectedAnimeResolution")
@@ -50,54 +50,39 @@ class AnimeVM: ObservableObject {
         return nil
     }
     
-    func getAnimeDetails(for anime: Anime) async {
-        DispatchQueue.main.async { [self] in
-            Task {
-                await sources[selectedSource]!.getAnimeDetails(anime: anime)
-            }
-            
-            return
-        }
+    @discardableResult
+    func getAnimeDetails(for anime: Anime) async -> Anime? {
+        await sources[selectedSource]!.getAnimeDetails(anime: anime)
     }
     
-    func getAnimeDetails(for anime: Anime, source: String, result: @escaping (Anime?) -> Void) async {
-        DispatchQueue.main.async { [self] in
-            Task {
-                result(await sources[source]!.getAnimeDetails(anime: anime))
-            }
-        }
+    @discardableResult
+    func getAnimeDetails(for anime: Anime, source: String) async -> Anime? {
+        await sources[source]!.getAnimeDetails(anime: anime)
     }
     
     func getAllUpdatedAnimeDetails(for oldSources: [String: Anime]) async -> [String: Anime] {
         var result = [String: Anime]()
-        let semaphore = DispatchGroup()
 
         for oldSource in oldSources {
             if let _ = sources[oldSource.key] {
-                semaphore.enter()
-                
-                await getAnimeDetails(for: oldSource.value, source: oldSource.key) { newAnime in
-                    if let newAnime = newAnime {
-                        result[oldSource.key] = newAnime
-                    } else {
-                        result[oldSource.key] = oldSource.value
-                    }
-                    
-                    semaphore.leave()
+                if let newAnime = await getAnimeDetails(for: oldSource.value, source: oldSource.key) {
+                    result[oldSource.key] = newAnime
+                } else {
+                    result[oldSource.key] = oldSource.value
                 }
             }
-        }
-        
-        DispatchQueue.global().sync {
-            semaphore.wait()
         }
         
         return result
     }
     
-    func getStreamingUrl(for episode: Episode, anime: Anime, returnEpisode: @escaping (Episode?) -> Void) async {
-        await sources[selectedSource]?.getStreamingUrl(for: episode, anime: anime) { newEpisode in
-            returnEpisode(newEpisode)
+    func getStreamingUrl(for episode: Episode, anime: Anime) async -> Episode? {
+        await withCheckedContinuation { continuation in
+            Task {
+                await sources[selectedSource]?.getStreamingUrl(for: episode, anime: anime) { newEpisode in
+                    continuation.resume(returning: newEpisode)
+                }
+            }
         }
     }
     

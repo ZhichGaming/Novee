@@ -10,16 +10,16 @@ import SwiftUI
 import AppKit
 
 struct Manga: Media, Hashable, Identifiable, Codable {
+    typealias MediaListElementType = MangaListElement
+    
     var id = UUID()
     
     var title: String?
     var altTitles: [String]?
     var description: String?
     var authors: [String]?
-    var tags: [MangaTag]?
-    
-    var detailsLoadingState: LoadingState = .loading
-    
+    var tags: [MediaTag]?
+        
     var detailsUrl: URL?
     var imageUrl: URL?
     var segments: [Chapter]?
@@ -35,13 +35,6 @@ struct Manga: Media, Hashable, Identifiable, Codable {
         case imageUrl
         case segments
     }
-}
-
-struct MangaTag: Hashable, Identifiable, Codable {
-    var id = UUID()
-    
-    var name: String
-    var url: URL?
 }
 
 struct Chapter: MediaSegment, Hashable, Identifiable, Codable {

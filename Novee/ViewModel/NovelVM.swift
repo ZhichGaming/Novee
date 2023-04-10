@@ -7,16 +7,16 @@
 
 import Foundation
 
-class NovelVM: ObservableObject {
+class NovelVM: MediaVM<Novel> {
     static let shared = NovelVM()
     
     init() {
+        super.init(selectedSource: "readlightnovels")
+        
         sources[readlightnovels.sourceId] = readlightnovels
     }
     
     @Published var sources: [String: any NovelSource] = [:]
-    @Published var selectedSource = "readlightnovels"
-    @Published var pageNumber = 1
         
     var sourcesArray: [NovelSource] {
         Array(sources.values)
@@ -42,13 +42,13 @@ class NovelVM: ObservableObject {
         return nil
     }
     
-    func getNovelDetails(for novel: Novel, source: String, result: @escaping (Novel?) -> Void) async {
+    func getNovelDetails(for novel: Novel, source: String) async -> Novel? {
         let finalUrl = novel.detailsUrl?.getFinalURL()
         
-        DispatchQueue.main.async { [self] in
+        return await withCheckedContinuation { continuation in
             if sources[source]?.baseUrl.contains(finalUrl?.host ?? "") == true {
                 Task {
-                    result(await sources[source]!.getNovelDetails(novel: novel))
+                    continuation.resume(returning: await sources[source]!.getNovelDetails(novel: novel))
                 }
                 
                 return
@@ -57,7 +57,7 @@ class NovelVM: ObservableObject {
             for source in sourcesArray {
                 if source.baseUrl.contains(finalUrl?.host ?? "") == true {
                     Task {
-                        result(await sources[source.sourceId]!.getNovelDetails(novel: novel))
+                        continuation.resume(returning: await sources[source.sourceId]!.getNovelDetails(novel: novel))
                     }
                     
                     break
@@ -68,26 +68,15 @@ class NovelVM: ObservableObject {
     
     func getAllUpdatedNovelDetails(for oldSources: [String: Novel]) async -> [String: Novel] {
         var result = [String: Novel]()
-        let semaphore = DispatchGroup()
 
         for oldSource in oldSources {
             if let _ = sources[oldSource.key] {
-                semaphore.enter()
-                
-                await getNovelDetails(for: oldSource.value, source: oldSource.key) { newNovel in
-                    if let newNovel = newNovel {
-                        result[oldSource.key] = newNovel
-                    } else {
-                        result[oldSource.key] = oldSource.value
-                    }
-                    
-                    semaphore.leave()
+                if let newNovel = await getNovelDetails(for: oldSource.value, source: oldSource.key) {
+                    result[oldSource.key] = newNovel
+                } else {
+                    result[oldSource.key] = oldSource.value
                 }
             }
-        }
-        
-        DispatchQueue.global().sync {
-            semaphore.wait()
         }
         
         return result

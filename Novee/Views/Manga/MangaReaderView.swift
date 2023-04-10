@@ -97,7 +97,9 @@ struct MangaReaderView: View {
                             Text("Reading options")
                         }
                     
-                    MangaReaderAddToListView(manga: manga, chapter: chapter)
+                    AddToListView(media: manga, segment: chapter)
+                        .environmentObject(mangaVM as MediaVM<Manga>)
+                        .environmentObject(mangaListVM as MediaListVM<MangaListElement>)
                         .tabItem {
                             Text("Manga list")
                         }
@@ -114,54 +116,9 @@ struct MangaReaderView: View {
             .padding()
         }
         .sheet(isPresented: $showingCustomizedAddToListSheet) {
-            VStack {
-                Text(manga.title ?? "No title")
-                    .font(.headline)
-
-                Group {
-                    Picker("Status", selection: $selectedMangaStatus) {
-                        ForEach(Status.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-                    
-                    Picker("Rating", selection: $selectedMangaRating) {
-                        ForEach(Rating.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-                    
-                    Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(manga.segments ?? []) {
-                            Text($0.title)
-                                .tag($0.id)
-                        }
-                    }
-                }
-                
-                HStack {
-                    Spacer()
-                    Button("Cancel", role: .cancel) {
-                        showingCustomizedAddToListSheet = false
-                    }
-                    
-                    Button("Add to list") {
-                        mangaListVM.addToList(
-                            source: mangaVM.selectedSource,
-                            manga: manga,
-                            lastSegment: manga.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter.title,
-                            status: selectedMangaStatus,
-                            rating: selectedMangaRating,
-                            lastViewedDate: Date.now
-                        )
-                        
-                        showingCustomizedAddToListSheet = false
-                    }
-                }
-            }
-            .padding()
+            AddToListView(media: manga, segment: chapter)
+                .environmentObject(mangaVM as MediaVM<Manga>)
+                .environmentObject(mangaListVM as MediaListVM<MangaListElement>)
         }
         .toolbar {
             // Some toolbar items to change chapter
@@ -243,7 +200,7 @@ struct MangaReaderView: View {
                     Button {
                         mangaListVM.addToList(
                             source: mangaVM.selectedSource,
-                            manga: manga,
+                            media: manga,
                             lastSegment: chapter.title,
                             status: .viewing,
                             rating: .none,
@@ -345,9 +302,6 @@ struct MangaReaderScrollReaderView: View {
                                 }
                             case .loading:
                                 ProgressView()
-                            // This case is useless for images, it is only used for manga details.
-                            case .notFound:
-                                EmptyView()
                             }
                         }
                     }
@@ -722,156 +676,6 @@ struct MangaReaderSettingsView: View {
             }
             .padding()
             .pickerStyle(.segmented)
-        }
-    }
-}
-
-struct MangaReaderAddToListView: View {
-    @EnvironmentObject var mangaVM: MangaVM
-    @EnvironmentObject var mangaListVM: MangaListVM
-
-    @Environment(\.dismiss) var dismiss
-
-    let manga: Manga
-    var chapter: Chapter? = nil
-    
-    @State private var selectedMangaStatus: Status = .viewing
-    @State private var selectedMangaRating: Rating = .none
-    @State private var selectedLastChapter: UUID = UUID()
-    
-    @State private var selectedMangaListElement: MangaListElement?
-    
-    @State private var createNewEntry = false
-    
-    @State private var selectedListItem = UUID()
-    @State private var showingFindManuallyPopup = false
-    
-    var body: some View {
-        HStack {
-            VStack {
-                Button("Add new entry") {
-                    selectedMangaListElement = MangaListElement(content: [:], status: .viewing, rating: .none, creationDate: Date.now)
-                    createNewEntry = true
-                }
-                                        
-                Button("Find manually") {
-                    showingFindManuallyPopup = true
-                }
-                .popover(isPresented: $showingFindManuallyPopup) {
-                    VStack {
-                        List(mangaListVM.list.sorted { $0.content.first?.value.title ?? "" < $1.content.first?.value.title ?? "" }, id: \.id, selection: $selectedListItem) { item in
-                            Text(item.content.first?.value.title ?? "No title")
-                                .tag(item.id)
-                        }
-                        .listStyle(.bordered(alternatesRowBackgrounds: true))
-                        
-                        Text("Type in the list to search.")
-                        
-                        HStack {
-                            Spacer()
-                            
-                            Button("Cancel") { showingFindManuallyPopup = false }
-                            Button("Select") {
-                                selectedMangaListElement = mangaListVM.list.first(where: { $0.id == selectedListItem })
-                                showingFindManuallyPopup = false
-                            }
-                            .disabled(!mangaListVM.list.contains { $0.id == selectedListItem })
-                        }
-                    }
-                    .frame(width: 400, height: 300)
-                    .padding()
-                }
-                
-                Spacer()
-                Text(mangaListVM.findInList(media: manga)?.content.first?.value.title ?? "Manga not found")
-                
-                if let url = mangaListVM.findInList(media: manga)?.content.first?.value.imageUrl {
-                    CachedAsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                }
-                
-                Spacer()
-            }
-            
-            Divider()
-                .padding(.horizontal)
-            
-            VStack {
-                Text("Manga options")
-
-                Group {
-                    Picker("Status", selection: $selectedMangaStatus) {
-                        ForEach(Status.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-                    
-                    Picker("Rating", selection: $selectedMangaRating) {
-                        ForEach(Rating.allCases, id: \.rawValue) {
-                            Text($0.rawValue)
-                                .tag($0)
-                        }
-                    }
-                    
-                    Picker("Last chapter", selection: $selectedLastChapter) {
-                        ForEach(manga.segments ?? []) {
-                            Text($0.title)
-                                .tag($0.id)
-                        }
-                    }
-                }
-                .disabled(selectedMangaListElement == nil)
-                
-                HStack {
-                    Spacer()
-                    
-                    Button(createNewEntry ? "Add to list" : "Save") {
-                        if createNewEntry {
-                            mangaListVM.addToList(
-                                source: mangaVM.selectedSource,
-                                manga: manga,
-                                lastSegment: manga.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
-                                status: selectedMangaStatus,
-                                rating: selectedMangaRating,
-                                lastViewedDate: Date.now
-                            )
-                        } else {
-                            mangaListVM.updateListEntry(
-                                id: selectedMangaListElement!.id,
-                                newValue: MangaListElement(
-                                    content: [mangaVM.selectedSource: manga],
-                                    lastSegment: manga.segments?.first { $0.id == selectedLastChapter }?.title ?? chapter?.title,
-                                    status: selectedMangaStatus,
-                                    rating: selectedMangaRating,
-                                    lastViewedDate: Date.now,
-                                    creationDate: Date.now
-                                )
-                            )
-                        }
-                        
-                        dismiss()
-                    }
-                    .disabled(selectedMangaListElement == nil)
-                }
-            }
-        }
-        .padding()
-        .onAppear {
-            selectedMangaListElement = mangaListVM.findInList(media: manga)
-        }
-        .onChange(of: selectedMangaListElement) { _ in
-            if let selectedMangaListElement = selectedMangaListElement {
-                selectedMangaStatus = selectedMangaListElement.status
-                selectedMangaRating = selectedMangaListElement.rating
-                
-                selectedLastChapter = manga.segments?.first { $0.title == selectedMangaListElement.lastSegment }?.id ?? UUID()
-            }
         }
     }
 }

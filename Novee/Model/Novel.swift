@@ -8,16 +8,16 @@
 import Foundation
 
 struct Novel: Media, Hashable, Identifiable, Codable {
+    typealias MediaListElementType = NovelListElement
+    
     var id = UUID()
     
     var title: String?
     var altTitles: [String]?
     var description: String?
     var authors: [String]?
-    var tags: [NovelTag]?
-    
-    var detailsLoadingState: LoadingState = .loading
-    
+    var tags: [MediaTag]?
+        
     var detailsUrl: URL?
     var imageUrl: URL?
     var segments: [NovelChapter]?
@@ -33,13 +33,6 @@ struct Novel: Media, Hashable, Identifiable, Codable {
         case imageUrl
         case segments
     }
-}
-
-struct NovelTag: Hashable, Identifiable, Codable {
-    var id = UUID()
-    
-    var name: String
-    var url: URL?
 }
 
 struct NovelChapter: MediaSegment, Hashable, Identifiable, Codable {

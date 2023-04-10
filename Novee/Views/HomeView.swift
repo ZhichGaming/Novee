@@ -23,23 +23,25 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading) {
-                    Text("Home")
-                        .font(.largeTitle.bold())
+                    Text("Recent")
+                        .font(.title.bold())
                     
                     Divider()
                     
                     recentView
+                        .padding(.vertical)
                     
-                    Group {
-                        Divider()
+                    Text("New Updates")
+                        .font(.title.bold())
+                    
+                    Divider()
+                    
+                    VStack(spacing: 0) {
                         HomeNewMediaView(media: $homeVM.newAnime, tab: $tab)
-                            .padding(.vertical, 25)
-                        Divider()
+
                         HomeNewMediaView(media: $homeVM.newManga, tab: $tab)
-                            .padding(.vertical, 25)
-                        Divider()
+
                         HomeNewMediaView(media: $homeVM.newNovels, tab: $tab)
-                            .padding(.vertical, 25)
                     }
                 }
                 .padding()
@@ -51,79 +53,84 @@ struct HomeView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationDestination(for: Anime.self) { anime in
-                AnimeDetailsView(selectedAnime: anime)
+                AnimeDetailsView(anime: anime)
             }
             .navigationDestination(for: Manga.self) { manga in
-                MangaDetailsView(selectedManga: manga)
+                MangaDetailsView(manga: manga)
             }
             .navigationDestination(for: Novel.self) { novel in
-                NovelDetailsView(selectedNovel: novel)
+                NovelDetailsView(novel: novel)
             }
         }
     }
     
     var recentView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            VStack(alignment: .leading) {
-                Text("Recent")
-                    .font(.title3.bold())
-                
-                HStack(spacing: 15) {
-                    ForEach(homeVM.getLatestActivities(), id: \.id) { activity in
-                        if let firstContent: any Media = activity.content.first?.value {
-                            NavigationLink {
-                                if let anime = firstContent as? Anime {
-                                    AnimeDetailsView(selectedAnime: anime)
-                                } else if let manga = firstContent as? Manga {
-                                    MangaDetailsView(selectedManga: manga)
-                                } else if let novel = firstContent as? Novel {
-                                    NovelDetailsView(selectedNovel: novel)
-                                }
-                            } label: {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 5)
-                                        .fill(.secondary)
-                                        .opacity(0.3)
-                                        .shadow(color: .black, radius: 5, x: 2, y: 2)
-                                    
-                                    HStack {
-                                        StyledImage(imageUrl: firstContent.imageUrl)
-                                            .frame(width: 100, height: 150)
-                                        
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            Text(firstContent.title ?? "No title")
-                                                .font(.headline)
-                                                .lineLimit(2)
-                                            
-                                            ZStack {
-                                                RoundedRectangle(cornerRadius: 5)
-                                                    .fill(activity.type.getColor())
-                                                
-                                                Text(activity.type.rawValue)
-                                                    .foregroundColor(.white)
-                                                    .padding(3)
-                                                    .padding(.horizontal, 3)
-                                            }
-                                            .frame(width: 60, height: 20, alignment: .leading)
-                                            
-                                            Text(firstContent.description ?? "")
-                                                .lineLimit(6)
-                                        }
-                                    }
-                                    .padding(10)
-                                }
-                                .frame(width: 350)
+            HStack(spacing: 15) {
+                ForEach(homeVM.getLatestActivities(), id: \.id) { activity in
+                    if let firstContent: any Media = activity.content.first?.value {
+                        NavigationLink {
+                            if let anime = firstContent as? Anime {
+                                AnimeDetailsView(anime: anime)
+                            } else if let manga = firstContent as? Manga {
+                                MangaDetailsView(manga: manga)
+                            } else if let novel = firstContent as? Novel {
+                                NovelDetailsView(novel: novel)
                             }
-                            .buttonStyle(.plain)
+                        } label: {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(.black.opacity(0.05))
+                                    .shadow(radius: 2, x: 0, y: 2)
+                                    .frame(height: 150)
+                                
+                                HStack {
+                                    CachedAsyncImage(url: firstContent.imageUrl) { image in
+                                        if let image = image {
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(maxWidth: 120)
+                                                .shadow(radius: 4, x: 0.5, y: 2)
+                                        }
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
+                                    .frame(maxWidth: 120, maxHeight: .infinity)
+                                    .padding(.leading, -10)
+                                    
+                                    VStack(alignment: .leading, spacing: 6.5) {
+                                        Text(firstContent.title ?? "No title")
+                                            .font(.headline)
+                                            .lineLimit(1)
+                                        
+                                        Text(firstContent.segments?.last?.title ?? "Unknown latest chapter")
+                                            .font(.subheadline)
+                                            .lineLimit(1)
+                                        
+                                        Text(firstContent.description ?? "")
+                                            .lineLimit(6)
+                                            .font(.caption)
+                                            .opacity(0.5)
+                                    }
+                                    
+                                    Spacer()
+                                }
+                                .padding(10)
+                                .frame(height: 150)
+                                .clipShape(RoundedRectangle(cornerRadius: 5))
+                                .clipped()
+                            }
+                            .frame(width: 340)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
-            .padding(.vertical)
-            .padding(.horizontal, 20)
+            .padding(20)
         }
         .frame(height: 200)
-        .padding(.horizontal, -20)
+        .padding(-20)
     }
 }
 
@@ -139,25 +146,51 @@ struct HomeNewMediaView<T: Media>: View {
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            VStack(alignment: .leading) {
-                Text("New \(mediaType.rawValue)")
+            VStack(alignment: .leading, spacing: 0) {
+                Text("\(mediaType.rawValue)")
                     .font(.title3.bold())
                 
                 HStack(spacing: 15) {
-                    ForEach(media, id: \.id) { activity in
+                    ForEach(media.indices, id: \.self) { index in
+                        let activity = media[index]
+                        
                         NavigationLink(value: activity) {
                             VStack(alignment: .leading) {
-                                Spacer() // y dis no work???
+                                Spacer()
                                 
-                                StyledImage(imageUrl: activity.imageUrl)
-                                    .frame(maxHeight: 250)
+                                CachedAsyncImage(url: activity.imageUrl) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 140, height: 180)
+                                        .clipped()
+                                        .cornerRadius(3)
+                                        .shadow(radius: 2, x: 0, y: 2)
+//                                        .shadow(radius: 2, x: 0, y: 2)
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(maxHeight: 250)
                                 
-                                
-                                Text(activity.title ?? "No title")
-                                    .lineLimit(1)
-                                    .font(.headline)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(activity.title ?? "No title")
+                                        .lineLimit(1)
+                                        .font(.headline)
+                                    
+                                    let title: String? = activity.segments?.last?.title
+                                    /// If title is shorter than 25 characters or title is nil, return title as is. Else, return title's first 25 letters and an ellipsis.
+                                    let trimmedTitle: String = ((title ?? "" == title?.prefix(25) ?? "") ? title : (title!.prefix(25) + "...")) ?? "Unknown"
+                                    let statusString: String = activity.associatedListElement?.status.rawValue ?? "Not viewing"
+                                    
+                                    Text(trimmedTitle + ", " + statusString)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Spacer()
+                                }
+                                .frame(height: 60)
                             }
-                            .frame(width: 150)
+                            .frame(width: 140)
                         }
                         .buttonStyle(.plain)
                     }

@@ -119,14 +119,15 @@ struct NovelColumnView: View {
         VStack {
             List(novelVM.sources[selectedSource]!.novelData) { novel in
                 NavigationLink {
-                    NovelDetailsView(selectedNovel: novel)
+                    NovelDetailsView(novel: novel)
                 } label: {
                     MediaColumnElementView(
                         imageUrl: novel.imageUrl,
                         title: novel.title,
-                        installmentTitles: novel.segments?.map { $0.title })
+                        segmentTitles: novel.segments?.map { $0.title })
                 }
             }
+            .listStyle(.plain)
 //        } else if novelVM.noveldexResponse == nil {
 //            let _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
 //                showingReload = true
@@ -139,6 +140,47 @@ struct NovelColumnView: View {
 //            }
         }
         .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct NovelDetailsView: View {
+    @EnvironmentObject var novelVM: NovelVM
+    @EnvironmentObject var novelListVM: NovelListVM
+    
+    var novel: Novel
+    
+    var isDownloading: Bool {
+        novelVM.chapterDownloadProgress != nil
+    }
+    
+    var downloadProgress: Double? {
+        Double(novelVM.chapterDownloadProgress ?? false ? 1 : 0)
+    }
+    
+    var downloadTotal: Double? {
+        1.0
+    }
+    
+    var body: some View {
+        MediaDetailsView(selectedMedia: novel, fetchDetails: {
+            return await novelVM.getNovelDetails(for: novel, source: novelVM.selectedSource)
+        }, updateMediaInList: { newMedia in
+            if let mangaListElement = novelListVM.findInList(media: newMedia) {
+                novelListVM.updateMediaInListElement(
+                    id: mangaListElement.id,
+                    source: novelVM.selectedSource,
+                    media: newMedia
+                )
+            }
+        }, resetDownloadProgress: {
+            
+        }, downloadSegment: { chapter in
+            Task {
+                await novelVM.downloadChapter(novel: novel, chapter: chapter)
+            }
+        }, isDownloading: isDownloading, downloadProgress: downloadProgress, downloadTotal: downloadTotal)
+        .environmentObject(novelVM as MediaVM<Novel>)
+        .environmentObject(novelListVM as MediaListVM<NovelListElement>)
     }
 }
 
