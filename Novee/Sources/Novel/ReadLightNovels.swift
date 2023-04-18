@@ -13,7 +13,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
     
-    func getNovel(pageNumber: Int) async -> [Novel] {
+    func getMedia(pageNumber: Int) async -> [Novel] {
         do {
             var htmlPage = ""
             
@@ -51,7 +51,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
                 result.detailsUrl = try URL(string: novel.child(0).attr("href"))
                 result.imageUrl = try URL(string: novel.child(0).child(0).child(0).attr("src"))
                 
-                super.novelData.append(result)
+                super.mediaData.append(result)
                 finalResult.append(result)
             }
             
@@ -62,7 +62,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
         }
     }
     
-    func getSearchNovel(pageNumber: Int, searchQuery: String) async -> [Novel] {
+    func getSearchMedia(pageNumber: Int, searchQuery: String) async -> [Novel] {
         do {
             var htmlPage = ""
             
@@ -100,7 +100,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 
-                super.novelData.append(result)
+                super.mediaData.append(result)
                 finalResult.append(result)
             }
             
@@ -111,12 +111,12 @@ class ReadLightNovels: NovelFetcher, NovelSource {
         }
     }
     
-    func getNovelDetails(novel: Novel) async -> Novel? {
+    func getMediaDetails(media: Novel) async -> Novel? {
         var htmlPage = ""
-        var result: Novel? = novel
+        var result: Novel? = media
         
         do {
-            guard let requestUrl = novel.detailsUrl else {
+            guard let requestUrl = media.detailsUrl else {
                 Log.shared.msg("Details url missing!")
                 return nil
             }

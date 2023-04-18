@@ -19,24 +19,9 @@ class AnimeFetcher {
     let sourceId: String
     let baseUrl: String
     
-    @Published var animeData: [Anime] = []
+    @Published var mediaData: [Anime] = []
 }
 
-protocol AnimeSource {
-    var label: String { get }
-    var baseUrl: String { get }
-    var sourceId: String { get }
-    
-    var animeData: [Anime] { get set }
-        
-    @discardableResult
-    func getAnime(pageNumber: Int) async -> [Anime]
-    
-    @discardableResult
-    func getSearchAnime(pageNumber: Int, searchQuery: String) async -> [Anime]
-    
-    @discardableResult
-    func getAnimeDetails(anime: Anime) async -> Anime?
-    
+protocol AnimeSource: MediaSource where AssociatedMediaType == Anime {
     func getStreamingUrl(for episode: Episode, anime: Anime, returnEpisode: @escaping (Episode?) -> Void) async
 }

@@ -28,6 +28,9 @@ protocol Media: Hashable, Codable, Identifiable {
     var segments: [MediaSegmentType]? { get set }
     
     var associatedListElement: (any MediaListElement)? { get }
+    
+    init()
+    init(title: String?, altTitles: [String]?, description: String?, authors: [String]?, tags: [MediaTag]?, detailsUrl: URL?, imageUrl: URL?, segments: [MediaSegmentType]?)
 }
 
 protocol MediaSegment: Hashable, Codable, Identifiable {
@@ -48,6 +51,19 @@ extension Media {
         }
         
         return nil
+    }
+    
+    init(title: String? = nil, altTitles: [String]? = nil, description: String? = nil, authors: [String]? = nil, tags: [MediaTag]? = nil, detailsUrl: URL? = nil, imageUrl: URL? = nil, segments: [MediaSegmentType]? = nil) {
+        self.init()
+        
+        self.title = title
+        self.altTitles = altTitles
+        self.description = description
+        self.authors = authors
+        self.tags = tags
+        self.detailsUrl = detailsUrl
+        self.imageUrl = imageUrl
+        self.segments = segments
     }
 }
 

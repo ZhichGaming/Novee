@@ -52,9 +52,9 @@ struct AnimeMenuView: View {
                             Task {
                                 textfieldPageNumber = animeVM.pageNumber
                                 if searchQuery.isEmpty {
-                                    await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: animeVM.pageNumber)
+                                    await animeVM.sources[animeVM.selectedSource]!.getMedia(pageNumber: animeVM.pageNumber)
                                 } else {
-                                    await animeVM.sources[animeVM.selectedSource]!.getSearchAnime(pageNumber: animeVM.pageNumber, searchQuery: searchQuery)
+                                    await animeVM.sources[animeVM.selectedSource]!.getSearchMedia(pageNumber: animeVM.pageNumber, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -62,9 +62,9 @@ struct AnimeMenuView: View {
                             Task {
                                 /// Reset page number each time the user searches something else
                                 if searchQuery.isEmpty {
-                                    await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: 1)
+                                    await animeVM.sources[animeVM.selectedSource]!.getMedia(pageNumber: 1)
                                 } else {
-                                    await animeVM.sources[animeVM.selectedSource]!.getSearchAnime(pageNumber: 1, searchQuery: searchQuery)
+                                    await animeVM.sources[animeVM.selectedSource]!.getSearchMedia(pageNumber: 1, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -79,7 +79,7 @@ struct AnimeMenuView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        await animeVM.sources[animeVM.selectedSource]?.getAnime(pageNumber: animeVM.pageNumber)
+                        await animeVM.sources[animeVM.selectedSource]?.getMedia(pageNumber: animeVM.pageNumber)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -97,16 +97,16 @@ struct AnimeMenuView: View {
         .onAppear {
             Task {
                 textfieldPageNumber = animeVM.pageNumber
-                await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: animeVM.pageNumber)
+                await animeVM.sources[animeVM.selectedSource]!.getMedia(pageNumber: animeVM.pageNumber)
             }
         }
         .onChange(of: animeVM.selectedSource) { _ in
             Task {
-                await animeVM.sources[animeVM.selectedSource]!.getAnime(pageNumber: animeVM.pageNumber)
+                await animeVM.sources[animeVM.selectedSource]!.getMedia(pageNumber: animeVM.pageNumber)
             }
         }
         .onDisappear {
-            animeVM.sources[animeVM.selectedSource]!.animeData = []
+            animeVM.sources[animeVM.selectedSource]!.mediaData = []
         }
     }
 }
@@ -118,7 +118,7 @@ struct AnimeColumnView: View {
     
     var body: some View {
         VStack {
-            List(animeVM.sources[selectedSource]!.animeData) { anime in
+            List(animeVM.sources[selectedSource]!.mediaData) { anime in
                 NavigationLink {
                     AnimeDetailsView(anime: anime)
                 } label: {

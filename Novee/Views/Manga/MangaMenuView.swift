@@ -52,9 +52,9 @@ struct MangaMenuView: View {
                             Task {
                                 textfieldPageNumber = mangaVM.pageNumber
                                 if searchQuery.isEmpty {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: mangaVM.pageNumber)
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getMedia(pageNumber: mangaVM.pageNumber)
                                 } else {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: mangaVM.pageNumber, searchQuery: searchQuery)
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchMedia(pageNumber: mangaVM.pageNumber, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -62,9 +62,9 @@ struct MangaMenuView: View {
                             Task {
                                 /// Reset page number each time the user searches something else
                                 if searchQuery.isEmpty {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: 1)
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getMedia(pageNumber: 1)
                                 } else {
-                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchManga(pageNumber: 1, searchQuery: searchQuery)
+                                    await mangaVM.sources[mangaVM.selectedSource]!.getSearchMedia(pageNumber: 1, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -79,7 +79,7 @@ struct MangaMenuView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        await mangaVM.sources[mangaVM.selectedSource]?.getManga(pageNumber: mangaVM.pageNumber)
+                        await mangaVM.sources[mangaVM.selectedSource]?.getMedia(pageNumber: mangaVM.pageNumber)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -97,16 +97,16 @@ struct MangaMenuView: View {
         .onAppear {
             Task {
                 textfieldPageNumber = mangaVM.pageNumber
-                await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: mangaVM.pageNumber)
+                await mangaVM.sources[mangaVM.selectedSource]!.getMedia(pageNumber: mangaVM.pageNumber)
             }
         }
         .onChange(of: mangaVM.selectedSource) { _ in
             Task {
-                await mangaVM.sources[mangaVM.selectedSource]!.getManga(pageNumber: mangaVM.pageNumber)
+                await mangaVM.sources[mangaVM.selectedSource]!.getMedia(pageNumber: mangaVM.pageNumber)
             }
         }
         .onDisappear {
-            mangaVM.sources[mangaVM.selectedSource]!.mangaData = []
+            mangaVM.sources[mangaVM.selectedSource]!.mediaData = []
         }
     }
 }
@@ -118,7 +118,7 @@ struct MangaColumnView: View {
 
     var body: some View {
         VStack {
-            List(mangaVM.sources[selectedSource]!.mangaData) { manga in
+            List(mangaVM.sources[selectedSource]!.mediaData) { manga in
                 NavigationLink {
                     MangaDetailsView(manga: manga)
                 } label: {

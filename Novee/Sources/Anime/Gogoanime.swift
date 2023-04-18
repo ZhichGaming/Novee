@@ -16,7 +16,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
     // Documentation: https://docs.consumet.org/rest-api/Anime/gogoanime/get-recent-episodes
     let api = "https://api.consumet.org/anime/gogoanime"
     
-    func getAnime(pageNumber: Int) async -> [Anime] {
+    func getMedia(pageNumber: Int) async -> [Anime] {
         do {
             guard let requestUrl = URL(string: api + "/recent-episodes" + "?page=" + String(pageNumber)) else {
                 Log.shared.msg("An error occured while formatting the URL")
@@ -42,7 +42,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                 AnimeVM.shared.objectWillChange.send()
             }
             
-            super.animeData = result
+            super.mediaData = result
             return result
         } catch {
             Log.shared.error(error)
@@ -50,7 +50,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         }
     }
     
-    func getSearchAnime(pageNumber: Int, searchQuery: String) async -> [Anime] {
+    func getSearchMedia(pageNumber: Int, searchQuery: String) async -> [Anime] {
         do {
             let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
             
@@ -78,7 +78,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                 AnimeVM.shared.objectWillChange.send()
             }
             
-            super.animeData = result
+            super.mediaData = result
             return result
         } catch {
             Log.shared.error(error)
@@ -86,9 +86,9 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         }
     }
     
-    func getAnimeDetails(anime: Anime) async -> Anime? {
+    func getMediaDetails(media: Anime) async -> Anime? {
         do {
-            guard let requestUrl = anime.detailsUrl else {
+            guard let requestUrl = media.detailsUrl else {
                 Log.shared.msg("No valid details url.")
                 return nil
             }
@@ -102,7 +102,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                 altTitles: newAnime.otherName != nil ? [newAnime.otherName!] : nil,
                 description: newAnime.description,
                 tags: newAnime.genres?.map { MediaTag(name: $0) },
-                detailsUrl: anime.detailsUrl,
+                detailsUrl: media.detailsUrl,
                 imageUrl: URL(string: newAnime.image ?? ""),
                 segments: newAnime.episodes?.map { Episode(
                     title: "Episode \($0.number)",

@@ -13,7 +13,7 @@ class AsuraScans: MangaFetcher, MangaSource {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
     
-    func getManga(pageNumber: Int) async -> [Manga] {
+    func getMedia(pageNumber: Int) async -> [Manga] {
         do {
             var htmlPage = ""
             
@@ -58,7 +58,7 @@ class AsuraScans: MangaFetcher, MangaSource {
                     }
                 }
                 
-                super.mangaData.append(result)
+                super.mediaData.append(result)
                 finalResult.append(result)
             }
             
@@ -69,7 +69,7 @@ class AsuraScans: MangaFetcher, MangaSource {
         }
     }
     
-    func getSearchManga(pageNumber: Int, searchQuery: String) async -> [Manga] {
+    func getSearchMedia(pageNumber: Int, searchQuery: String) async -> [Manga] {
         do {
             var htmlPage = ""
             
@@ -99,7 +99,7 @@ class AsuraScans: MangaFetcher, MangaSource {
             }
             
             /// Reset mangas
-            mangaData = [Manga]()
+            mediaData = [Manga]()
             var finalResult: [Manga] = []
             
             for manga in mangas.array() {
@@ -107,7 +107,7 @@ class AsuraScans: MangaFetcher, MangaSource {
                 result.detailsUrl = try URL(string: manga.child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).child(0).child(2).attr("src"))
                 
-                super.mangaData.append(result)
+                super.mediaData.append(result)
                 finalResult.append(result)
             }
             
@@ -118,7 +118,7 @@ class AsuraScans: MangaFetcher, MangaSource {
         }
     }
     
-    func fetchMangaDetails(manga: Manga) async -> Manga? {
+    func fetchMediaDetails(manga: Manga) async -> Manga? {
         var htmlPage = ""
         var result: Manga? = manga
         
@@ -195,8 +195,8 @@ class AsuraScans: MangaFetcher, MangaSource {
         return result
     }
     
-    func getMangaDetails(manga: Manga) async -> Manga? {
-        if let result = await fetchMangaDetails(manga: manga) {
+    func getMediaDetails(media: Manga) async -> Manga? {
+        if let result = await fetchMediaDetails(manga: media) {
             return result
         } else {
             Log.shared.msg("An error occured while fetching manga details")

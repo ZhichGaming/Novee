@@ -24,7 +24,7 @@ class MangaVM: MediaVM<Manga> {
     
     @Published var chapterDownloadProgress: ChapterDownloadProgress? = nil
 
-    var sourcesArray: [MangaSource] {
+    var sourcesArray: [any MangaSource] {
         Array(sources.values)
     }
     
@@ -50,13 +50,13 @@ class MangaVM: MediaVM<Manga> {
     
     @discardableResult
     func getMangaDetails(for manga: Manga) async -> Manga? {
-        let mangaIndex = (sources[selectedSource]?.mangaData.firstIndex(of: manga))!
-        let finalUrl = sources[selectedSource]?.mangaData[mangaIndex].detailsUrl?.getFinalURL()
+        let mangaIndex = (sources[selectedSource]?.mediaData.firstIndex(of: manga))!
+        let finalUrl = sources[selectedSource]?.mediaData[mangaIndex].detailsUrl?.getFinalURL()
 
         let continuation = await withCheckedContinuation { continuation in
             if sources[selectedSource]?.baseUrl.contains(finalUrl?.host ?? "") == true {
                 Task {
-                    continuation.resume(returning: await sources[selectedSource]!.getMangaDetails(manga: manga))
+                    continuation.resume(returning: await sources[selectedSource]!.getMediaDetails(media: manga))
                 }
                 
                 return
@@ -65,7 +65,7 @@ class MangaVM: MediaVM<Manga> {
             for source in sourcesArray {
                 if source.baseUrl.contains(finalUrl?.host ?? "") == true {
                     Task {
-                        continuation.resume(returning: await sources[source.sourceId]!.getMangaDetails(manga: manga))
+                        continuation.resume(returning: await sources[source.sourceId]!.getMediaDetails(media: manga))
                     }
                     
                     break
@@ -83,7 +83,7 @@ class MangaVM: MediaVM<Manga> {
         let continuation = await withCheckedContinuation { continuation in
             if sources[source]?.baseUrl.contains(finalUrl?.host ?? "") == true {
                 Task {
-                    continuation.resume(returning: await sources[source]!.getMangaDetails(manga: manga))
+                    continuation.resume(returning: await sources[source]!.getMediaDetails(media: manga))
                 }
                 
                 return
@@ -92,7 +92,7 @@ class MangaVM: MediaVM<Manga> {
             for source in sourcesArray {
                 if source.baseUrl.contains(finalUrl?.host ?? "") == true {
                     Task {
-                        continuation.resume(returning: await sources[source.sourceId]!.getMangaDetails(manga: manga))
+                        continuation.resume(returning: await sources[source.sourceId]!.getMediaDetails(media: manga))
                     }
                     
                     break

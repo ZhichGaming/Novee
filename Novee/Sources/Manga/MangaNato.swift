@@ -14,7 +14,7 @@ class MangaNato: MangaFetcher, MangaSource {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
 
-    func getManga(pageNumber: Int) async -> [Manga] {
+    func getMedia(pageNumber: Int) async -> [Manga] {
         do {
             var htmlPage = ""
             
@@ -54,7 +54,7 @@ class MangaNato: MangaFetcher, MangaSource {
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 result.segments = [try Chapter(title: manga.child(1).child(1).text(), segmentUrl: URL(string: manga.child(1).child(1).attr("href"))!)]
 
-                super.mangaData.append(result)
+                super.mediaData.append(result)
                 finalResult.append(result)
             }
             
@@ -65,7 +65,7 @@ class MangaNato: MangaFetcher, MangaSource {
         }
     }
     
-    func getSearchManga(pageNumber: Int, searchQuery: String) async -> [Manga] {
+    func getSearchMedia(pageNumber: Int, searchQuery: String) async -> [Manga] {
         do {
             var htmlPage = ""
 
@@ -96,7 +96,7 @@ class MangaNato: MangaFetcher, MangaSource {
             }
             
             /// Reset mangas
-            mangaData = [Manga]()
+            mediaData = [Manga]()
             var finalResult: [Manga] = []
             
             for manga in mangas.array() {
@@ -107,7 +107,7 @@ class MangaNato: MangaFetcher, MangaSource {
                     try Chapter(title: $0.text(), segmentUrl: URL(string: $0.attr("href"))!)
                 }
 
-                super.mangaData.append(result)
+                super.mediaData.append(result)
                 finalResult.append(result)
             }
             
@@ -118,7 +118,7 @@ class MangaNato: MangaFetcher, MangaSource {
         }
     }
     
-    func fetchMangaDetails(manga: Manga) async -> Manga? {
+    func fetchMediaDetails(manga: Manga) async -> Manga? {
         var htmlPage = ""
         var result: Manga? = manga
         
@@ -186,8 +186,8 @@ class MangaNato: MangaFetcher, MangaSource {
         return result
     }
     
-    func getMangaDetails(manga: Manga) async -> Manga? {
-        if let result = await fetchMangaDetails(manga: manga) {
+    func getMediaDetails(media: Manga) async -> Manga? {
+        if let result = await fetchMediaDetails(manga: media) {
             return result
         } else {
             Log.shared.msg("An error occured while fetching manga details")

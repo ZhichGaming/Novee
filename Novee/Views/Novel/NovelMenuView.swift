@@ -51,9 +51,9 @@ struct NovelMenuView: View {
                             Task {
                                 textfieldPageNumber = novelVM.pageNumber
                                 if searchQuery.isEmpty {
-                                    await novelVM.sources[novelVM.selectedSource]!.getNovel(pageNumber: novelVM.pageNumber)
+                                    await novelVM.sources[novelVM.selectedSource]!.getMedia(pageNumber: novelVM.pageNumber)
                                 } else {
-                                    await novelVM.sources[novelVM.selectedSource]!.getSearchNovel(pageNumber: novelVM.pageNumber, searchQuery: searchQuery)
+                                    await novelVM.sources[novelVM.selectedSource]!.getSearchMedia(pageNumber: novelVM.pageNumber, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -61,9 +61,9 @@ struct NovelMenuView: View {
                             Task {
                                 /// Reset page number each time the user searches something else
                                 if searchQuery.isEmpty {
-                                    await novelVM.sources[novelVM.selectedSource]!.getNovel(pageNumber: 1)
+                                    await novelVM.sources[novelVM.selectedSource]!.getMedia(pageNumber: 1)
                                 } else {
-                                    await novelVM.sources[novelVM.selectedSource]!.getSearchNovel(pageNumber: 1, searchQuery: searchQuery)
+                                    await novelVM.sources[novelVM.selectedSource]!.getSearchMedia(pageNumber: 1, searchQuery: searchQuery)
                                 }
                             }
                         }
@@ -78,7 +78,7 @@ struct NovelMenuView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        await novelVM.sources[novelVM.selectedSource]?.getNovel(pageNumber: novelVM.pageNumber)
+                        await novelVM.sources[novelVM.selectedSource]?.getMedia(pageNumber: novelVM.pageNumber)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -96,16 +96,16 @@ struct NovelMenuView: View {
         .onAppear {
             Task {
                 textfieldPageNumber = novelVM.pageNumber
-                await novelVM.sources[novelVM.selectedSource]!.getNovel(pageNumber: novelVM.pageNumber)
+                await novelVM.sources[novelVM.selectedSource]!.getMedia(pageNumber: novelVM.pageNumber)
             }
         }
         .onChange(of: novelVM.selectedSource) { _ in
             Task {
-                await novelVM.sources[novelVM.selectedSource]!.getNovel(pageNumber: novelVM.pageNumber)
+                await novelVM.sources[novelVM.selectedSource]!.getMedia(pageNumber: novelVM.pageNumber)
             }
         }
         .onDisappear {
-            novelVM.sources[novelVM.selectedSource]!.novelData = []
+            novelVM.sources[novelVM.selectedSource]!.mediaData = []
         }
     }
 }
@@ -117,7 +117,7 @@ struct NovelColumnView: View {
 
     var body: some View {
         VStack {
-            List(novelVM.sources[selectedSource]!.novelData) { novel in
+            List(novelVM.sources[selectedSource]!.mediaData) { novel in
                 NavigationLink {
                     NovelDetailsView(novel: novel)
                 } label: {

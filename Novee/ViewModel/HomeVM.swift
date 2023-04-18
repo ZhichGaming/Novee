@@ -51,7 +51,7 @@ class HomeVM: ObservableObject {
     func getLatestAnime(page: Int = 1) async -> [Anime] {
         let mediaVM = AnimeVM.shared
         
-        let result = await mediaVM.sources[mediaVM.selectedSource]!.getAnime(pageNumber: page)
+        let result = await mediaVM.sources[mediaVM.selectedSource]!.getMedia(pageNumber: page)
         
         Task { @MainActor in
             newAnime.append(contentsOf: result)
@@ -64,7 +64,7 @@ class HomeVM: ObservableObject {
     func getLatestManga(page: Int = 1) async -> [Manga] {
         let mediaVM = MangaVM.shared
         
-        let result = await mediaVM.sources[mediaVM.selectedSource]!.getManga(pageNumber: page)
+        let result = await mediaVM.sources[mediaVM.selectedSource]!.getMedia(pageNumber: page)
         
         Task { @MainActor in
             newManga.append(contentsOf: result)
@@ -77,7 +77,7 @@ class HomeVM: ObservableObject {
     func getLatestNovels(page: Int = 1) async -> [Novel] {
         let mediaVM = NovelVM.shared
         
-        let result = await mediaVM.sources[mediaVM.selectedSource]!.getNovel(pageNumber: page)
+        let result = await mediaVM.sources[mediaVM.selectedSource]!.getMedia(pageNumber: page)
         
         Task { @MainActor in
             newNovels.append(contentsOf: result)

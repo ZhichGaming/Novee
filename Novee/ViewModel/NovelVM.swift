@@ -18,7 +18,7 @@ class NovelVM: MediaVM<Novel> {
     
     @Published var sources: [String: any NovelSource] = [:]
         
-    var sourcesArray: [NovelSource] {
+    var sourcesArray: [any NovelSource] {
         Array(sources.values)
     }
     
@@ -48,7 +48,7 @@ class NovelVM: MediaVM<Novel> {
         return await withCheckedContinuation { continuation in
             if sources[source]?.baseUrl.contains(finalUrl?.host ?? "") == true {
                 Task {
-                    continuation.resume(returning: await sources[source]!.getNovelDetails(novel: novel))
+                    continuation.resume(returning: await sources[source]!.getMediaDetails(media: novel))
                 }
                 
                 return
@@ -57,7 +57,7 @@ class NovelVM: MediaVM<Novel> {
             for source in sourcesArray {
                 if source.baseUrl.contains(finalUrl?.host ?? "") == true {
                     Task {
-                        continuation.resume(returning: await sources[source.sourceId]!.getNovelDetails(novel: novel))
+                        continuation.resume(returning: await sources[source.sourceId]!.getMediaDetails(media: novel))
                     }
                     
                     break

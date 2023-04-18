@@ -8,6 +8,8 @@
 import Foundation
 
 struct Novel: Media, Hashable, Identifiable, Codable {
+    init() { }
+    
     typealias MediaListElementType = NovelListElement
     
     var id = UUID()

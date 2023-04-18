@@ -9,6 +9,8 @@ import Foundation
 import CoreMedia
 
 struct Anime: Media, Hashable, Identifiable, Codable {
+    init() { }
+    
     typealias MediaListElementType = AnimeListElement
     
     var id = UUID()

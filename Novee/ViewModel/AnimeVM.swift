@@ -29,7 +29,7 @@ class AnimeVM: MediaVM<Anime> {
     
     @Published var episodeDownloadProgress: EpisodeDownloadProgress? = nil
     
-    var sourcesArray: [AnimeSource] {
+    var sourcesArray: [any AnimeSource] {
         Array(sources.values)
     }
     
@@ -52,12 +52,12 @@ class AnimeVM: MediaVM<Anime> {
     
     @discardableResult
     func getAnimeDetails(for anime: Anime) async -> Anime? {
-        await sources[selectedSource]!.getAnimeDetails(anime: anime)
+        await sources[selectedSource]!.getMediaDetails(media: anime)
     }
     
     @discardableResult
     func getAnimeDetails(for anime: Anime, source: String) async -> Anime? {
-        await sources[source]!.getAnimeDetails(anime: anime)
+        await sources[source]!.getMediaDetails(media: anime)
     }
     
     func getAllUpdatedAnimeDetails(for oldSources: [String: Anime]) async -> [String: Anime] {

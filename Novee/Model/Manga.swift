@@ -10,6 +10,8 @@ import SwiftUI
 import AppKit
 
 struct Manga: Media, Hashable, Identifiable, Codable {
+    init() { }
+    
     typealias MediaListElementType = MangaListElement
     
     var id = UUID()
