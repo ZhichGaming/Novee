@@ -248,7 +248,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
 
             let content = try document.getElementsByClass("chapter-content")[0]
             
-            result = try content.text()
+            result = try content.getSeparatedText()
         } catch {
             Log.shared.error(error)
             return nil
