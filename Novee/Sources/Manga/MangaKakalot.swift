@@ -49,7 +49,7 @@ class MangaKakalot: MangaFetcher, MangaSource {
             
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(0).attr("title"))
-                result.description = try manga.children().last()?.getSeparatedText()
+                result.description = try manga.children().last()?.text()
                 result.detailsUrl = try URL(string: manga.child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 result.segments = [try Chapter(title: manga.child(2).text(), segmentUrl: URL(string: manga.child(2).attr("href"))!)]

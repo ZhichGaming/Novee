@@ -139,10 +139,10 @@ class ReadLightNovels: NovelFetcher, NovelSource {
                 .child(0)
                 .text()
 
-            if let descriptionText = try document.select("div.col-xs-12.col-sm-8.col-md-8.desc > div.desc-text > hr").first()?.untilNext("hr").getSeparatedText() {
+            if let descriptionText = try document.select("div.col-xs-12.col-sm-8.col-md-8.desc > div.desc-text > hr").first()?.untilNext("hr").text() {
                 result?.description = descriptionText
             } else {
-                result?.description = try document.select("div.col-xs-12.col-sm-8.col-md-8.desc > div.desc-text").first()?.getSeparatedText()
+                result?.description = try document.select("div.col-xs-12.col-sm-8.col-md-8.desc > div.desc-text").first()?.text()
             }
             
             result?.authors = try infoElement
@@ -248,7 +248,7 @@ class ReadLightNovels: NovelFetcher, NovelSource {
 
             let content = try document.getElementsByClass("chapter-content")[0]
             
-            result = try content.getSeparatedText()
+            result = try content.text()
         } catch {
             Log.shared.error(error)
             return nil

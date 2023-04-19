@@ -146,7 +146,7 @@ class AsuraScans: MangaFetcher, MangaSource {
             }
             
             if let descriptionElement = try infoElement.child(1).children().array().first(where: { try $0.text().hasPrefix("Synopsis") }) {
-                result?.description = try descriptionElement.getSeparatedText()
+                result?.description = try descriptionElement.text()
             }
             
             if let tagsElement = try infoElement.child(1).children().array().first(where: { try $0.text().hasPrefix("Genres") }) {

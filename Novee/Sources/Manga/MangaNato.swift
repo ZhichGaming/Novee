@@ -49,7 +49,7 @@ class MangaNato: MangaFetcher, MangaSource {
             
             for manga in mangas.array() {
                 var result = Manga(title: try manga.child(1).child(0).child(0).text())
-                result.description = try manga.child(1).child(3).getSeparatedText()
+                result.description = try manga.child(1).child(3).text()
                 result.detailsUrl = try URL(string: manga.child(1).child(0).child(0).attr("href"))
                 result.imageUrl = try URL(string: manga.child(0).child(0).attr("src"))
                 result.segments = [try Chapter(title: manga.child(1).child(1).text(), segmentUrl: URL(string: manga.child(1).child(1).attr("href"))!)]
@@ -149,7 +149,7 @@ class MangaNato: MangaFetcher, MangaSource {
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             result?.description = try document
                 .select("#panel-story-info-description")
-                .getSeparatedText()
+                .text()
                 .replacingOccurrences(of: "Description : ", with: "")
             result?.authors = try infoElement
                 .select("table > tbody > tr:nth-child(2) > td.table-value")

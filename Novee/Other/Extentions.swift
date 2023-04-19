@@ -172,7 +172,7 @@ extension Elements {
         
         for line in self.array() {
             if try !line.text().isEmpty {
-                result += "\(try line.getSeparatedText())\(String(repeating: "\n", count: lineBreakAmount))"
+                result += "\(try line.text())\(String(repeating: "\n", count: lineBreakAmount))"
             }
         }
         
