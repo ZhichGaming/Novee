@@ -50,8 +50,7 @@ class MangaVM: MediaVM<Manga> {
     
     @discardableResult
     func getMangaDetails(for manga: Manga) async -> Manga? {
-        let mangaIndex = (sources[selectedSource]?.mediaData.firstIndex(of: manga))!
-        let finalUrl = sources[selectedSource]?.mediaData[mangaIndex].detailsUrl?.getFinalURL()
+        let finalUrl = manga.detailsUrl?.getFinalURL()
 
         let continuation = await withCheckedContinuation { continuation in
             if sources[selectedSource]?.baseUrl.contains(finalUrl?.host ?? "") == true {
