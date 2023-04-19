@@ -122,6 +122,7 @@ struct MediaDetailsView<T: Media>: View {
                             }
                             .font(.body)
                             .formStyle(.grouped)
+                            .scrollContentBackground(.hidden)
                             .padding(.horizontal, -20)
                         }
                     }
