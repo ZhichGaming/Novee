@@ -89,7 +89,11 @@ class MediaListVM<T: MediaListElement>: ObservableObject {
 
     func updateListEntry(id: UUID, newValue: T) {
         if let index = list.firstIndex(where: { $0.id == id }) {
-            list[index] = newValue
+            var newEntry = newValue
+            
+            newEntry.creationDate = list[index].creationDate
+            
+            list[index] = newEntry
         } else {
             Log.shared.msg("A list entry with this UUID could not be found.")
         }
