@@ -12,6 +12,7 @@ import CachedAsyncImage
 struct NovelReaderView: View {
     @EnvironmentObject var novelVM: NovelVM
     @EnvironmentObject var novelListVM: NovelListVM
+    @EnvironmentObject var settingsVM: SettingsVM
     @StateObject var notification = SystemNotificationContext()
     
     @State private var zoom = 1.0
@@ -27,13 +28,17 @@ struct NovelReaderView: View {
 
     let novel: Novel
     @State var chapter: NovelChapter
+    
+    var selectedColorScheme: ColorScheme? {
+        settingsVM.settings.novelSettings.colorScheme == .light ? .light : settingsVM.settings.novelSettings.colorScheme == .dark ? .dark : nil
+    }
 
     var body: some View {
         GeometryReader { geometry in
             ScrollView(.vertical) {                
                 if let chapterContent = chapter.content {
                     Text(chapterContent)
-                        .font(.system(size: 16))
+                        .font(settingsVM.settings.novelSettings.selectedTheme?.font)
                         .lineSpacing(5)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -99,7 +104,7 @@ struct NovelReaderView: View {
                 }
                 
                 TabView {
-                    NovelReaderDetailsView(novel: novel, chapter: chapter)
+                    NovelReaderSettingsView(novel: novel, chapter: chapter)
                         .tabItem {
                             Text("Reading options")
                         }
@@ -171,6 +176,8 @@ struct NovelReaderView: View {
                 }
             }
         }
+        .preferredColorScheme(selectedColorScheme)
+        .background(settingsVM.settings.novelSettings.selectedTheme?.getBackgroundColor(settingsVM.settings.novelSettings.colorScheme))
         .navigationTitle(chapter.title)
     }
     
@@ -288,19 +295,74 @@ struct NovelReaderView: View {
     }
 }
 
-struct NovelReaderDetailsView: View {
+struct NovelReaderSettingsView: View {
     @EnvironmentObject var novelVM: NovelVM
     @EnvironmentObject var novelListVM: NovelListVM
+    @EnvironmentObject var settingsVM: SettingsVM
     
     @Environment(\.dismiss) var dismiss
-    
+    @Environment(\.colorScheme) var colorScheme
+        
     let novel: Novel
     let chapter: NovelChapter
+    
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
 
     var body: some View {
-        VStack {
-            
+        ScrollView {
+            VStack(alignment: .leading) {
+                VStack(alignment: .leading) {
+                    Text("Color scheme")
+                        .font(.headline)
+                    
+                    Picker("", selection: $settingsVM.settings.novelSettings.colorScheme) {
+                        ForEach(NoveeColorScheme.allCases, id: \.self) { scheme in
+                            Text(scheme.rawValue)
+                        }
+                    }
+                }
+                .padding(.bottom)
+
+                VStack(alignment: .leading) {
+                    Text("Themes")
+                        .font(.headline)
+                    
+                    HStack {
+                        LazyVGrid(columns: columns) {
+                            ForEach(Theme.themes, id: \.self) { theme in
+                                Button {
+                                    settingsVM.settings.novelSettings.selectedThemeName = theme.name
+                                } label: {
+                                    ZStack {
+                                        let backgroundColor: Color = theme.getBackgroundColor(settingsVM.settings.novelSettings.colorScheme) == .clear ? (colorScheme == .light ? Color.white : Color.black) : theme.getBackgroundColor(settingsVM.settings.novelSettings.colorScheme)
+                                        let isSelected: Bool = settingsVM.settings.novelSettings.selectedTheme?.name == theme.name
+                                        
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(backgroundColor)
+                                            .overlay {
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(isSelected ? Color.primary : Color.clear, lineWidth: 4)
+                                            }
+
+                                        Text(theme.name)
+                                            .font(theme.font)
+                                            .foregroundColor(theme.getTextColor(settingsVM.settings.novelSettings.colorScheme))
+                                    }
+                                    .frame(height: 50)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .padding(.bottom)
+            }
+            .padding()
+            .pickerStyle(.segmented)
         }
-        .padding()
     }
 }

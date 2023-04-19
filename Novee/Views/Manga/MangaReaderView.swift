@@ -172,7 +172,7 @@ struct MangaReaderView: View {
             }
         }
         .preferredColorScheme(selectedColorScheme)
-        .background(settingsVM.settings.mangaSettings.selectedTheme?.backgroundColor)
+        .background(settingsVM.settings.mangaSettings.selectedTheme?.getBackgroundColor(settingsVM.settings.mangaSettings.colorScheme))
         .navigationTitle(chapter.title)
     }
     
@@ -615,7 +615,7 @@ struct MangaReaderSettingsView: View {
                                     settingsVM.settings.mangaSettings.selectedThemeName = theme.name
                                 } label: {
                                     ZStack {
-                                        let backgroundColor: Color = theme.backgroundColor == .clear ? (colorScheme == .light ? Color.white : Color.black) : theme.backgroundColor
+                                        let backgroundColor: Color = theme.getBackgroundColor(settingsVM.settings.mangaSettings.colorScheme) == .clear ? (colorScheme == .light ? Color.white : Color.black) : theme.getBackgroundColor(settingsVM.settings.mangaSettings.colorScheme)
                                         let isSelected: Bool = settingsVM.settings.mangaSettings.selectedTheme?.name == theme.name
                                         
                                         RoundedRectangle(cornerRadius: 16)
@@ -627,7 +627,7 @@ struct MangaReaderSettingsView: View {
 
                                         Text(theme.name)
                                             .font(theme.font)
-                                            .foregroundColor(theme.textColor)
+                                            .foregroundColor(theme.getTextColor(settingsVM.settings.novelSettings.colorScheme))
                                     }
                                     .frame(height: 50)
                                 }

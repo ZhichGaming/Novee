@@ -10,6 +10,7 @@ import SwiftUI
 
 struct Settings: Codable {
     var mangaSettings = MangaSettings()
+    var novelSettings = NovelSettings()
 }
 
 enum NoveeColorScheme: String, Codable, CaseIterable {
@@ -57,6 +58,19 @@ struct MangaSettings: Codable {
     var readingDirection = ReadingDirection.rightToLeft
 }
 
+struct NovelSettings: Codable {
+    /// Color scheme, being light, dark or system.
+    var colorScheme: NoveeColorScheme = .system
+    
+    /// The name of the theme of the manga reader window.
+    var selectedThemeName = "Default"
+    
+    /// The theme of the manga reader window.
+    var selectedTheme: Theme? {
+        Theme.themes.first { $0.name == selectedThemeName }
+    }
+}
+
 struct Theme: Codable, Hashable {
     /// Theme name.
     var name: String
@@ -98,9 +112,7 @@ struct Theme: Codable, Hashable {
         return Font(nsFont)
     }
     
-    var backgroundColor: Color {
-        let colorScheme = SettingsVM.shared.settings.mangaSettings.colorScheme
-        
+    func getBackgroundColor(_ colorScheme: NoveeColorScheme) -> Color {
         switch colorScheme {
         case .light:
             return lightBackgroundColor
@@ -111,9 +123,7 @@ struct Theme: Codable, Hashable {
         }
     }
     
-    var textColor: Color {
-        let colorScheme = SettingsVM.shared.settings.mangaSettings.colorScheme
-        
+    func getTextColor(_ colorScheme: NoveeColorScheme) -> Color {
         switch colorScheme {
         case .light:
             return lightTextColor
