@@ -332,8 +332,10 @@ struct SegmentList<T: Media>: View {
                         }
                     }
                     
-                    Button("Download") {
+                    Button {
                         showingDownloadSheet = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
                     }
                 }
                 
