@@ -172,4 +172,4 @@ Project Link: [https://github.com/ZhichGaming/Novee](https://github.com/ZhichGam
 [license-shield]: https://img.shields.io/github/license/ZhichGaming/Novee.svg?style=for-the-badge
 [license-url]: https://github.com/ZhichGaming/Novee/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[product-screenshot]: images/anime-menu.png
+[product-screenshot]: images/home-menu.jpeg
