@@ -235,7 +235,9 @@ struct MediaInfoView<T: Media>: View {
             if let description = selectedMedia.description {
                 Divider()
                 
-                Text(description)
+                ScrollView {
+                    Text(description)
+                }
             }
         }
     }
