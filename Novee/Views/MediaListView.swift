@@ -14,16 +14,16 @@ struct MediaListView<T: MediaListElement>: View {
     @EnvironmentObject var mediaVM: MediaVM<T.AssociatedMediaType>
     
     @State private var listQuery = ""
-    @State private var showingSearchDetailsSheet = false
+    @State private var showingFilterPopover = false
     @State private var showingAddNewMediaSheet = false
     @State private var selectedSortingStyle = "Recently updated"
     @State private var mediaDetailsSheet: T?
     
     @State private var showingWaiting = true
-    @State private var showingWatching = true
+    @State private var showingViewing = true
     @State private var showingDropped = true
     @State private var showingCompleted = true
-    @State private var showingToWatch = true
+    @State private var showingToView = true
     
     @State private var showingRatingNone = true
     @State private var showingRatingHorrible = true
@@ -39,10 +39,10 @@ struct MediaListView<T: MediaListElement>: View {
         var result = mediaListVM.list
         
         if !showingWaiting { result.removeAll { $0.status == .waiting } }
-        if !showingWatching { result.removeAll { $0.status == .viewing } }
+        if !showingViewing { result.removeAll { $0.status == .viewing } }
         if !showingDropped { result.removeAll { $0.status == .dropped } }
         if !showingCompleted { result.removeAll { $0.status == .completed } }
-        if !showingToWatch { result.removeAll { $0.status == .toView } }
+        if !showingToView { result.removeAll { $0.status == .toView } }
         
         if !showingRatingNone { result.removeAll { $0.rating == .none } }
         if !showingRatingHorrible { result.removeAll { $0.rating == .horrible } }
@@ -84,89 +84,75 @@ struct MediaListView<T: MediaListElement>: View {
     var body: some View {
         GeometryReader { geo in
             NavigationStack(path: $navigationPath) {
-                VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 0) {
+//                    Text(String(describing: type(of: T.AssociatedMediaType.self)).replacingOccurrences(of: ".Type", with: "") + " list")
+//                        .font(.title.bold())
+//                        .padding()
+//                    Divider()
+//                        .padding(.horizontal)
+                    
                     HStack {
-                        TextField("Search for media", text: $listQuery)
-                            .textFieldStyle(.roundedBorder)
+                        Spacer()
                         
                         Button {
-                            showingSearchDetailsSheet = true
+                            showingFilterPopover.toggle()
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            HStack {
+                                Text("Filter")
+                                    .font(.headline)
+                                
+                                Image(systemName: "chevron.down")
+                            }
                         }
-                        
-                        Button {
-                            showingAddNewMediaSheet = true
-                        } label: {
-                            Image(systemName: "plus.circle")
+                        .buttonStyle(.plain)
+                        .popover(isPresented: $showingFilterPopover) {
+                            VStack(alignment: .leading, spacing: 15) {
+                                Text("Filter options")
+                                    .font(.title2.bold())
+                                
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("Grouping and sorting")
+                                        .font(.headline)
+                                    
+                                    Picker("Sorted by", selection: $selectedSortingStyle) {
+                                        ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
+                                            Text($0)
+                                        }
+                                    }
+                                    .pickerStyle(.radioGroup)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("Filters")
+                                        .font(.headline)
+                                    
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text("Status")
+                                            
+                                            Toggle("Waiting", isOn: $showingWaiting)
+                                            Toggle("Viewing", isOn: $showingViewing)
+                                            Toggle("Dropped", isOn: $showingDropped)
+                                            Toggle("Completed", isOn: $showingCompleted)
+                                            Toggle("To view", isOn: $showingToView)
+                                        }
+                                        
+                                        VStack(alignment: .leading) {
+                                            Text("Rating")
+                                            
+                                            Toggle("None", isOn: $showingRatingNone)
+                                            Toggle("Horrible", isOn: $showingRatingHorrible)
+                                            Toggle("Bad", isOn: $showingRatingBad)
+                                            Toggle("Good", isOn: $showingRatingGood)
+                                            Toggle("Best", isOn: $showingRatingBest)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(40)
                         }
                     }
                     .padding()
-                    .sheet(isPresented: $showingSearchDetailsSheet) {
-                        VStack {
-                            Text("Filter options")
-                                .font(.title2.bold())
-                                .padding(.top)
-                            
-                            TabView {
-                                VStack {
-                                    HStack {
-                                        Picker("Sorting style", selection: $selectedSortingStyle) {
-                                            ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
-                                                Text($0)
-                                            }
-                                        }
-                                        .pickerStyle(.radioGroup)
-                                    }
-                                    .padding(.horizontal)
-                                    
-                                }
-                                .tabItem {
-                                    Text("Grouping and sorting")
-                                }
-                                
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("Showing status")
-                                            .font(.headline)
-                                        
-                                        Toggle("Waiting", isOn: $showingWaiting)
-                                        Toggle("Watching", isOn: $showingWatching)
-                                        Toggle("Dropped", isOn: $showingDropped)
-                                        Toggle("Completed", isOn: $showingCompleted)
-                                        Toggle("To watch", isOn: $showingToWatch)
-                                    }
-                                    .padding(.trailing)
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text("Showing rating")
-                                            .font(.headline)
-                                        
-                                        Toggle("None", isOn: $showingRatingNone)
-                                        Toggle("Horrible", isOn: $showingRatingHorrible)
-                                        Toggle("Bad", isOn: $showingRatingBad)
-                                        Toggle("Good", isOn: $showingRatingGood)
-                                        Toggle("Best", isOn: $showingRatingBest)
-                                    }
-                                    .padding(.leading)
-                                }
-                                .padding()
-                                .tabItem {
-                                    Text("Filters")
-                                }
-                            }
-                            .padding()
-                            
-                            HStack {
-                                Spacer()
-                                Button("Done") {
-                                    showingSearchDetailsSheet = false
-                                }
-                            }
-                            .padding([.bottom, .horizontal])
-                        }
-                        .frame(width: 500, height: 350)
-                    }
                     
                     HStack {
                         Text("Title")
@@ -203,6 +189,7 @@ struct MediaListView<T: MediaListElement>: View {
                                 NovelDetailsView(novel: novel)
                             }
                         }
+                        .searchable(text: $listQuery)
                     }
                     .sheet(isPresented: $showingAddNewMediaSheet) {
                         MediaListAddNewToListView<T>(sources: $sources)
@@ -210,6 +197,15 @@ struct MediaListView<T: MediaListElement>: View {
                     }
                 }
                 .frame(width: geo.size.width)
+            }
+        }
+        .toolbar {
+            ToolbarItem {
+                Button {
+                    showingAddNewMediaSheet = true
+                } label: {
+                    Image(systemName: "plus")
+                }
             }
         }
     }
