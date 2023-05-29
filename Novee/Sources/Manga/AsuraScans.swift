@@ -134,7 +134,12 @@ class AsuraScans: MangaFetcher, MangaSource {
             }
         
             let document: Document = try SwiftSoup.parse(htmlPage)
-            let infoElement: Element = try document.getElementsByClass("bigcontent")[0]
+            let infoElement = try document.getElementsByClass("bigcontent").first()
+            
+            guard let infoElement = infoElement else {
+                Log.shared.msg("An error occured while fetching manga details. InfoElement is nil.")
+                return nil
+            }
             
             result?.title = try infoElement
                 .child(1)
