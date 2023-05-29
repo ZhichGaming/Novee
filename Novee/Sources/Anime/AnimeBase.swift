@@ -23,5 +23,5 @@ class AnimeFetcher {
 }
 
 protocol AnimeSource: MediaSource where AssociatedMediaType == Anime {
-    func getStreamingUrl(for episode: Episode, anime: Anime, returnEpisode: @escaping (Episode?) -> Void) async
+    func getStreamingUrl(for episode: Episode, anime: Anime) async -> Episode?
 }

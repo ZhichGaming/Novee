@@ -77,13 +77,7 @@ class AnimeVM: MediaVM<Anime> {
     }
     
     func getStreamingUrl(for episode: Episode, anime: Anime) async -> Episode? {
-        await withCheckedContinuation { continuation in
-            Task {
-                await sources[selectedSource]?.getStreamingUrl(for: episode, anime: anime) { newEpisode in
-                    continuation.resume(returning: newEpisode)
-                }
-            }
-        }
+        await sources[selectedSource]?.getStreamingUrl(for: episode, anime: anime)
     }
     
     func downloadEpisode(for url: StreamingUrl, anime: Anime) async {

@@ -7,33 +7,42 @@
 
 import Foundation
 import SwiftSoup
+import CommonCrypto
 
 class Gogoanime: AnimeFetcher, AnimeSource {
-    override init(label: String = "Gogoanime", sourceId: String = "gogoanime", baseUrl: String = "https://ww4.gogoanimes.org") {
+    override init(label: String = "Gogoanime", sourceId: String = "gogoanime", baseUrl: String = "https://www1.gogoanime.bid") {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
     
-    // Documentation: https://docs.consumet.org/rest-api/Anime/gogoanime/get-recent-episodes
-    let api = "https://api.consumet.org/anime/gogoanime"
-    
     func getMedia(pageNumber: Int) async -> [Anime] {
         do {
-            guard let requestUrl = URL(string: api + "/recent-episodes" + "?page=" + String(pageNumber)) else {
+            guard let requestUrl = URL(string: baseUrl) else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
-            let animes = try JSONDecoder().decode(GogoanimeRecentReleaseApi.self, from: data)
+            guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+                Log.shared.msg("An error occured while fetching anime.")
+                return []
+            }
+            
+            let document = try SwiftSoup.parse(stringData)
+            
+            guard let animes = try document.getElementsByClass("last_episodes").first()?.child(0).children() else {
+                Log.shared.msg("An error occured while fetching anime.")
+                return []
+            }
             
             var result: [Anime] = []
                         
-            for anime in animes.results ?? [] {
+            for anime in animes {
                 let converted = Anime(
-                    title: anime.title,
-                    detailsUrl: URL(string: api + "/info/" + (anime.id ?? "")),
-                    imageUrl: URL(string: anime.image ?? ""))
+                    title: try anime.child(1).child(0).text(),
+                    detailsUrl: try URL(string: getDetailsUrlFromLatestChapter(url: anime.child(0).child(0).attr("href"))),
+                    imageUrl: try URL(string: anime.child(0).child(0).child(0).attr("src")),
+                    segments: [Episode(title: try anime.child(2).text(), segmentUrl: URL(string: try anime.child(0).child(0).attr("href"))!)])
                 
                 result.append(converted)
             }
@@ -53,23 +62,34 @@ class Gogoanime: AnimeFetcher, AnimeSource {
     func getSearchMedia(pageNumber: Int, searchQuery: String) async -> [Anime] {
         do {
             let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-            
-            guard let requestUrl = URL(string: api + "/\(safeSearchQuery)?page=\(pageNumber)") else {
+
+            guard let requestUrl = URL(string: baseUrl + "/search.html?keyword=\(safeSearchQuery)") else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
-            let animes = try JSONDecoder().decode(GogoanimeSearchApi.self, from: data)
+            guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+                Log.shared.msg("An error occured while fetching anime.")
+                return []
+            }
+            
+            let document = try SwiftSoup.parse(stringData)
+            
+            guard let animes = try document.getElementsByClass("items").first()?.children() else {
+                Log.shared.msg("An error occured while fetching anime.")
+                return []
+            }
             
             var result: [Anime] = []
                         
-            for anime in animes.results ?? [] {
+            for anime in animes {
                 let converted = Anime(
-                    title: anime.title,
-                    detailsUrl: URL(string: api + "/info/" + (anime.id ?? "")),
-                    imageUrl: URL(string: anime.image ?? ""))
+                    title: try anime.child(1).child(0).text(),
+                    detailsUrl: try URL(string: getDetailsUrlFromLatestChapter(url: anime.child(0).child(0).attr("href").replacingOccurrences(of: "/category", with: ""))),
+                    imageUrl: try URL(string: anime.child(0).child(0).child(0).attr("src")),
+                    segments: [Episode(title: try anime.child(2).text(), segmentUrl: URL(string: try anime.child(0).child(0).attr("href"))!)])
                 
                 result.append(converted)
             }
@@ -95,20 +115,111 @@ class Gogoanime: AnimeFetcher, AnimeSource {
 
             let (data, _) = try await URLSession.shared.data(from: requestUrl)
             
-            let newAnime = try JSONDecoder().decode(GogoanimeDetailsApi.self, from: data)
+            guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+                Log.shared.msg("An error occured while fetching anime. Converting to string failed.")
+                return nil
+            }
             
-            let result: Anime? = Anime(
-                title: newAnime.title,
-                altTitles: newAnime.otherName != nil ? [newAnime.otherName!] : nil,
-                description: newAnime.description,
-                tags: newAnime.genres?.map { MediaTag(name: $0) },
-                detailsUrl: media.detailsUrl,
-                imageUrl: URL(string: newAnime.image ?? ""),
-                segments: newAnime.episodes?.map { Episode(
-                    title: "Episode \($0.number)",
-                    segmentUrl: URL(string: $0.url)!,
-                    episodeId: $0.id)
-                })
+            let document = try SwiftSoup.parse(stringData)
+            
+            guard let infoElement = try document.getElementsByClass("anime_info_body_bg").first() else {
+                Log.shared.msg("An error occured while fetching anime. Scraping infoElement failed.")
+                return nil
+            }
+            
+            var newAnime = Anime()
+            
+            newAnime.title = try infoElement.child(1).text()
+            newAnime.imageUrl = try URL(string: infoElement.child(0).attr("src"))
+            
+            newAnime.description = try infoElement.children().first(where: {
+                try $0.text().contains("Plot Summary: ")
+            })?.text().replacingOccurrences(of: "Plot Summary: ", with: "")
+            
+            newAnime.altTitles = try infoElement.children().first(where: {
+                try $0.text().contains("Other name: ")
+            })?.text().replacingOccurrences(of: "Other name: ", with: "").components(separatedBy: "; ")
+            
+            newAnime.tags = try infoElement.children().first(where: {
+                try $0.text().contains("Genre: ")
+            })?.children().filter {
+                try !$0.text().contains("Genre: ")
+            }.map {
+                MediaTag(name: try $0.text(), url: try URL(string: $0.attr("href")))
+            }
+            
+            newAnime.segments = try await getEpisodes(document: document)
+            
+            return newAnime
+        } catch {
+            Log.shared.error(error)
+            return nil
+        }
+    }
+    
+    private func getEpisodes(document: Document) async throws -> [Episode]? {
+        guard let id = try document.getElementById("movie_id")?.attr("value") else {
+            Log.shared.msg("An error occured while fetching anime.")
+            return nil
+        }
+        
+        guard let defaultEpisode = try document.getElementById("default_ep")?.attr("value") else {
+            Log.shared.msg("An error occured while fetching anime.")
+            return nil
+        }
+        
+        guard let alias = try document.getElementById("alias_anime")?.attr("value") else {
+            Log.shared.msg("An error occured while fetching anime.")
+            return nil
+        }
+        
+        guard let requestUrl = URL(string: "https://ajax.gogo-load.com/ajax/load-list-episode?ep_start=0&ep_end=10000&id=\(id)&default_ep=\(defaultEpisode)&alias=\(alias)") else {
+            Log.shared.msg("Invalid segments url.")
+            return nil
+        }
+
+        let (data, _) = try await URLSession.shared.data(from: requestUrl)
+        
+        guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+            Log.shared.msg("An error occured while fetching anime.")
+            return nil
+        }
+        
+        let newDocument = try SwiftSoup.parse(stringData)
+        
+        guard let episodes = try newDocument.getElementById("episode_related")?.children() else {
+            Log.shared.msg("Cannot find episodes.")
+            return nil
+        }
+        
+        var result = [Episode]()
+        
+        for episode in episodes.reversed() {
+            result.append(Episode(title: try episode.child(0).child(0).text(), segmentUrl: try URL(string: baseUrl + episode.child(0).attr("href").trimmingCharacters(in: .whitespacesAndNewlines))!))
+        }
+        
+        return result
+    }
+    
+    func getStreamingUrl(for episode: Episode, anime: Anime) async -> Episode? {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: episode.segmentUrl)
+            
+            guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+                Log.shared.msg("An error occured while fetching streaming URLs.")
+                return nil
+            }
+            
+            let document = try SwiftSoup.parse(stringData)
+            
+            guard let videoUrl = URL(string: try document.select("#load_anime > div > div > iframe").attr("src")) else {
+                Log.shared.msg("An error occured while fetching streaming URLs.")
+                return nil
+            }
+            
+            var result = episode
+            
+            result.streamingUrls = try await extractSources(from: videoUrl)
             
             return result
         } catch {
@@ -117,40 +228,154 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         }
     }
     
-    func getStreamingUrl(for episode: Episode, anime: Anime, returnEpisode: @escaping (Episode?) -> Void) async {
-        guard let episodeId = episode.episodeId else {
-            Log.shared.msg("An error occured while getting episodeId.")
-            return
+    func getDetailsUrlFromLatestChapter(url: String) -> String {
+        var newString = url
+        
+        if let lowerBound = newString.range(of: "episode", options: .backwards)?.lowerBound {
+            newString.removeSubrange(lowerBound..<newString.endIndex)
+            newString.removeLast()
         }
         
-        if let requestUrl = URL(string: "https://api.consumet.org/anime/gogoanime/watch/" + episodeId) {
-            let request = URLRequest(url: requestUrl)
+        return baseUrl + "/category" + newString
+    }
+    
+    func extractSources(from url: URL) async throws -> [StreamingUrl]? {
+        var request = URLRequest(url: url)
+        request.setValue(baseUrl, forHTTPHeaderField: "Referer")
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
             
-            let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                do {
-                    let decoded = try JSONDecoder().decode(GogoanimeStreamingUrlApi.self, from: data ?? Data())
-                    
-                    var result: Episode = episode
-                    
-                    result.referer = URL(string: decoded.headers?.referer ?? "")
-                    result.downloadUrl = URL(string: decoded.download ?? "")
-                    result.streamingUrls = decoded.sources?.map {
-                        StreamingUrl(
-                            url: URL(string: $0.url ?? ""),
-                            isM3U8: $0.isM3U8,
-                            quality: $0.quality
-                        )
-                    }
-                    
-                    returnEpisode(result)
-                } catch {
-                    Log.shared.error(error)
-                }
+        guard let responseString = String(data: data, encoding: .utf8) else {
+            Log.shared.msg("An error occured while fetching streaming URLs. (2)")
+            return nil
+        }
+                        
+        let keyData = "37911490979715163134003223491201"
+        let secondKeyData = "54674138327930866480207815084989"
+        let ivData = "3134003223491201"
+        
+        let keys = (key: keyData, secondKey: secondKeyData, iv: ivData)
+        
+        var encryptedParams = String(responseString.split(separator: "data-value=\"")[1].split(separator: "\"><")[0]).aesDecrypt(key: keys.key, iv: keys.iv)
+        
+        let encrypt = encryptedParams?.split(separator: "&")[0]
+        
+        guard let encrypt = encrypt else {
+            Log.shared.msg("An error occured while fetching streaming URLs. Encrypt is nil.)")
+            return nil
+        }
+        
+        guard let newEncryptParams = String(data: Data(encrypt.utf8), encoding: .utf8)?.aesEncrypt(key: keys.key, iv: keys.iv) else {
+            Log.shared.msg("An error occured while fetching streaming URLs. New encrypted parameters are nil.)")
+            return nil
+        }
+        
+        encryptedParams = encryptedParams?.replacingOccurrences(of: "\(encrypt)", with: newEncryptParams)
+
+        guard let encryptedParams = encryptedParams else {
+            Log.shared.msg("An error occured while fetching streaming URLs. Encrypted parameters are nil.)")
+            return nil
+        }
+                
+        guard let encryptedDataRequestUrl = URL(string: "https://playtaku.online/encrypt-ajax.php?id=\(encryptedParams)&alias=\(encrypt)") else {
+            Log.shared.msg("An error occured while fetching streaming URLs. Encrypted data request URL is broken. (6)")
+            print("https://playtaku.online/encrypt-ajax.php?" + encryptedParams)
+            return nil
+        }
+                
+        var encryptedDataRequest = URLRequest(url: encryptedDataRequestUrl)
+        
+        encryptedDataRequest.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
+        encryptedDataRequest.setValue(url.absoluteString, forHTTPHeaderField: "Referer")
+        
+        let (encryptedData, _) = try await URLSession.shared.data(for: encryptedDataRequest)
+        
+        let parsedData = try JSONDecoder().decode(Gogoanime.GogoanimeSourceData.self, from: encryptedData)
+        let decryptedData = parsedData.data.aesDecrypt(key: keys.secondKey, iv: keys.iv)
+        
+        guard let decryptedData = decryptedData?.data(using: .utf8) else {
+            Log.shared.msg("An error occured while fetching streaming URLs. Decrypted data is nil.")
+            return nil
+        }
+        
+        let parsedDecryptedData = try JSONDecoder().decode(Gogoanime.Source.self, from: decryptedData)
+
+        var sources = [StreamingUrl]()
+
+        if parsedDecryptedData.source?[0].file?.contains(".m3u8") ?? false, let source = parsedDecryptedData.source?[0] {
+            guard let fileUrl = URL(string: source.file ?? "") else {
+                Log.shared.msg("An error occured while fetching streaming URLs. File URL is nil.")
+                return nil
             }
             
-            task.resume()
-        } else {
-            returnEpisode(nil)
+            let (resResult, _) = try await URLSession.shared.data(from: fileUrl)
+            
+            guard let stringResResult = String(data: resResult, encoding: .utf8) else {
+                Log.shared.msg("An error occured while fetching streaming URLs. Res result is nil.")
+                return nil
+            }
+            
+            let resolutions = stringResResult.components(separatedBy: .newlines).map {
+                if $0.contains("EXT-X-STREAM-INF") {
+                    return $0.components(separatedBy: "RESOLUTION=")[1].components(separatedBy: ",")[0]
+                }
+                
+                return ""
+            }.filter { !$0.isEmpty }
+                                    
+            for resolution in resolutions {
+                let index = parsedDecryptedData.source?[0].file?.lastIndex(of: "/")
+                
+                guard let index = index else {
+                    Log.shared.msg("An error occured while fetching streaming URLs. Index is nil.")
+                    return nil
+                }
+                
+                let quality = resolution.components(separatedBy: "x")[1]
+                guard let stringResolutionUrl = parsedDecryptedData.source?[0].file?[..<index] else {
+                    Log.shared.msg("An error occured while fetching streaming URLs. Initial resolution URL is nil.")
+                    return nil
+                }
+                
+                guard let indexOfResolution = stringResResult.components(separatedBy: .newlines).firstIndex(where: { $0.contains(resolution) && !$0.contains(".m3u8") }) else {
+                    Log.shared.msg("An error occured while fetching streaming URLs. Index of resolution is nil.")
+                    return nil
+                }
+
+                guard let resolutionUrl = URL(string: stringResolutionUrl + "/" + stringResResult.components(separatedBy: .newlines)[indexOfResolution + 1]) else {
+                    Log.shared.msg("An error occured while fetching streaming URLs. Resolution URL is nil.")
+                    print(stringResolutionUrl + "/" + stringResResult.components(separatedBy: .newlines)[indexOfResolution])
+                    return nil
+                }
+                                
+                sources.append(StreamingUrl(
+                    url: resolutionUrl,
+                    isM3U8: resolutionUrl.absoluteString.contains(".m3u8"),
+                    quality: quality + "p")
+                )
+            }
         }
+        
+        return sources
+    }
+    
+    struct GogoanimeSourceData: Codable, Hashable {
+        var data: String
+    }
+    
+    struct Source: Codable {
+        var source: [SourceFile]?
+        var sourceBk: [SourceFile]?
+        
+        enum CodingKeys: String, CodingKey {
+            case source
+            case sourceBk = "source_bk"
+        }
+    }
+
+    struct SourceFile: Codable {
+        let file: String?
+        let label: String?
+        let type: String?
     }
 }
