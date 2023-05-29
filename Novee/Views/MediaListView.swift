@@ -92,13 +92,21 @@ struct MediaListView<T: MediaListElement>: View {
 //                        .padding(.horizontal)
                     
                     HStack {
+                        Picker("Sorted by", selection: $selectedSortingStyle) {
+                            ForEach(["Recently updated", "Recently added", "By title"], id: \.self) {
+                                Text($0)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 500)
+                        
                         Spacer()
                         
                         Button {
                             showingFilterPopover.toggle()
                         } label: {
                             HStack {
-                                Text("Filter")
+                                Text("Advanced filters")
                                     .font(.headline)
                                 
                                 Image(systemName: "chevron.down")
