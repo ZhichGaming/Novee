@@ -16,7 +16,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
     
     func getMedia(pageNumber: Int) async -> [Anime] {
         do {
-            guard let requestUrl = URL(string: baseUrl) else {
+            guard let requestUrl = URL(string: baseUrl + "?page=\(pageNumber)") else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
@@ -63,7 +63,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         do {
             let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
 
-            guard let requestUrl = URL(string: baseUrl + "/search.html?keyword=\(safeSearchQuery)") else {
+            guard let requestUrl = URL(string: baseUrl + "/search.html?keyword=\(safeSearchQuery)&page=\(pageNumber)") else {
                 Log.shared.msg("An error occured while formatting the URL")
                 return []
             }
