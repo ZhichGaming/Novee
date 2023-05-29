@@ -127,7 +127,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                 return nil
             }
             
-            var newAnime = Anime()
+            var newAnime = media
             
             newAnime.title = try infoElement.child(1).text()
             newAnime.imageUrl = try URL(string: infoElement.child(0).attr("src"))
