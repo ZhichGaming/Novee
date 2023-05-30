@@ -24,6 +24,14 @@ struct ContentView: View {
                     }
                 }
                 
+                NavigationLink(tag: "favourites", selection: self.$selectedView, destination: { FavouritesView() }) {
+                    HStack {
+                        Image(systemName: "star")
+                            .frame(width: 15)
+                        Text("Favourites")
+                    }
+                }
+                
                 Section("Anime") {
                     NavigationLink(tag: "anime", selection: self.$selectedView, destination: { AnimeMenuView() }) {
                         HStack {

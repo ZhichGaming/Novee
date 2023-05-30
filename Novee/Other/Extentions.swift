@@ -84,6 +84,21 @@ extension MediaType {
     }
 }
 
+extension LoadingState? {
+    func getColor() -> Color {
+        switch self {
+        case .loading:
+            return Color.yellow
+        case .success:
+            return Color.green
+        case .failed:
+            return Color.red
+        default:
+            return Color.blue
+        }
+    }
+}
+
 extension NSImage {
     func pngData() -> Data? {
         if let tiffRepresentation = self.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) {
