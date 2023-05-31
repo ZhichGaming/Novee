@@ -195,7 +195,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         var result = [Episode]()
         
         for episode in episodes.reversed() {
-            result.append(Episode(title: try episode.child(0).child(0).text(), segmentUrl: try URL(string: baseUrl + episode.child(0).attr("href").trimmingCharacters(in: .whitespacesAndNewlines))!))
+            result.append(Episode(title: try episode.child(0).child(0).text().replacingOccurrences(of: "EP", with: "Episode"), segmentUrl: try URL(string: baseUrl + episode.child(0).attr("href").trimmingCharacters(in: .whitespacesAndNewlines))!))
         }
         
         return result
