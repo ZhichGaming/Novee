@@ -67,9 +67,11 @@ class MangaVM: MediaVM<Manga> {
                         continuation.resume(returning: await sources[source.sourceId]!.getMediaDetails(media: manga))
                     }
                     
-                    break
+                    return
                 }
             }
+            
+            continuation.resume(returning: nil)
         }
         
         return continuation
@@ -94,9 +96,11 @@ class MangaVM: MediaVM<Manga> {
                         continuation.resume(returning: await sources[source.sourceId]!.getMediaDetails(media: manga))
                     }
                     
-                    break
+                    return
                 }
             }
+            
+            continuation.resume(returning: nil)
         }
         
         return continuation

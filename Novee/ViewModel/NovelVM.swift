@@ -60,9 +60,11 @@ class NovelVM: MediaVM<Novel> {
                         continuation.resume(returning: await sources[source.sourceId]!.getMediaDetails(media: novel))
                     }
                     
-                    break
+                    return
                 }
             }
+            
+            continuation.resume(returning: nil)
         }
     }
     
