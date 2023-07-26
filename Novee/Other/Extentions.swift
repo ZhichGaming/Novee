@@ -84,7 +84,7 @@ extension MediaType {
     }
 }
 
-extension LoadingState? {
+extension LoadingState {
     func getColor() -> Color {
         switch self {
         case .loading:
@@ -93,8 +93,6 @@ extension LoadingState? {
             return Color.green
         case .failed:
             return Color.red
-        default:
-            return Color.blue
         }
     }
 }

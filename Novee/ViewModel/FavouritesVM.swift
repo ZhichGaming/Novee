@@ -25,7 +25,7 @@ class FavouritesVM: ObservableObject {
         
         let result = [animeFavourites as [any MediaListElement], mangaFavourites as [any MediaListElement], novelFavourites as [any MediaListElement]].reduce([], +).sorted { $0.lastViewedDate ?? .distantPast > $1.lastViewedDate ?? .distantPast }
         
-        favourites = result.map { Favourite(mediaListElement: $0, loadingState: .loading) }
+        favourites = result.map { Favourite(mediaListElement: $0, loadingState: nil) }
         return result
     }
     
@@ -56,4 +56,51 @@ class FavouritesVM: ObservableObject {
         
         getFavourites()
     }
+
+    @discardableResult
+    func fetchLatestSegments<T: MediaListElement>(for media: T) async -> T {
+        guard let index = favourites.firstIndex(where: { $0.mediaListElement.id == media.id }) else {
+            Log.shared.msg("Cannot find favourited item in list.")
+            return media
+        }
+        
+        Task { @MainActor in
+            favourites[index].loadingState = .loading
+        }
+        
+        var updatedMediaDetails: [String: T.AssociatedMediaType]? = nil
+        
+        if let anime = media as? AnimeListElement {
+            updatedMediaDetails = await AnimeVM.shared.getAllUpdatedMediaDetails(for: anime.content) as? [String: T.AssociatedMediaType]
+        } else if let manga = media as? MangaListElement {
+            updatedMediaDetails = await MangaVM.shared.getAllUpdatedMediaDetails(for: manga.content) as? [String: T.AssociatedMediaType]
+        } else if let novel = media as? NovelListElement {
+            updatedMediaDetails = await NovelVM.shared.getAllUpdatedMediaDetails(for: novel.content) as? [String: T.AssociatedMediaType]
+        }
+        
+        guard let updatedMediaDetails = updatedMediaDetails else {
+            Log.shared.msg("Failed to fetch latest segment for favourited item.")
+            favourites[index].loadingState = .failed
+            return media
+        }
+        
+        Task { @MainActor in
+            favourites[index].mediaListElement = T(
+                content: updatedMediaDetails,
+                lastSegment: favourites[index].mediaListElement.lastSegment,
+                status: favourites[index].mediaListElement.status,
+                rating: favourites[index].mediaListElement.rating,
+                lastViewedDate: favourites[index].mediaListElement.lastViewedDate,
+                creationDate: favourites[index].mediaListElement.creationDate)
+            
+            if updatedMediaDetails.values.isEmpty || !updatedMediaDetails.values.map({ $0.segments == nil }).contains(false) {
+                favourites[index].loadingState = .failed
+            } else {
+                favourites[index].loadingState = .success
+            }
+        }
+        
+        return favourites[index].mediaListElement as! T
+    }
+    
 }
