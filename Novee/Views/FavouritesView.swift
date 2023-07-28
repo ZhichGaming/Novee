@@ -155,7 +155,9 @@ struct FavouritesView: View {
     }
     
     func getLastFetchedSegment(for mediaListElement: any MediaListElement) async -> String {
-        let allLatestSegments = await favouritesVM.fetchLatestSegments(for: mediaListElement).content
+        guard let allLatestSegments = await favouritesVM.fetchLatestSegments(for: mediaListElement)?.content else {
+            return "Error."
+        }
         
         var currentLatestSegment = ""
         
@@ -172,10 +174,7 @@ struct FavouritesView: View {
                 currentLatestSegment = sourceLast
             } else if let sourceLast = source.segments?.last?.title, currentLatestSegment.isEmpty {
                 currentLatestSegment = sourceLast
-            }
-            
-            print(source.segments?.last?.title ?? "Error: None")
-
+            }            
         }
         
         return currentLatestSegment

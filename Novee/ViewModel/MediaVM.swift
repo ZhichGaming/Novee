@@ -39,7 +39,7 @@ class MediaVM<T: Media>: ObservableObject {
         }
     }
     
-    func getAllUpdatedMediaDetails(for oldSources: [String: T]) async -> [String: T] {
+    func getAllUpdatedMediaDetails(for oldSources: [String: T], returnUnupdatedValue: Bool = true) async -> [String: T] {
         var result = [String: T]()
         
         var sources: [String: any MediaSource] {
@@ -57,7 +57,7 @@ class MediaVM<T: Media>: ObservableObject {
             if let _ = sources[oldSource.key] {
                 if let newMedia = await getMediaDetails(for: oldSource.value, source: oldSource.key) {
                     result[oldSource.key] = newMedia
-                } else {
+                } else if returnUnupdatedValue {
                     result[oldSource.key] = oldSource.value
                 }
             }

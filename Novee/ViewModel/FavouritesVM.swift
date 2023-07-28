@@ -58,7 +58,7 @@ class FavouritesVM: ObservableObject {
     }
 
     @discardableResult
-    func fetchLatestSegments<T: MediaListElement>(for media: T) async -> T {
+    func fetchLatestSegments<T: MediaListElement>(for media: T) async -> T? {
         guard let index = favourites.firstIndex(where: { $0.mediaListElement.id == media.id }) else {
             Log.shared.msg("Cannot find favourited item in list.")
             return media
@@ -71,36 +71,40 @@ class FavouritesVM: ObservableObject {
         var updatedMediaDetails: [String: T.AssociatedMediaType]? = nil
         
         if let anime = media as? AnimeListElement {
-            updatedMediaDetails = await AnimeVM.shared.getAllUpdatedMediaDetails(for: anime.content) as? [String: T.AssociatedMediaType]
+            updatedMediaDetails = await AnimeVM.shared.getAllUpdatedMediaDetails(for: anime.content, returnUnupdatedValue: false) as? [String: T.AssociatedMediaType]
         } else if let manga = media as? MangaListElement {
-            updatedMediaDetails = await MangaVM.shared.getAllUpdatedMediaDetails(for: manga.content) as? [String: T.AssociatedMediaType]
+            updatedMediaDetails = await MangaVM.shared.getAllUpdatedMediaDetails(for: manga.content, returnUnupdatedValue: false) as? [String: T.AssociatedMediaType]
         } else if let novel = media as? NovelListElement {
-            updatedMediaDetails = await NovelVM.shared.getAllUpdatedMediaDetails(for: novel.content) as? [String: T.AssociatedMediaType]
+            updatedMediaDetails = await NovelVM.shared.getAllUpdatedMediaDetails(for: novel.content, returnUnupdatedValue: false) as? [String: T.AssociatedMediaType]
         }
         
         guard let updatedMediaDetails = updatedMediaDetails else {
             Log.shared.msg("Failed to fetch latest segment for favourited item.")
-            favourites[index].loadingState = .failed
-            return media
+            
+            Task { @MainActor in
+                favourites[index].loadingState = .failed
+            }
+            
+            return nil
         }
         
-        Task { @MainActor in
-            favourites[index].mediaListElement = T(
-                content: updatedMediaDetails,
-                lastSegment: favourites[index].mediaListElement.lastSegment,
-                status: favourites[index].mediaListElement.status,
-                rating: favourites[index].mediaListElement.rating,
-                lastViewedDate: favourites[index].mediaListElement.lastViewedDate,
-                creationDate: favourites[index].mediaListElement.creationDate)
-            
-            if updatedMediaDetails.values.isEmpty || !updatedMediaDetails.values.map({ $0.segments == nil }).contains(false) {
+        if updatedMediaDetails.values.isEmpty || !updatedMediaDetails.values.map({ $0.segments == nil }).contains(false) {
+            Task { @MainActor in
                 favourites[index].loadingState = .failed
-            } else {
+            }
+                        
+//            print("Values is empty: " + updatedMediaDetails.values.isEmpty.description)
+//            print("Does not contain a segment that isn't nil: " + (!updatedMediaDetails.values.map({ $0.segments == nil }).contains(false)).description)
+            
+            return nil
+        } else {
+            Task { @MainActor in
                 favourites[index].loadingState = .success
             }
+            
+            return favourites[index].mediaListElement as? T
         }
         
-        return favourites[index].mediaListElement as! T
     }
     
 }
