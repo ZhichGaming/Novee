@@ -154,32 +154,6 @@ struct FavouritesView: View {
         }
     }
     
-    func getLastFetchedSegment(for mediaListElement: any MediaListElement) async -> String {
-        guard let allLatestSegments = await favouritesVM.fetchLatestSegments(for: mediaListElement)?.content else {
-            return "Error."
-        }
-        
-        var currentLatestSegment = ""
-        
-        for source in allLatestSegments.values {
-//            source.segments?.firstIndex(where: { mediaListElement.lastSegment == $0.title })
-            
-            /// This if statement checks if the current looped over source has chapters later than previous sources. Checks if:
-            /// - The current latest segment exists in this source.
-            /// - The last segment exists in this source (whether the source is empty).
-            /// - The current latest segment is not the source last segment.
-            if let currentLast = source.segments?.first(where: { $0.title == currentLatestSegment }),
-               let sourceLast = source.segments?.last?.title,
-               currentLast.title != sourceLast {
-                currentLatestSegment = sourceLast
-            } else if let sourceLast = source.segments?.last?.title, currentLatestSegment.isEmpty {
-                currentLatestSegment = sourceLast
-            }            
-        }
-        
-        return currentLatestSegment
-    }
-    
     func getListRow(favourite: Favourite, index: Int, geo: GeometryProxy) -> some View {
         HStack {
             Text(favourite.mediaListElement.content.first?.value.title ?? "No title")
@@ -193,7 +167,7 @@ struct FavouritesView: View {
                 .lineLimit(2)
                 .onAppear {
                     Task { @MainActor in
-                        fetchedLatestChapters[index] = await getLastFetchedSegment(for: favourite.mediaListElement)
+                        fetchedLatestChapters[index] = await favouritesVM.getLastFetchedSegment(for: favourite.mediaListElement) ?? "Error."
                     }
                 }
 
