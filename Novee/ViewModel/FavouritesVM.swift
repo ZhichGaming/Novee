@@ -11,7 +11,16 @@ class FavouritesVM: ObservableObject {
     static var shared = FavouritesVM()
     
     // rewrite this to Favourites array
-    @Published var favourites: [Favourite] = []
+    @Published var favourites: [Favourite] = [] {
+        willSet {
+            if newValue.count != favourites.count {
+                notificationFavourites = newValue
+            }
+        }
+    }
+    
+    /// The array used for fetching favourites in the background and displaying notifications. 
+    @Published var notificationFavourites: [Favourite] = []
     
     @discardableResult
     func getFavourites() -> [any MediaListElement] {
@@ -107,8 +116,8 @@ class FavouritesVM: ObservableObject {
     }
     
     /// Gets the latest segment for some `mediaListElement` from sources saved in the user's media lists.
-    func getLastFetchedSegment(for mediaListElement: any MediaListElement) async -> String? {
-        guard let allLatestSegments = await fetchLatestSegments(for: mediaListElement)?.content else {
+    func getLastFetchedSegment<T: MediaListElement>(for mediaListElement: T, fetch: Bool = true) async -> String? {
+        guard let allLatestSegments = fetch ? (await fetchLatestSegments(for: mediaListElement)?.content) : mediaListElement.content else {
             return nil
         }
         

@@ -93,6 +93,8 @@ struct NoveeApp: App {
     }
     
     private func loadSegmentFetcher() {
+        FavouritesVM.shared.getFavourites()
+        
         requestNotificationAuthorization()
         
         let timer = Timer(fire: Date(), interval: 3600, repeats: true) { timer in
@@ -115,20 +117,27 @@ struct NoveeApp: App {
     }
     
     private func fetchNewSegments() async {
-        let favourites = FavouritesVM.shared.getFavourites()
+        var favourites = FavouritesVM.shared.notificationFavourites
         
         var amountOfUpdates = 0
         var updatedMediaTitle = ""
         var updatedSegmentTitle = ""
         
-        for favourite in favourites {
-            let savedLatestChapter = favourite.lastSegment
-            let fetchedLatestChapter = await FavouritesVM.shared.getLastFetchedSegment(for: favourite)
+        for (index, favourite) in favourites.enumerated() {
+            let savedLatestChapter = favourite.mediaListElement.lastSegment
+            let fetchedMedia = await FavouritesVM.shared.fetchLatestSegments(for: favourite.mediaListElement)
             
+            guard let fetchedMedia = fetchedMedia else {
+                Log.shared.log("Fetched media is nil.", isError: true)
+                return
+            }
+            
+            let fetchedLatestChapter = await getFetchedLatestChapter(fetchedMedia: fetchedMedia)
+
             if let savedLatestChapter = savedLatestChapter, let fetchedLatestChapter = fetchedLatestChapter {
                 if savedLatestChapter != fetchedLatestChapter {
                     if amountOfUpdates == 0 {
-                        updatedMediaTitle = favourite.content.first?.value.title ?? "Unknown"
+                        updatedMediaTitle = favourite.mediaListElement.content.first?.value.title ?? "Unknown"
                         updatedSegmentTitle = fetchedLatestChapter
                     }
 
@@ -136,10 +145,17 @@ struct NoveeApp: App {
                 }
             }
             
+            // Finished checking whether there is a new chapter, update favourites so notifications don't repeat.
+            favourites[index].mediaListElement = fetchedMedia
+            favourites[index].mediaListElement.lastSegment = fetchedLatestChapter
+            
             try? await Task.sleep(nanoseconds: UInt64(3 * Double(NSEC_PER_SEC)))
         }
         
+        FavouritesVM.shared.notificationFavourites = favourites
+        
         if amountOfUpdates == 0 {
+            print("0 new media updates.")
             return
         }
         
@@ -160,5 +176,9 @@ struct NoveeApp: App {
         } catch {
             Log.shared.error(error)
         }
+    }
+    
+    private func getFetchedLatestChapter(fetchedMedia: any MediaListElement) async -> String? {
+        await FavouritesVM.shared.getLastFetchedSegment(for: fetchedMedia, fetch: false)
     }
 }
