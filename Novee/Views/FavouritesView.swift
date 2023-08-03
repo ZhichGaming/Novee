@@ -147,7 +147,7 @@ struct FavouritesView: View {
                     getListRow(favourite: favourite, index: index, geo: geo)
                 }
                 .onAppear {
-                    favouritesVM.getFavourites()
+                    favouritesVM.updateFavourites()
                 }
                 .searchable(text: $searchQuery)
             }

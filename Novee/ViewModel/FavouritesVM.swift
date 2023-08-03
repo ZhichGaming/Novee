@@ -10,20 +10,16 @@ import Foundation
 class FavouritesVM: ObservableObject {
     static var shared = FavouritesVM()
     
-    // rewrite this to Favourites array
-    @Published var favourites: [Favourite] = [] {
-        willSet {
-            if newValue.count != favourites.count {
-                notificationFavourites = newValue
-            }
-        }
+    init() {
+        favourites = getFavourites()
     }
     
-    /// The array used for fetching favourites in the background and displaying notifications. 
-    @Published var notificationFavourites: [Favourite] = []
+    @Published var favourites: [Favourite] = []
+    // TODO: Stop updating when there's already updating going on
+//    @Published var isUpdating = false
     
     @discardableResult
-    func getFavourites() -> [any MediaListElement] {
+    func getFavourites() -> [Favourite] {
         let animeListVM = AnimeListVM.shared
         let mangaListVM = MangaListVM.shared
         let novelListVM = NovelListVM.shared
@@ -34,8 +30,31 @@ class FavouritesVM: ObservableObject {
         
         let result = [animeFavourites as [any MediaListElement], mangaFavourites as [any MediaListElement], novelFavourites as [any MediaListElement]].reduce([], +).sorted { $0.lastViewedDate ?? .distantPast > $1.lastViewedDate ?? .distantPast }
         
-        favourites = result.map { Favourite(mediaListElement: $0, loadingState: nil) }
-        return result
+        return result.map { Favourite(mediaListElement: $0, loadingState: nil) }
+    }
+    
+    @discardableResult
+    func updateFavourites() -> [Favourite] {
+        let newFavourites = getFavourites()
+        var oldFavourites = favourites
+        
+        for newFavourite in newFavourites {
+            if let index = oldFavourites.firstIndex(where: { $0.mediaListElement.id == newFavourite.mediaListElement.id }) {
+                oldFavourites.remove(at: index)
+            } else {
+                favourites.append(newFavourite)
+            }
+        }
+        
+        if oldFavourites.count != 0 {
+            for oldFavourite in oldFavourites {
+                if let index = favourites.firstIndex(where: { $0.mediaListElement.id == oldFavourite.mediaListElement.id }) {
+                    favourites.remove(at: index)
+                }
+            }
+        }
+        
+        return favourites
     }
     
     func unfavourite<T: MediaListElement>(_ media: T) {

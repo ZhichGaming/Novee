@@ -117,7 +117,7 @@ struct NoveeApp: App {
     }
     
     private func fetchNewSegments() async {
-        var favourites = FavouritesVM.shared.notificationFavourites
+        var favourites = FavouritesVM.shared.favourites
         
         var amountOfUpdates = 0
         var updatedMediaTitle = ""
@@ -152,7 +152,7 @@ struct NoveeApp: App {
             try? await Task.sleep(nanoseconds: UInt64(3 * Double(NSEC_PER_SEC)))
         }
         
-        FavouritesVM.shared.notificationFavourites = favourites
+        FavouritesVM.shared.favourites = favourites
         
         if amountOfUpdates == 0 {
             print("0 new media updates.")
