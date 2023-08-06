@@ -96,7 +96,7 @@ struct ContentView: View {
             }
             .listStyle(.sidebar)
             .toolbar {
-                ToolbarItem(placement: .navigation) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: toggleSidebar, label: {
                         Image(systemName: "sidebar.leading")
                     })
