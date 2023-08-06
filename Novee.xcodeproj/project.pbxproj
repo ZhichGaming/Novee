@@ -34,6 +34,9 @@
 		9B5B1F8E2958FEA100160F6C /* MangaNato.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F8D2958FEA100160F6C /* MangaNato.swift */; };
 		9B5B1F91295A1BAC00160F6C /* Extentions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F90295A1BAC00160F6C /* Extentions.swift */; };
 		9B5B1F93295A2CFD00160F6C /* ChapMangaNato.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5B1F92295A2CFD00160F6C /* ChapMangaNato.swift */; };
+		9B69D7D12A7C00FF001A5287 /* NotificationsVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B69D7D02A7C00FF001A5287 /* NotificationsVM.swift */; };
+		9B69D7D32A7C060E001A5287 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B69D7D22A7C060E001A5287 /* NotificationView.swift */; };
+		9B69D7D52A7CE968001A5287 /* LocalNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B69D7D42A7CE968001A5287 /* LocalNotification.swift */; };
 		9B71CC4D2947AE170014B265 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC4C2947AE170014B265 /* CachedAsyncImage */; };
 		9B71CC512947CDB10014B265 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 9B71CC502947CDB10014B265 /* SwiftSoup */; };
 		9B71CC562947CEE70014B265 /* MangaKakalot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B71CC552947CEE70014B265 /* MangaKakalot.swift */; };
@@ -96,6 +99,9 @@
 		9B5B1F8D2958FEA100160F6C /* MangaNato.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MangaNato.swift; sourceTree = "<group>"; };
 		9B5B1F90295A1BAC00160F6C /* Extentions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extentions.swift; sourceTree = "<group>"; };
 		9B5B1F92295A2CFD00160F6C /* ChapMangaNato.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChapMangaNato.swift; sourceTree = "<group>"; };
+		9B69D7D02A7C00FF001A5287 /* NotificationsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsVM.swift; sourceTree = "<group>"; };
+		9B69D7D22A7C060E001A5287 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
+		9B69D7D42A7CE968001A5287 /* LocalNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotification.swift; sourceTree = "<group>"; };
 		9B71CC552947CEE70014B265 /* MangaKakalot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaKakalot.swift; sourceTree = "<group>"; };
 		9B71CC572948C24C0014B265 /* MangaBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaBase.swift; sourceTree = "<group>"; };
 		9B71CC5B2948F8BB0014B265 /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -239,6 +245,7 @@
 			isa = PBXGroup;
 			children = (
 				9B04480E28FB3DA300FD7891 /* ContentView.swift */,
+				9B69D7D22A7C060E001A5287 /* NotificationView.swift */,
 				9B78B57D28FBCE5900E1A837 /* HomeView.swift */,
 				9B23F3CA29F0EF0D00209FDE /* FavouritesView.swift */,
 				9B23F3C229EBC2AF00209FDE /* MediaDetailsView.swift */,
@@ -255,6 +262,7 @@
 			isa = PBXGroup;
 			children = (
 				9BEF80C629034D8500662F8C /* Settings.swift */,
+				9B69D7D42A7CE968001A5287 /* LocalNotification.swift */,
 				9B23F3CE29F227E800209FDE /* Favourites.swift */,
 				9B289A8D29D4EE8E00D95698 /* Media.swift */,
 				9B2EEFAE29D6762A0083D247 /* MediaList.swift */,
@@ -284,6 +292,7 @@
 				9BA1C50E29B3026B006DB424 /* NovelVM.swift */,
 				9BA1C52229B5363D006DB424 /* NovelListVM.swift */,
 				9BEF80C82903524A00662F8C /* SettingsVM.swift */,
+				9B69D7D02A7C00FF001A5287 /* NotificationsVM.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -429,6 +438,7 @@
 				9B8B70CC28FD8E8F008738D5 /* Log.swift in Sources */,
 				9B2B9D90299DB99A000EFEB1 /* Anime.swift in Sources */,
 				9BA1C52329B5363D006DB424 /* NovelListVM.swift in Sources */,
+				9B69D7D12A7C00FF001A5287 /* NotificationsVM.swift in Sources */,
 				9BEF80C729034D8500662F8C /* Settings.swift in Sources */,
 				9B71CC582948C24C0014B265 /* MangaBase.swift in Sources */,
 				9B78B57E28FBCE5900E1A837 /* HomeView.swift in Sources */,
@@ -449,6 +459,7 @@
 				9B23F3CF29F227E800209FDE /* Favourites.swift in Sources */,
 				9BA1C50529AF117E006DB424 /* AsuraScans.swift in Sources */,
 				9BCC5C3C2965364200FDC318 /* MangaListView.swift in Sources */,
+				9B69D7D32A7C060E001A5287 /* NotificationView.swift in Sources */,
 				9B2B9D96299DD42E000EFEB1 /* AnimeBase.swift in Sources */,
 				9B1DCC2029A156DB00CBD5D7 /* AnimeListVM.swift in Sources */,
 				9B78B58428FBCE7000E1A837 /* NovelMenuView.swift in Sources */,
@@ -466,6 +477,7 @@
 				9B2B9D92299DD21A000EFEB1 /* AnimeVM.swift in Sources */,
 				9BA1C51329B3034A006DB424 /* NovelBase.swift in Sources */,
 				9B71CC5C2948F8BB0014B265 /* Manga.swift in Sources */,
+				9B69D7D52A7CE968001A5287 /* LocalNotification.swift in Sources */,
 				9BA1C50F29B3026B006DB424 /* NovelVM.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

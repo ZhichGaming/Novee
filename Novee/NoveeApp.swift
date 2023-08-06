@@ -31,6 +31,7 @@ struct NoveeApp: App {
                 .environmentObject(MangaLibraryVM.shared)
                 .environmentObject(NovelVM.shared)
                 .environmentObject(NovelListVM.shared)
+                .environmentObject(NotificationsVM.shared)
                 .environmentObject(notification)
                 .presentedWindowToolbarStyle(.unified)
         }
@@ -159,23 +160,9 @@ struct NoveeApp: App {
             return
         }
         
-        do {
-            let content = UNMutableNotificationContent()
-            content.title = "There are " + amountOfUpdates.description + " new chapters/episodes"
-            content.subtitle = "\(updatedSegmentTitle) from \(updatedMediaTitle) and \(amountOfUpdates != 1 ? amountOfUpdates.description + " others " : "")have been published."
-            content.sound = UNNotificationSound.default
-
-            // show this notification five seconds from now
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-
-            // choose a random identifier
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-
-            // add our notification request
-            try await UNUserNotificationCenter.current().add(request)
-        } catch {
-            Log.shared.error(error)
-        }
+        await NotificationsVM.shared.addNotification(
+            title: "There are " + amountOfUpdates.description + " new chapters/episodes",
+            subtitle: "\(updatedSegmentTitle) from \(updatedMediaTitle) and \(amountOfUpdates != 1 ? amountOfUpdates.description + " others " : "")have been published.")
     }
     
     private func getFetchedLatestChapter(fetchedMedia: any MediaListElement) async -> String? {

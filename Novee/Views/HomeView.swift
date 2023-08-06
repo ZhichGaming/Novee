@@ -15,6 +15,8 @@ struct HomeView: View {
     @EnvironmentObject var mangaVM: MangaVM
     @EnvironmentObject var novelVM: NovelVM
     
+    @State private var showingNotificationsPopup = false
+    
     @Environment(\.colorScheme) var colorScheme
     
     @Binding var tab: String?
@@ -131,6 +133,14 @@ struct HomeView: View {
         }
         .frame(height: 200)
         .padding(-20)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                NotificationToolbarButton(isPopupShown: $showingNotificationsPopup)
+                    .popover(isPresented: $showingNotificationsPopup) {
+                        NotificationView()
+                    }
+            }
+        }
     }
 }
 

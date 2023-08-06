@@ -14,6 +14,7 @@ struct FavouritesView: View {
     @State private var selectedSortingStyle = "Recently updated"
     
     @State private var showingFilterPopover = false
+    @State private var showingNotificationsPopup = false
 
     @State private var showingWaiting = true
     @State private var showingViewing = true
@@ -150,6 +151,14 @@ struct FavouritesView: View {
                     favouritesVM.updateFavourites()
                 }
                 .searchable(text: $searchQuery)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                NotificationToolbarButton(isPopupShown: $showingNotificationsPopup)
+                    .popover(isPresented: $showingNotificationsPopup) {
+                        NotificationView()
+                    }
             }
         }
     }
