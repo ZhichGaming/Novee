@@ -37,7 +37,7 @@ struct NovelReaderView: View {
         GeometryReader { geometry in
             ScrollView(.vertical) {                
                 if let chapterContent = chapter.content {
-                    Text(chapterContent)
+                    NovelReaderContentView(chapterContent: chapterContent)
                         .font(settingsVM.settings.novelSettings.selectedTheme?.font)
                         .lineSpacing(5)
                         .padding()
@@ -364,5 +364,61 @@ struct NovelReaderSettingsView: View {
             .padding()
             .pickerStyle(.segmented)
         }
+    }
+}
+
+struct NovelReaderContentView: View {
+    let chapterContent: String
+    
+    var body: some View {
+        ForEach(0..<getSplitText().count, id: \.self) { index in
+            Text(getSplitText()[index])
+            
+            if getImageURLs().count > index {
+                CachedAsyncImage(url: getImageURLs()[index])
+            }
+        }
+    }
+    
+    func getImageURLs() -> [URL] {
+        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let matches = detector.matches(in: chapterContent, options: [], range: NSRange(location: 0, length: chapterContent.utf16.count))
+        var result: [URL] = []
+        
+        for match in matches {
+            guard let range = Range(match.range, in: chapterContent) else { continue }
+            let stringUrl = String(chapterContent[range])
+            
+            if let url = URL(string: stringUrl) {
+                let imageExtensions = ["png", "jpg", "jpeg"]
+                
+                let pathExtention = url.pathExtension
+                
+                if imageExtensions.contains(pathExtention.lowercased()) {
+                    result.append(url)
+                }
+            }
+        }
+        
+        return result
+    }
+    
+    func getSplitText() -> [String] {
+        let imageUrls = getImageURLs()
+        var result: [String] = [chapterContent]
+        
+        for (index, url) in imageUrls.enumerated() {
+            let split = result[index].split(separator: url.path, maxSplits: 1).map { String($0) }
+            
+            if split.count != 2 {
+                Log.shared.log("Error: Getting split text length is not two (\(split))", isError: true)
+                continue
+            }
+            
+            result[index] = split[0]
+            result.append(split[1])
+        }
+        
+        return result
     }
 }
