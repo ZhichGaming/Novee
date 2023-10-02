@@ -61,38 +61,7 @@ class Gogoanime: AnimeFetcher, AnimeSource {
     
     func getSearchMedia(pageNumber: Int, searchQuery: String) async -> [Anime] {
         do {
-            let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-
-            guard let requestUrl = URL(string: baseUrl + "/search.html?keyword=\(safeSearchQuery)&page=\(pageNumber)") else {
-                Log.shared.msg("An error occured while formatting the URL")
-                return []
-            }
-
-            let (data, _) = try await URLSession.shared.data(from: requestUrl)
-            
-            guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
-                Log.shared.msg("An error occured while fetching anime.")
-                return []
-            }
-            
-            let document = try SwiftSoup.parse(stringData)
-            
-            guard let animes = try document.getElementsByClass("items").first()?.children() else {
-                Log.shared.msg("An error occured while fetching anime.")
-                return []
-            }
-            
-            var result: [Anime] = []
-                        
-            for anime in animes {
-                let converted = Anime(
-                    title: try anime.child(1).child(0).text(),
-                    detailsUrl: try URL(string: getDetailsUrlFromLatestChapter(url: anime.child(0).child(0).attr("href").replacingOccurrences(of: "/category", with: ""))),
-                    imageUrl: try URL(string: anime.child(0).child(0).child(0).attr("src")),
-                    segments: [Episode(title: try anime.child(2).text(), segmentUrl: URL(string: try anime.child(0).child(0).attr("href"))!)])
-                
-                result.append(converted)
-            }
+            let result = try await fetchSearchMedia(pageNumber: pageNumber, searchQuery: searchQuery)
             
             DispatchQueue.main.sync {
                 AnimeVM.shared.objectWillChange.send()
@@ -106,8 +75,47 @@ class Gogoanime: AnimeFetcher, AnimeSource {
         }
     }
     
+    func fetchSearchMedia(pageNumber: Int, searchQuery: String) async throws -> [Anime] {
+        let safeSearchQuery = searchQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+
+        guard let requestUrl = URL(string: baseUrl + "/search.html?keyword=\(safeSearchQuery)&page=\(pageNumber)") else {
+            Log.shared.msg("An error occured while formatting the URL")
+            return []
+        }
+
+        let (data, _) = try await URLSession.shared.data(from: requestUrl)
+        
+        guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+            Log.shared.msg("An error occured while fetching anime.")
+            return []
+        }
+        
+        let document = try SwiftSoup.parse(stringData)
+        
+        guard let animes = try document.getElementsByClass("items").first()?.children() else {
+            Log.shared.msg("An error occured while fetching anime.")
+            return []
+        }
+        
+        var result: [Anime] = []
+                    
+        for anime in animes {
+            let converted = Anime(
+                title: try anime.child(1).child(0).text(),
+                detailsUrl: try URL(string: getDetailsUrlFromLatestChapter(url: anime.child(0).child(0).attr("href").replacingOccurrences(of: "/category", with: ""))),
+                imageUrl: try URL(string: anime.child(0).child(0).child(0).attr("src")),
+                segments: [Episode(title: try anime.child(2).text(), segmentUrl: URL(string: try anime.child(0).child(0).attr("href"))!)])
+            
+            result.append(converted)
+        }
+        
+        return result
+    }
+    
     func getMediaDetails(media: Anime) async -> Anime? {
         do {
+            var media = media
+            
             guard let requestUrl = media.detailsUrl else {
                 Log.shared.msg("No valid details url.")
                 return nil
@@ -120,10 +128,44 @@ class Gogoanime: AnimeFetcher, AnimeSource {
                 return nil
             }
             
-            let document = try SwiftSoup.parse(stringData)
+            var document = try SwiftSoup.parse(stringData)
             
-            guard let infoElement = try document.getElementsByClass("anime_info_body_bg").first() else {
-                Log.shared.msg("An error occured while fetching anime. Scraping infoElement failed.")
+            var infoElement = try document.getElementsByClass("anime_info_body_bg").first()
+            
+            if infoElement == nil {
+                guard let mediaString = media.title, let requestUrl = await refetchDetailsUrl(title: mediaString) else {
+                    Log.shared.msg("No valid details url.")
+                    return nil
+                }
+                
+                // Set the correct details URL
+                guard let index = super.mediaData.firstIndex(where: { $0.id == media.id }) else {
+                    print("A media with this ID could not be found.")
+                    return nil
+                }
+                
+                DispatchQueue.main.sync {
+                    AnimeVM.shared.objectWillChange.send()
+                }
+                
+                super.mediaData[index].detailsUrl = requestUrl
+                media.detailsUrl = requestUrl
+
+                // Continue refetching data
+                let (data, _) = try await URLSession.shared.data(from: requestUrl)
+                
+                guard let stringData = String(data: data, encoding: .utf8), !stringData.isEmpty else {
+                    Log.shared.msg("An error occured while fetching anime. Converting to string failed.")
+                    return nil
+                }
+                
+                document = try SwiftSoup.parse(stringData)
+                
+                infoElement = try document.getElementsByClass("anime_info_body_bg").first()
+            }
+            
+            guard let infoElement = infoElement else {
+                Log.shared.msg("An error occured while fetching anime. Converting to string failed.")
                 return nil
             }
             
@@ -155,6 +197,12 @@ class Gogoanime: AnimeFetcher, AnimeSource {
             Log.shared.error(error)
             return nil
         }
+    }
+    
+    func refetchDetailsUrl(title: String) async -> URL? {
+        let title = try? await fetchSearchMedia(pageNumber: 1, searchQuery: title).first?.detailsUrl
+        
+        return title
     }
     
     private func getEpisodes(document: Document) async throws -> [Episode]? {
