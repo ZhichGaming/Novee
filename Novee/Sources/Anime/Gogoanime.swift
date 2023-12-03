@@ -10,7 +10,7 @@ import SwiftSoup
 import CommonCrypto
 
 class Gogoanime: AnimeFetcher, AnimeSource {
-    override init(label: String = "Gogoanime", sourceId: String = "gogoanime", baseUrl: String = "https://www1.gogoanime.bid") {
+    override init(label: String = "Gogoanime", sourceId: String = "gogoanime", baseUrl: String = "https://gogoanime3.net") {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
     

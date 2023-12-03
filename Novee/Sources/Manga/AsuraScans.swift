@@ -9,7 +9,7 @@ import Foundation
 import SwiftSoup
 
 class AsuraScans: MangaFetcher, MangaSource {
-    override init(label: String = "AsuraScans", sourceId: String = "asurascans", baseUrl: String = "https://asuracomics.com") {
+    override init(label: String = "AsuraScans", sourceId: String = "asurascans", baseUrl: String = "https://asuratoon.com") {
         super.init(label: label, sourceId: sourceId, baseUrl: baseUrl)
     }
     
