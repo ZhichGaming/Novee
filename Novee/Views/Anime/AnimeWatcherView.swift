@@ -14,11 +14,10 @@ struct AnimeWatcherView: View {
     @EnvironmentObject var animeVM: AnimeVM
     @EnvironmentObject var animeListVM: AnimeListVM
     @StateObject var notification = SystemNotificationContext()
+    var customWindowDelegate = CustomWindowDelegate()
 
     let selectedAnime: Anime
     @State var selectedEpisode: Episode
-    
-    @State var isToolbarHidden: Bool = false
 
     @State var pickerSelectedEpisodeId = UUID()
     @State var streamingUrl: URL? = nil
@@ -132,89 +131,78 @@ struct AnimeWatcherView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
-            if !isToolbarHidden {
-                // A toolbar item to change video resolution using a picker
-                ToolbarItem(placement: .secondaryAction) {
-                    Picker("Select resolution", selection: $streamingUrl) {
-                        ForEach(selectedEpisode.streamingUrls ?? []) { streamingUrl in
-                            Text(streamingUrl.quality ?? "Unknown")
-                                .tag(streamingUrl.url)
-                        }
-                    }
-                    .onChange(of: streamingUrl) { [streamingUrl] newUrl in
-                        if player == nil { return }
-                        
-                        if let newUrl = newUrl {
-                            self.player?.pause()
-                            
-                            selectedEpisode.resumeTime = animeListVM.getResumeTime(anime: selectedAnime, episode: selectedEpisode)
-                            self.player = AVPlayer(url: newUrl)
-                            
-                            if streamingUrl != nil {
-                                seekToResumeTime()
-                                player?.play()
-                            }
-                            
-                            if let newSelectedQuality = selectedEpisode.streamingUrls?.first(where: { $0.url == newUrl })?.quality {
-                                animeVM.lastSelectedResolution = newSelectedQuality
-                            }
-                        }
+            // A toolbar item to change video resolution using a picker
+            ToolbarItem(placement: .secondaryAction) {
+                Picker("Select resolution", selection: $streamingUrl) {
+                    ForEach(selectedEpisode.streamingUrls ?? []) { streamingUrl in
+                        Text(streamingUrl.quality ?? "Unknown")
+                            .tag(streamingUrl.url)
                     }
                 }
-                
-                // Some toolbar items to change episode
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Spacer()
+                .onChange(of: streamingUrl) { [streamingUrl] newUrl in
+                    if player == nil { return }
                     
-                    Button(action: {
-                        previousEpisode()
-                    }, label: {
-                        Image(systemName: "chevron.left")
-                    })
-                    .disabled(selectedAnime.segments?.first?.id == selectedEpisode.id)
-                    
-                    Button(action: {
-                        nextEpisode()
-                    }, label: {
-                        Image(systemName: "chevron.right")
-                    })
-                    .disabled(selectedAnime.segments?.last?.id == selectedEpisode.id)
-                    
-                    Picker("Select episode", selection: $pickerSelectedEpisodeId) {
-                        ForEach(selectedAnime.segments ?? []) { episode in
-                            Text(episode.title)
-                                .tag(episode.id)
-                        }
-                    }
-                    .frame(maxWidth: 300)
-                    .onAppear {
-                        pickerSelectedEpisodeId = selectedEpisode.id
+                    if let newUrl = newUrl {
+                        self.player?.pause()
                         
-                        if animeListVM.findInList(media: selectedAnime) == nil {
-                            showAddAnimeNotification()
-                        } else {
-                            showUpdateEpisodeNotification(newEpisode: selectedEpisode)
-                        }
-                    }
-                    .onChange(of: pickerSelectedEpisodeId) { [pickerSelectedEpisodeId] newId in
-                        selectAndLoadEpisode()
-                        streamingUrl = nil
+                        selectedEpisode.resumeTime = animeListVM.getResumeTime(anime: selectedAnime, episode: selectedEpisode)
+                        self.player = AVPlayer(url: newUrl)
                         
-                        if pickerSelectedEpisodeId != newId {
-                            showUpdateEpisodeNotification(newEpisode: selectedEpisode)
+                        if streamingUrl != nil {
+                            seekToResumeTime()
+                            player?.play()
+                        }
+                        
+                        if let newSelectedQuality = selectedEpisode.streamingUrls?.first(where: { $0.url == newUrl })?.quality {
+                            animeVM.lastSelectedResolution = newSelectedQuality
                         }
                     }
                 }
             }
-        }
-        .onAppear {
-            NotificationCenter.default.addObserver(forName: NSWindow.willEnterFullScreenNotification, object: nil, queue: OperationQueue.main, using: { note in
-                self.isToolbarHidden = true
-            })
-
-            NotificationCenter.default.addObserver(forName: NSWindow.willExitFullScreenNotification, object: nil, queue: OperationQueue.main, using: { note in
-                self.isToolbarHidden = false
-            })
+            
+            // Some toolbar items to change episode
+            ToolbarItemGroup(placement: .primaryAction) {
+                Spacer()
+                
+                Button(action: {
+                    previousEpisode()
+                }, label: {
+                    Image(systemName: "chevron.left")
+                })
+                .disabled(selectedAnime.segments?.first?.id == selectedEpisode.id)
+                
+                Button(action: {
+                    nextEpisode()
+                }, label: {
+                    Image(systemName: "chevron.right")
+                })
+                .disabled(selectedAnime.segments?.last?.id == selectedEpisode.id)
+                
+                Picker("Select episode", selection: $pickerSelectedEpisodeId) {
+                    ForEach(selectedAnime.segments ?? []) { episode in
+                        Text(episode.title)
+                            .tag(episode.id)
+                    }
+                }
+                .frame(maxWidth: 300)
+                .onAppear {
+                    pickerSelectedEpisodeId = selectedEpisode.id
+                    
+                    if animeListVM.findInList(media: selectedAnime) == nil {
+                        showAddAnimeNotification()
+                    } else {
+                        showUpdateEpisodeNotification(newEpisode: selectedEpisode)
+                    }
+                }
+                .onChange(of: pickerSelectedEpisodeId) { [pickerSelectedEpisodeId] newId in
+                    selectAndLoadEpisode()
+                    streamingUrl = nil
+                    
+                    if pickerSelectedEpisodeId != newId {
+                        showUpdateEpisodeNotification(newEpisode: selectedEpisode)
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showingCustomizedAddToListSheet) {
             AddToListView(media: selectedAnime, segment: selectedEpisode)
@@ -223,6 +211,12 @@ struct AnimeWatcherView: View {
         }
         .navigationTitle(selectedEpisode.title)
         .systemNotification(notification)
+        .background {
+            HostingWindowFinder { window in
+                guard let window else { return }
+                window.delegate = self.customWindowDelegate
+            }
+        }
     }
     
     func addPeriodicTimeObserver() {
@@ -389,5 +383,29 @@ struct AnimeWatcherView: View {
         if let resumeTime = selectedEpisode.resumeTime {
             self.player?.seek(to: CMTime(seconds: resumeTime, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))
         }
+    }
+}
+
+struct HostingWindowFinder: NSViewRepresentable {
+    var callback: (NSWindow?) -> ()
+    
+    func makeNSView(context: Self.Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async { self.callback(view.window) }
+        return view
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async { self.callback(nsView.window) }
+    }
+}
+
+class CustomWindowDelegate: NSObject, NSWindowDelegate {
+    override init() {
+        super.init()
+    }
+    
+    func window(_ window: NSWindow, willUseFullScreenPresentationOptions proposedOptions: NSApplication.PresentationOptions = []) -> NSApplication.PresentationOptions {
+        return [.autoHideToolbar, .autoHideMenuBar, .fullScreen]
     }
 }
